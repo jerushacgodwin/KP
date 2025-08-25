@@ -1,0 +1,26 @@
+{
+  "name": "@kp/server",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "nodemon --watch src --ext ts --exec ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@types/multer": "^1.4.13",
+    "cors": "^2.8.5",
+    "dompurify": "^3.2.6",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "multer": "^2.0.1",
+    "mysql2": "^3.14.1",
+    "sequelize": "^6.37.7",
+    "validator": "^13.15.15",
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "nodemon": "^3.1.10"
+  }
+}

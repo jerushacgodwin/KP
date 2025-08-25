@@ -1,0 +1,25 @@
+{
+  "name": "kp",
+  "private": true,
+  "workspaces": [
+    "application",
+    "packages/*",
+    "public/*"
+  ],
+  "devDependencies": {
+    "@types/node": "^24.2.1",
+    "lerna": "^6.6.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "scripts": {
+    "bootstrap": "lerna bootstrap",
+    "dev": "lerna run dev --stream",
+    "build": "lerna run build --stream"
+  },
+  "dependencies": {
+    "primeflex": "^4.0.0",
+    "primeicons": "^7.0.0",
+    "primereact": "^10.9.7"
+  }
+}

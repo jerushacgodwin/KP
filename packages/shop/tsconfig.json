@@ -1,0 +1,18 @@
+﻿{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "declaration": true,
+    "emitDeclarationOnly": false,
+    "baseUrl": ".",
+    "paths": {
+      "@kp/shop": ["../packages/shop/dist"]
+    }
+
+  },
+  "scripts": {
+  "build": "tsc"
+},
+
+  "include": ["src"]
+}

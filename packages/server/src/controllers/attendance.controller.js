@@ -1,0 +1,63 @@
+const attendance = require("../services/attendance.services");
+const { validationResult } = require("express-validator");
+
+module.exports.staff = async (req, res, next) => {
+  const error = validationResult(req);
+  if (!error.isEmpty()) {
+    return res.status(400).json({ errors: error.array() });
+  }
+  const { email } = req.body;
+  const result = await attendance.getStaffAttendance(email);
+  res.status(201).json({
+    message: "User created successfully",
+    result: result.present,
+  });
+};
+module.exports.student = async (req, res, next) => {
+  const error = validationResult(req);
+  if (!error.isEmpty()) {
+    return res.status(400).json({ errors: error.array() });
+  }
+  const { email } = req.body;
+  const result = await attendance.getStudentAttendance(email);
+  res.status(201).json({
+    message: "User created successfully",
+   result:result.present,
+      
+  });
+};
+module.exports.studentAttendanceList = async (req, res, next) => {
+const { classID,search, status, startDate, endDate } = req.query || {};
+  const result = await attendance.getStudentAttendanceList({classID, search, status, startDate, endDate });
+  res.status(201).json({
+    message: "User created successfully",
+   result:result,
+      
+  });
+};
+module.exports.staffAttendanceList = async (req, res, next) => {
+  const { search, status, startDate, endDate } = req.query || {};
+  const result = await attendance.getStaffAttendanceList({ search, status, startDate, endDate });
+  res.status(201).json({
+    message: "User created successfully",
+    result: result,
+  });
+};
+module.exports.setStudentAttendance = async (req, res, next) => {
+  const error = validationResult(req);
+  if (!error.isEmpty()) {
+    return res.status(400).json({ errors: error.array() });
+  }
+
+  const requests = Array.isArray(req.body) ? req.body : [req.body];
+  const results = [];
+  //console.log(requests, "requests in attendance controller");
+  for (const request of requests) {
+    const result = await attendance.setStudentAttendance(request);
+    results.push(result);
+  }
+  res.status(201).json({
+    message: "User created successfully",
+    result: results,
+  });
+}
