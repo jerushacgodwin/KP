@@ -1,0 +1,11 @@
+{
+  "packages": [
+    "application",
+    "packages/*",
+    "public/*"
+  ],
+  "version": "0.0.0",
+  "npmClient": "npm",
+  "useWorkspaces": true,
+  "$schema": "node_modules/lerna/schemas/lerna-schema.json"
+}
