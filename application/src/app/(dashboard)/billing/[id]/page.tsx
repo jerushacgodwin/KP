@@ -83,6 +83,7 @@ const [globalFilterValue, setGlobalFilterValue] = useState("");
         columns={columns}
         globalFilter={globalFilterFields}
         first={first}
+        
         onGlobalSearch={onGlobalSearch}
       />
     </div>
