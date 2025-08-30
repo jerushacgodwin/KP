@@ -53,3 +53,16 @@ module.exports.getAllStudents = async (req, res, next) => {
     next(err);
   }
 };
+module.exports.getStudentById = async (req, res, next) => {
+  try {
+    const studentId = req.params.id;
+    const student = await studentService.getStudentById(studentId);
+    res.status(200).json({
+      message: "Student fetched successfully",
+      result: student,
+    });
+  } catch (err) {
+    console.error("Get Student By ID Error:", err);
+    next(err);
+  }
+};
