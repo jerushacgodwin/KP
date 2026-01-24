@@ -106,9 +106,9 @@ const Homepage = () => {
                 />
                 Remember me
               </label>
-              <a href="#" className="text-indigo-600 hover:underline">
+              <Link href="/forgot-password" title="Forgot Password?" className="text-indigo-600 hover:underline">
                 Forgot Password?
-              </a>
+              </Link>
             </div>
           <button
             type="submit"
@@ -123,9 +123,9 @@ const Homepage = () => {
 
           <p className="mt-4 text-center text-sm">
             Don't have any account?{' '}
-            <a href="#" className="text-indigo-600 hover:underline">
+            <Link href="/sign-up" title="Sign Up" className="text-indigo-600 hover:underline">
               Sign Up
-            </a>
+            </Link>
           </p>
         </div>
 
