@@ -21,7 +21,9 @@ type User = {
   }
 
   //try {
-       user =JSON.parse(userString)as User;
+  if (userString) {
+       user = JSON.parse(userString) as User;
+  }
 
       
        //console.log(usermenu)

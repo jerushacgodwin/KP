@@ -64,4 +64,14 @@ router.post(
   timeTableController.TimeTableStaff
 );
 router.get('/role',staffRolesController.getAllRoles);
+
+router.post(
+  "/getAllStaff",
+  [
+    body("page").optional().isInt({ min: 1 }),
+    body("size").optional().isInt({ min: 1 }),
+  ],
+  staffController.getAllStaff
+);
+
 module.exports = router;

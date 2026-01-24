@@ -1,7 +1,9 @@
-/lib/
-/node_modules/
+node_modules/
+dist/
+coverage/
+.env
+uploads/
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
 bun.lockb
-.env

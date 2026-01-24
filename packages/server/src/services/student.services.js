@@ -5,17 +5,14 @@ const {extractAndMergeNestedData} = require("../utility/extractData");
 const db = require("../models");
 const { Op, col } = require("sequelize");
 const {getNextSequenceValue} = require('./student.sequence.service');
+const { type } = require("os");
 const fieldsToExtract = [
     {
         path: ['iClass'], 
         targetField: 'class', 
         nestedFields: ['name', 'group'] 
     },
-    {
-        path: ['feeStructures'], 
-        targetField: 'fee',
-        nestedFields: ['amount', 'due_date'] 
-    }
+    
 ];
 module.exports.createStudent = async (data,file)=>{
    const user_id = await getNextSequenceValue('user_id');
@@ -104,6 +101,7 @@ module.exports.getStudentById = async (studentId) => {
   try {
     const student = await Student.findOne({
       where: { user_id: studentId },
+       attributes: ['id','user_id', 'name', 'email', 'phone_no', 'class_id'] ,
       include: [
         {
           model: db.iClass,
@@ -114,7 +112,7 @@ module.exports.getStudentById = async (studentId) => {
           model: db.FeeStructure,
           as: "feeStructures",
           required: false,
-          attributes: ["amount", "due_date"]
+          attributes: ["amount", "due_date", "fee_type"]
         }
       ]
     });

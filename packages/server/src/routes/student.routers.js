@@ -64,6 +64,11 @@ router.get(
   [param("id").notEmpty().withMessage("Invalid Role")],
   attendanceController.student
 );
+router.get(
+  "/getStudentById/:id",
+  [param("id").notEmpty().withMessage("Invalid Student ID")],
+  studentController.getStudentById
+);
 router.post(
   "/getAllStudents/",
   [body("school_id").notEmpty().withMessage("Invalid School ID"),
@@ -72,6 +77,7 @@ router.post(
   ],
   studentController.getAllStudents
 );
+
 router.post(
   "/timetble/",
   [body("email").isEmail().withMessage("Invalid Email")],

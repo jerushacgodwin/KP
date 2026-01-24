@@ -125,14 +125,14 @@ const StudentForm = ({
 
   useEffect(() => {
     async function getClassList() {
-      const getclasslist = await apiFetch(`${apiUrl}/class`, "GET");
+      const getclasslist: any = await apiFetch(`${apiUrl}/class`, "GET");
       if (getclasslist && getclasslist.result) {
         setclassList(getclasslist.result);
       }
     }
     getClassList();
   }, []);
-  const onSubmit = (data) => {
+  const onSubmit = (data: Inputs) => {
     const cleaned = sanitizeFormData(data);
     const addstudent=  apiFetch(`${apiUrl}/student/addstudent`, 'POST',cleaned,{},true);
   //console.log("Form valid, submitting:", addstudent);

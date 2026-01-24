@@ -1,12 +1,12 @@
 "use client";
 
-import { Calendar, momentLocalizer, Views, View } from "react-big-calendar";
-import moment from "moment";
+import { Calendar, dayjsLocalizer, Views, View } from "react-big-calendar";
+import dayjs from "dayjs";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { useState } from "react";
 import CustomToolbar from "./calenderHeader"; // Adjust path if needed
 
-const localizer = momentLocalizer(moment);
+const localizer = dayjsLocalizer(dayjs);
 
 const BigCalendar = ({ calendarData }: { calendarData: any[] }) => {
   const [view, setView] = useState<View>(Views.MONTH);
@@ -42,9 +42,10 @@ const BigCalendar = ({ calendarData }: { calendarData: any[] }) => {
         start,
         end,  };
   });
-if(calendarData ){
+  const RBC = Calendar as any;
+  if(calendarData ){
   return (
-    <Calendar
+    <RBC
       localizer={localizer}
       events={fixedEvents}
       startAccessor="start"
@@ -56,7 +57,7 @@ if(calendarData ){
       onNavigate={setDate}
       style={{ height: "45vh" }}
       components={{
-        toolbar: CustomToolbar,
+        toolbar: CustomToolbar as any,
           
       }}
        dayPropGetter={dayPropGetter}

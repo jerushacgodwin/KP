@@ -1,0 +1,121 @@
+﻿src/app/(dashboard)/billing/[id]/page.tsx(41,18): error TS18046: 'getStudentById' is of type 'unknown'.
+src/app/(dashboard)/billing/[id]/page.tsx(42,21): error TS18046: 'schoolById' is of type 'unknown'.
+src/app/(dashboard)/billing/[id]/page.tsx(43,24): error TS18046: 'getfeecategories' is of type 'unknown'.
+src/app/(dashboard)/billing/[id]/page.tsx(44,19): error TS18046: 'getFeesByStudentId' is of type 'unknown'.
+src/app/(dashboard)/billing/[id]/page.tsx(69,38): error TS2740: Type 'any[]' is missing the following properties from type '{ name: string; className: string; admissionNo: string; iClass: { name: string; class_id: number; } | null; user_id: string; school_id: number; }': name, className, admissionNo, iClass, and 2 more.
+src/app/(dashboard)/billing/page.tsx(41,19): error TS18046: 'res' is of type 'unknown'.
+src/app/(dashboard)/billing/page.tsx(42,23): error TS18046: 'res' is of type 'unknown'.
+src/app/(dashboard)/lessons/student/page.tsx(45,40): error TS2339: Property 'result' does not exist on type '{}'.
+src/app/(dashboard)/lessons/student/page.tsx(46,35): error TS2339: Property 'result' does not exist on type '{}'.
+src/app/(dashboard)/lessons/student/page.tsx(70,50): error TS2339: Property 'result' does not exist on type '{}'.
+src/app/(dashboard)/lessons/student/page.tsx(71,45): error TS2339: Property 'result' does not exist on type '{}'.
+src/app/(dashboard)/lessons/student/page.tsx(84,46): error TS2339: Property 'result' does not exist on type '{}'.
+src/app/(dashboard)/lessons/student/page.tsx(85,41): error TS2339: Property 'result' does not exist on type '{}'.
+src/app/(dashboard)/lessons/student/page.tsx(94,28): error TS18047: 'subjectSelected' is possibly 'null'.
+src/app/(dashboard)/lessons/student/page.tsx(99,44): error TS2339: Property 'result' does not exist on type '{}'.
+src/app/(dashboard)/lessons/student/page.tsx(100,43): error TS2339: Property 'result' does not exist on type '{}'.
+src/app/(dashboard)/lessons/student/page.tsx(102,39): error TS2339: Property 'result' does not exist on type '{}'.
+src/app/(dashboard)/lessons/student/page.tsx(128,40): error TS2339: Property 'lesson_title' does not exist on type 'any[]'.
+src/app/(dashboard)/lessons/student/page.tsx(137,40): error TS2339: Property 'chapter_title' does not exist on type 'any[]'.
+src/app/(dashboard)/lessons/teacher/page.tsx(75,40): error TS2339: Property 'result' does not exist on type '{}'.
+src/app/(dashboard)/lessons/teacher/page.tsx(76,35): error TS2339: Property 'result' does not exist on type '{}'.
+src/app/(dashboard)/lessons/teacher/page.tsx(98,47): error TS2339: Property 'result' does not exist on type '{}'.
+src/app/(dashboard)/lessons/teacher/page.tsx(99,42): error TS2339: Property 'result' does not exist on type '{}'.
+src/app/(dashboard)/lessons/teacher/page.tsx(105,21): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/app/(dashboard)/list/students/[id]/page.tsx(113,12): error TS2741: Property 'calendarData' is missing in type '{}' but required in type '{ calendarData: any[]; }'.
+src/app/(dashboard)/list/teachers/[id]/page.tsx(135,12): error TS2741: Property 'calendarData' is missing in type '{}' but required in type '{ calendarData: any[]; }'.
+src/app/(dashboard)/parent/page.tsx(11,12): error TS2741: Property 'calendarData' is missing in type '{}' but required in type '{ calendarData: any[]; }'.
+src/app/(dashboard)/profile/page.tsx(22,32): error TS2339: Property 'user' does not exist on type '{}'.
+src/app/(dashboard)/profile/page.tsx(23,33): error TS2339: Property 'user' does not exist on type '{}'.
+src/app/(dashboard)/profile/page.tsx(43,33): error TS2339: Property 'photo' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(47,65): error TS2339: Property 'name' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(51,31): error TS2339: Property 'user_id' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(55,31): error TS2339: Property 'phone_no' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(57,29): error TS2339: Property 'class_id' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(60,32): error TS2339: Property 'class_id' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(76,36): error TS2339: Property 'address' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(82,36): error TS2339: Property 'gender' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(87,36): error TS2339: Property 'religion' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(92,36): error TS2339: Property 'blood_group' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(97,36): error TS2339: Property 'dob' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(108,34): error TS2339: Property 'father_name' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(113,34): error TS2339: Property 'mother_name' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(119,34): error TS2339: Property 'father_phone' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(124,34): error TS2339: Property 'mother_phone' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(126,27): error TS2339: Property 'present_address' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(130,36): error TS2339: Property 'present_address' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(133,27): error TS2339: Property 'qualification' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(137,36): error TS2339: Property 'qualification' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(140,27): error TS2339: Property 'guardian' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(144,36): error TS2339: Property 'guardian' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(147,27): error TS2339: Property 'guardian_phone_no' does not exist on type 'never'.
+src/app/(dashboard)/profile/page.tsx(151,36): error TS2339: Property 'guardian_phone_no' does not exist on type 'never'.
+src/app/(dashboard)/student/page.tsx(31,37): error TS2339: Property 'timetable' does not exist on type '{}'.
+src/app/(dashboard)/student/page.tsx(34,32): error TS2339: Property 'events' does not exist on type '{}'.
+src/app/(dashboard)/student/page.tsx(60,28): error TS2322: Type '{ eventData: any[]; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'eventData' does not exist on type 'IntrinsicAttributes'.
+src/app/(dashboard)/teacher/attendance/page.tsx(36,40): error TS2339: Property 'result' does not exist on type '{}'.
+src/app/(dashboard)/teacher/attendance/page.tsx(37,35): error TS2339: Property 'result' does not exist on type '{}'.
+src/app/(dashboard)/teacher/attendance/page.tsx(54,19): error TS2339: Property 'search' does not exist on type '{ student_name: string; status: string; dateRange: null[]; }'.
+src/app/(dashboard)/teacher/attendance/page.tsx(54,59): error TS2339: Property 'search' does not exist on type '{ student_name: string; status: string; dateRange: null[]; }'.
+src/app/(dashboard)/teacher/attendance/page.tsx(57,51): error TS2339: Property 'toISOString' does not exist on type 'never'.
+src/app/(dashboard)/teacher/attendance/page.tsx(58,45): error TS2339: Property 'toISOString' does not exist on type 'never'.
+src/app/(dashboard)/teacher/attendance/page.tsx(62,21): error TS18046: 'response' is of type 'unknown'.
+src/app/(dashboard)/teacher/attendance/page.tsx(77,27): error TS7006: Parameter 'field' implicitly has an 'any' type.
+src/app/(dashboard)/teacher/attendance/page.tsx(77,34): error TS7006: Parameter 'value' implicitly has an 'any' type.
+src/app/(dashboard)/teacher/attendance/page.tsx(84,16): error TS2339: Property 'name' does not exist on type 'never'.
+src/app/(dashboard)/teacher/attendance/page.tsx(87,49): error TS2339: Property 'status' does not exist on type 'never'.
+src/app/(dashboard)/teacher/attendance/page.tsx(90,45): error TS2339: Property 'date' does not exist on type 'never'.
+src/app/(dashboard)/teacher/attendance/page.tsx(90,67): error TS2339: Property 'date' does not exist on type 'never'.
+src/app/(dashboard)/teacher/attendance/page.tsx(100,27): error TS7006: Parameter 'status' implicitly has an 'any' type.
+src/app/(dashboard)/teacher/attendance/page.tsx(101,39): error TS2698: Spread types may only be created from object types.
+src/app/(dashboard)/teacher/attendance/page.tsx(108,5): error TS18047: 'toast.current' is possibly 'null'.
+src/app/(dashboard)/teacher/attendance/page.tsx(113,27): error TS7006: Parameter 'row' implicitly has an 'any' type.
+src/app/(dashboard)/teacher/attendance/page.tsx(129,7): error TS18047: 'toast.current' is possibly 'null'.
+src/app/(dashboard)/teacher/attendance/page.tsx(157,81): error TS2339: Property 'exportCSV' does not exist on type 'never'.
+src/app/(dashboard)/teacher/attendance/page.tsx(198,8): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: DataTableProps<never[]> | Readonly<DataTableProps<never[]>>): DataTable<never[]>', gave the following error.
+    Type '{ children: Element[]; ref: MutableRefObject<null>; value: never[]; selection: never[]; onSelectionChange: (e: DataTableSelectionMultipleChangeEvent<never[]>) => void; ... 5 more ...; columnResizeMode: "fit"; }' is not assignable to type 'IntrinsicAttributes & (IntrinsicClassAttributes<DataTable<never[]>> & Readonly<DataTableProps<never[]>>)'.
+      Type '{ children: Element[]; ref: MutableRefObject<null>; value: never[]; selection: never[]; onSelectionChange: (e: DataTableSelectionMultipleChangeEvent<never[]>) => void; ... 5 more ...; columnResizeMode: "fit"; }' is not assignable to type '(IntrinsicAttributes & IntrinsicClassAttributes<DataTable<never[]>> & Readonly<DataTablePropsMultiple<never[]>>) | (IntrinsicAttributes & ... 1 more ... & Readonly<...>)'.
+        Type '{ children: Element[]; ref: MutableRefObject<null>; value: never[]; selection: never[]; onSelectionChange: (e: DataTableSelectionMultipleChangeEvent<never[]>) => void; ... 5 more ...; columnResizeMode: "fit"; }' is missing the following properties from type 'Readonly<DataTablePropsCellMultiple<never[]>>': cellSelection, selectionMode
+  Overload 2 of 2, '(props: DataTableProps<never[]>, context: any): DataTable<never[]>', gave the following error.
+    Type '{ children: Element[]; ref: MutableRefObject<null>; value: never[]; selection: never[]; onSelectionChange: (e: DataTableSelectionMultipleChangeEvent<never[]>) => void; ... 5 more ...; columnResizeMode: "fit"; }' is not assignable to type 'IntrinsicAttributes & (IntrinsicClassAttributes<DataTable<never[]>> & Readonly<DataTableProps<never[]>>)'.
+      Type '{ children: Element[]; ref: MutableRefObject<null>; value: never[]; selection: never[]; onSelectionChange: (e: DataTableSelectionMultipleChangeEvent<never[]>) => void; ... 5 more ...; columnResizeMode: "fit"; }' is not assignable to type '(IntrinsicAttributes & IntrinsicClassAttributes<DataTable<never[]>> & Readonly<DataTablePropsMultiple<never[]>>) | (IntrinsicAttributes & ... 1 more ... & Readonly<...>)'.
+        Type '{ children: Element[]; ref: MutableRefObject<null>; value: never[]; selection: never[]; onSelectionChange: (e: DataTableSelectionMultipleChangeEvent<never[]>) => void; ... 5 more ...; columnResizeMode: "fit"; }' is missing the following properties from type 'Readonly<DataTablePropsCellMultiple<never[]>>': cellSelection, selectionMode
+src/app/(dashboard)/teacher/attendance/page.tsx(218,30): error TS2339: Property 'name' does not exist on type '{ student_name: string; status: string; dateRange: null[]; }'.
+src/app/(dashboard)/teacher/page.tsx(31,37): error TS2339: Property 'timetable' does not exist on type '{}'.
+src/app/(dashboard)/teacher/page.tsx(34,32): error TS2339: Property 'events' does not exist on type '{}'.
+src/app/(dashboard)/teacher/page.tsx(60,29): error TS2322: Type '{ eventData: any[]; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'eventData' does not exist on type 'IntrinsicAttributes'.
+src/app/api/login/route.ts(27,29): error TS2339: Property 'role' does not exist on type '{}'.
+src/app/api/login/route.ts(44,68): error TS2339: Property 'userpermission' does not exist on type '{ roleList: {}; }'.
+src/app/api/login/route.ts(52,23): error TS2339: Property 'role' does not exist on type '{}'.
+src/app/api/login/route.ts(73,42): error TS18046: 'err' is of type 'unknown'.
+src/app/context/LoaderContext.tsx(15,7): error TS2322: Type 'React.ReactNode' is not assignable to type 'import("D:/LMSAPI/kpripo/application/node_modules/@types/react/index").ReactNode'.
+  Type 'ReactElement<any, string | JSXElementConstructor<any>>' is not assignable to type 'ReactNode'.
+    Property 'children' is missing in type 'ReactElement<any, string | JSXElementConstructor<any>>' but required in type 'ReactPortal'.
+src/app/layout.tsx(36,15): error TS2322: Type 'Element' is not assignable to type 'ReactNode'.
+  Property 'children' is missing in type 'Element' but required in type 'ReactPortal'.
+src/components/forms/StudentForm.tsx(129,40): error TS2339: Property 'result' does not exist on type '{}'.
+src/components/forms/StudentForm.tsx(130,35): error TS2339: Property 'result' does not exist on type '{}'.
+src/components/forms/StudentForm.tsx(135,21): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/components/forms/TeacherForm.tsx(143,23): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'File'.
+src/components/forms/TeacherForm.tsx(144,27): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'File'.
+src/components/forms/TeacherForm.tsx(145,26): error TS2345: Argument of type 'undefined' is not assignable to parameter of type 'File'.
+src/components/forms/TeacherForm.tsx(189,40): error TS2339: Property 'result' does not exist on type '{}'.
+src/components/forms/TeacherForm.tsx(190,38): error TS2339: Property 'result' does not exist on type '{}'.
+src/components/forms/TeacherForm.tsx(192,36): error TS2339: Property 'result' does not exist on type '{}'.
+src/components/forms/TeacherForm.tsx(193,35): error TS2339: Property 'result' does not exist on type '{}'.
+src/components/Menu.tsx(123,16): error TS7031: Binding element 'menulist' implicitly has an 'any' type.
+src/components/Menu.tsx(123,25): error TS7031: Binding element 'userDetail' implicitly has an 'any' type.
+src/components/Menu.tsx(138,26): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/components/Menu.tsx(155,31): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/TiptapEditor.tsx(35,37): error TS7031: Binding element 'onChange' implicitly has an 'any' type.
+src/components/TiptapEditor.tsx(57,23): error TS7006: Parameter 'onClick' implicitly has an 'any' type.
+src/components/TiptapEditor.tsx(57,32): error TS7006: Parameter 'icon' implicitly has an 'any' type.
+src/components/TiptapEditor.tsx(79,52): error TS2322: Type 'number' is not assignable to type 'Level'.
+src/lib/data.ts(917,26): error TS7006: Parameter 'dayIndex' implicitly has an 'any' type.
+src/lib/data.ts(917,36): error TS7006: Parameter 'hour' implicitly has an 'any' type.
+src/lib/data.ts(917,42): error TS7006: Parameter 'minute' implicitly has an 'any' type.
+src/lib/utility.ts(70,15): error TS2358: The left-hand side of an 'instanceof' expression must be of type 'any', an object type or a type parameter.
+src/lib/utility.ts(70,40): error TS2358: The left-hand side of an 'instanceof' expression must be of type 'any', an object type or a type parameter.

@@ -5,7 +5,8 @@ const iclassController = require("../controllers/Iclass.controller");
 router.get("/", iclassController.getAllClasses);
 
 router.get("/getsite", iclassController.getSiteDetail);
-router.get("/:class_id", iclassController.getClassById);
+router.get("/getClassById/:class_id", iclassController.getClassById);
+router.get("/getSchoolById/:school_id", iclassController.getSchoolById);
 router.post(
   "/addClass",
   [

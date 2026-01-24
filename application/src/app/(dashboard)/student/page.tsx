@@ -6,12 +6,10 @@ import { apiFetch } from "@src/lib/api";
 import Cookies from "js-cookie"
 import { useEffect,useState } from "react";
 import { weekdays } from "@src/lib/utility";
-import { body } from "express-validator";
  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 const StudentPage = () => {
   //const user = useUser();
   const [userTimeTable, setUserTimeTable] = useState<any[]>([])
-  const [events, setEvents] = useState<any[]>([])
   const userString = Cookies.get("log-user");
 
     useEffect(() => {
@@ -21,18 +19,14 @@ const StudentPage = () => {
           if (userString) {
             user = JSON.parse(userString);
           }
-        const [timetable, eventsData,attendance] = await Promise.all([
+        const [timetable, attendance] = await Promise.all([
     apiFetch(`${apiUrl}/student/timetble`, 'POST', { email: user?.email }),
-    apiFetch(`${apiUrl}/events`, 'POST', body),
      apiFetch(`${apiUrl}/student/attendance`, 'POST', { email: user?.email }),
   ]);
         //console.log(timetable)
-        if (timetable) {
-         setUserTimeTable(timetable.timetable);
-        }
-        if (eventsData) {
-          setEvents(eventsData.events);
-          //console.log(eventsData)
+        const timetableRes = timetable as any;
+        if (timetableRes) {
+         setUserTimeTable(timetableRes.timetable || []);
         }
       } catch (error) {
         console.error('Failed to fetch:', error);
@@ -41,7 +35,7 @@ const StudentPage = () => {
 
     fetchData();
     }, []);
-  if (userTimeTable.length && events.length) {
+  if (userTimeTable.length) {
    //console.log(userTimeTable, 'userTimeTable')
  const timeSlots = [...new Set(userTimeTable.map((item) => (item.time)))];
   //console.log(timeSlots)
@@ -57,7 +51,7 @@ const StudentPage = () => {
       </div>
       {/* RIGHT */}
       <div className="w-full xl:w-1/3 flex flex-col gap-8">
- {events && <EventCalendar eventData={events} />}
+ <EventCalendar />
 
       </div>
     </div>

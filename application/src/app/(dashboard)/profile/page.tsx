@@ -8,8 +8,29 @@ import Cookies from "js-cookie";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 const userString = Cookies.get("log-user");
 
+interface UserProfile {
+  photo?: string;
+  name?: string;
+  user_id?: string;
+  phone_no?: string;
+  class_id?: string;
+  address?: string;
+  gender?: string;
+  religion?: string;
+  blood_group?: string;
+  dob?: string;
+  father_name?: string;
+  mother_name?: string;
+  father_phone?: string;
+  mother_phone?: string;
+  present_address?: string;
+  qualification?: string;
+  guardian?: string;
+  guardian_phone_no?: string;
+}
+
 const ProfilePage = () => {
-  const [userProfile, setUserProfile] = useState();
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const fetchData = async () => {
     try {
       let user = null;
@@ -17,7 +38,7 @@ const ProfilePage = () => {
         user = JSON.parse(userString);
       }
 
-      const response = await apiFetch(`${apiUrl}/user/profile`, "POST", user);
+      const response: any = await apiFetch(`${apiUrl}/user/profile`, "POST", user);
       // Handle the response data as needed
       if (response && response.user) {
         setUserProfile(response.user);

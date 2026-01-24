@@ -120,7 +120,7 @@ const menuItems = [
   },
 ];
 
-const Menu = ({menulist,userDetail}) => {
+const Menu = ({menulist,userDetail}: {menulist: any, userDetail: any}) => {
   //console.log(menulist);
  const userFromHook = useUser();
 
@@ -135,7 +135,7 @@ const Menu = ({menulist,userDetail}) => {
       </div>
     );
   }
-    const handleClick = (e) => {
+    const handleClick = (e: any) => {
     //e.preventDefault();
     //setLoading(true);
     //navigate(item.slug);
@@ -152,7 +152,7 @@ const Menu = ({menulist,userDetail}) => {
          Menu
           </span>
             
-          {menu.map((item:any,index) => {
+          {menu.map((item:any,index: number) => {
             if (item.group_id==user?.role) {
               return (
                 <div key={item.name}>

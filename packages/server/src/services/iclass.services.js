@@ -1,6 +1,7 @@
 const iClass  = require('../models/iclass.model');
 const roleModel = require('../models/role.model');
 const appMetas = require('../models/app_metas.model');
+const School = require('../models/school.model');
 const { getNextClassSequenceValue } = require('./sequence.service');
 module.exports.getAllClassesList = async () => {
   ///console.log(email, "email in timetable service");
@@ -15,18 +16,18 @@ module.exports.getAllClassesList = async () => {
     throw new Error("Internal server error");
   }
 };
-module.exports.getClassById = async (classId) => {
+module.exports.getSchoolById = async (schoolId) => {
   try {
-    const classData = await iClass.findOne({
-      where: { class_id: classId },
-      attributes: ['class_id', 'name', 'class_teacher', 'class_leader', 'group']
+    const schoolData = await School.findOne({
+      where: { code: schoolId },
+      attributes: ['id', 'name', 'address', 'city', 'state', 'pincode', 'phone', 'email']
     });
-    if (!classData) {
-      throw new Error("Class not found");
+    if (!schoolData) {
+      throw new Error("School not found");
     }
-    return classData;
+    return schoolData;
   } catch (error) {
-    console.error("Error fetching class by ID:", error);
+    console.error("Error fetching school by ID:", error);
     throw error;
   }
 };
