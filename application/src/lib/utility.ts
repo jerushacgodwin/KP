@@ -1,5 +1,5 @@
  import DOMPurify from 'dompurify';
- const dayMap = {
+ const dayMap: { [key: string]: number } = {
     Sunday: 0,
     Monday: 1,
     Tuesday: 2,
@@ -9,7 +9,7 @@
     Saturday: 6,
   };
   export const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
-  function getThisWeekDate(dayName, hour, minute) {
+  function getThisWeekDate(dayName: string, hour: number, minute: number) {
  const now = new Date();
   const currentDay = now.getDay();
   const targetDay = dayMap[dayName];
@@ -20,7 +20,7 @@
   targetDate.setHours(hour, minute, 0, 0);
   return targetDate;
 }
-export function convertToCalendarEvent(timetableArray) {
+export function convertToCalendarEvent(timetableArray: any[]) {
  return timetableArray.map(entry => {
     const [startStr, endStr] = entry.time.split("–"); // or "-"
     const [startHour, startMinute] = startStr.split(":").map(Number);
@@ -35,7 +35,7 @@ export function convertToCalendarEvent(timetableArray) {
     };
   });
 }
-export function formatDate(date) {
+export function formatDate(date: Date | string) {
   const newdate = new Date(date);
 
 const formatted = newdate.toLocaleString('en-US', {
@@ -67,7 +67,7 @@ export const sanitizeFormData = <T extends Record<string, any>>(data: T): T => {
 
     if (typeof value === 'string') {
       sanitized[key] = sanitizeInput(value);
-    }else if (value instanceof File || value instanceof FileList) {
+    }else if ((value as any) instanceof File || (value as any) instanceof FileList) {
       sanitized[key] = value;
     }
  

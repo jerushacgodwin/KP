@@ -54,6 +54,7 @@ module.exports.getAllStudents = async (req, res, next) => {
   }
 };
 module.exports.getStudentById = async (req, res, next) => {
+  
   try {
     const studentId = req.params.id;
     const student = await studentService.getStudentById(studentId);

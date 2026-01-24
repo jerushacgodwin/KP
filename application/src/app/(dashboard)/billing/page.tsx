@@ -66,8 +66,7 @@ const [globalFilterValue, setGlobalFilterValue] = useState("");
     { field: "class_group", header: "Class Group" },
     { field: "email", header: "Email" },
     { field: "phone_no", header: "Phone No" },
-    { field: "fee_amount", header: "Amount" },
-    { field: "due_date", header: "Due Amount" },
+  
   ];
 
   const globalFilterFields = ["user_id", "name", "class_group", "email"];

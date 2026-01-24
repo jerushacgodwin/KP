@@ -6,6 +6,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
+import { Button } from "primereact/button";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 const userString = Cookies.get("log-user");
@@ -16,20 +17,31 @@ const FessEntry = dynamic(
 );
 
 const BillingPage = () => {
-  const [students, setStudents] = useState<any[]>([]);
-  const [totalRecords, setTotalRecords] = useState(0);
+  const [student, setStudent] = useState<any[]>([]);
+  const [schoolData, setSchoolData] = useState<any>([]);
+  const [feeCategories, setFeeCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [first, setFirst] = useState(0); // row offset
-const [globalFilterValue, setGlobalFilterValue] = useState("");
+  const [feesData, setFeesData] = useState<any[]>([]);
+  const [receiptData, setReceiptData] = useState<{ items: any[]; total: number }>({ items: [], total: 0 });
+
 
   const { id } = useParams();
-  // Lazy loading function (fetch only one page)
+ 
   const loadData = async () => {
     setLoading(true);
     try {
-      const res = await apiFetch(`${apiUrl}/student/getStudentById/${id}`, "GET");
-      setStudents(res.result.data);
-      setTotalRecords(res.result.total);
+      const user = userString ? JSON.parse(userString) : null;
+      const [getStudentById, schoolById, getfeecategories,getFeesByStudentId] = await Promise.all([
+          apiFetch(`${apiUrl}/student/getStudentById/${id}`, "GET"),
+          apiFetch(`${apiUrl}/class/getSchoolById/${user?.school_id}`, "GET"),
+          apiFetch(`${apiUrl}/finance/getfeecategories`, "GET"),
+          apiFetch(`${apiUrl}/finance/getFeesByStudentId/${id}/${user?.school_id}`, "GET"),
+        ]);
+      //const res = await apiFetch(`${apiUrl}/student/getStudentById/${id}`, "GET");
+      setStudent(getStudentById.result);
+      setSchoolData(schoolById.result);
+      setFeeCategories(getfeecategories.data);
+      setFeesData(getFeesByStudentId.data);
     } finally {
       setLoading(false);
     }
@@ -37,17 +49,25 @@ const [globalFilterValue, setGlobalFilterValue] = useState("");
 
   // Initial load
   useEffect(() => {
-    loadData(0);
-  }, [loadData]);
+    loadData();
+  }, [id]);
+
+ const handleDataChange = (data: { items: any[]; total: number }) => {
+  console.log("Receipt Data:", data);
+    setReceiptData(data);
+  };
 
 
+const handleSubmit = async () => {
+  // Handle form submission logic here
+  console.log("Submitting Receipt Data:", receiptData);
+   apiFetch(`${apiUrl}/finance/addfee`, "POST", { data: receiptData });
+};
 
-
-
- 
   return (
     <div className="rounded-md flex-1 m-4 mt-0">
- 
+      <FessEntry school={schoolData} student={student} feeCategories={feeCategories} onDataChange={handleDataChange} feesData={feesData}/>
+     <Button label="Submit" className="bg-blue-400 text-white p-2 rounded-md mt-4 l-0 w-full" onClick={handleSubmit} />
     </div>
   );
 };

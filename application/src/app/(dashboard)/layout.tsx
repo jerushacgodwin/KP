@@ -45,7 +45,10 @@ export default function DashboardLayout({
             setUser(user);
         } catch (err) {
           console.error('Failed to parse menu cookie', err);
+          window.location.href = "/sign-in";
         }
+      } else {
+         window.location.href = "/sign-in";
       }
      // done loading, render the page
     };
@@ -54,7 +57,7 @@ export default function DashboardLayout({
   }, []);
   useEffect(() => {
       const getSiteDetails = async () => {
-       const response = await apiFetch(`${apiUrl}/class/getsite`,"GET");
+       const response: any = await apiFetch(`${apiUrl}/class/getsite`,"GET");
         if (response || response.siteDetail) {
           const siteData = JSON.parse(response.siteDetail.meta_value);
        setSiteDetail(siteData);

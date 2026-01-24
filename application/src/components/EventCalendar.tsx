@@ -8,7 +8,7 @@ import "react-calendar/dist/Calendar.css";
 import DOMPurify from 'dompurify';
 import BigCalendar from "./BigCalender";
 import { apiFetch } from "@src/lib/api";
-import { body } from "express-validator";
+
 type ValuePiece = Date | null;
 
 type Value = ValuePiece | [ValuePiece, ValuePiece];
@@ -23,7 +23,7 @@ const EventCalendar = () => {
     const [open, setOpen] = useState(false);
  async function fetchData() {
    try {
-     const res:any = await apiFetch(`${apiUrl}/events`, 'POST', body);
+     const res:any = await apiFetch(`${apiUrl}/events`, 'POST', {});
      
      setEvents(res.events || []);
    } catch (error) {

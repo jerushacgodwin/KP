@@ -102,7 +102,8 @@ const FessList: React.FC<FessListProps> = ({
     console.log("Pay clicked for ID:", id);
     // Add your payment API logic here
   };
- const payButtonTemplate = (rowData: any) => {
+ 
+  const payButtonTemplate = (rowData: any) => {
   //console.log(rowData);
     return (
       <Button
@@ -143,6 +144,7 @@ const FessList: React.FC<FessListProps> = ({
                 style={{ flexGrow: 1, flexBasis: "150px" }}
               />
             ))}
+         
              <Column header="Action" body={payButtonTemplate} />
           </DataTable>
 

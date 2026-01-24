@@ -17,6 +17,14 @@ module.exports.getClassById = async (req, res, next) => {
     result: result,
   });
 };
+module.exports.getSchoolById = async (req, res, next) => {
+  const schoolId = req.params.school_id;
+  const result = await iclass.getSchoolById(schoolId);
+  res.status(201).json({
+    message: "User created successfully",
+    result: result,
+  });
+};
 module.exports.addClass = async (req, res, next) => {
   const classData = req.body;
   try {

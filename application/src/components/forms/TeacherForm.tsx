@@ -140,9 +140,9 @@ const TeacherForm = ({
         const addstaff=  apiFetch(`${apiUrl}/teacher/addstaff`, 'POST',cleaned,{},true);
       // console.log("Form valid, submitting:", addstaff);
       staffFormRef.current?.reset();  
-      setValue("img", undefined);
-      setValue("idproof", undefined);
-      setValue("resume", undefined);
+      setValue("img", undefined as any);
+      setValue("idproof", undefined as any);
+      setValue("resume", undefined as any);
       
         
     //console.log(data);
@@ -182,7 +182,7 @@ const TeacherForm = ({
   };
   useEffect(() => {
     async function getClassList() {
-      const [getClasslist, getAllRols] = await Promise.all([
+      const [getClasslist, getAllRols]: any[] = await Promise.all([
         apiFetch(`${apiUrl}/class`, "GET"),
         apiFetch(`${apiUrl}/teacher/role`, "GET"),
       ]);
