@@ -12,7 +12,7 @@ import financeRoutes from './routes/finance.routes';
 import eventRoutes from './routes/event.routes';
 import iclassRoutes from './routes/iclass.routes';
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '../.env') });
 connectDb();
 connectRedis();
 

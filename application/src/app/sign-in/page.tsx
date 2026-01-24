@@ -1,5 +1,6 @@
 "use client";
 
+"use client";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -7,6 +8,7 @@ import InputField from "@src/components/InputField";
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -88,6 +90,9 @@ const LoginPage = () => {
               className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
             />
             <label htmlFor="remember" className="text-sm text-gray-500">Remember me</label>
+          </div>
+          <div className="text-sm mt-2">
+            <Link href="/forgot-password">Forgot password?</Link>
           </div>
 
           {errors.root && (

@@ -58,3 +58,11 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 bun.lockb
+
+# Logs
+*.log
+application/*.log
+packages/server/*.log
+
+# Temporary files
+winget_out.txt
