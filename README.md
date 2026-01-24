@@ -62,4 +62,43 @@ npm run dev
 
 ## License
 
+## Production Deployment
 
+Follow these steps to deploy the entire suite to a production environment.
+
+### 1. Environment Configuration
+Ensure you have production `.env` files in the following locations:
+- `packages/server/.env` (DB credentials, Redis URL, SMTP details)
+- `application/.env.local` (`NEXT_PUBLIC_API_URL` pointing to your production server)
+
+### 2. Build All Packages
+From the root directory, run the build command to compile the frontend and backend:
+```bash
+npm run build
+```
+
+### 3. Running the Services
+
+We recommend using **PM2** to manage the processes.
+
+#### Backend (Server)
+```bash
+cd packages/server
+pm2 start dist/index.js --name lms-backend
+```
+
+#### Frontend (Application)
+```bash
+cd application
+pm2 start "npm run start" --name lms-frontend
+```
+
+### 4. Reverse Proxy (Nginx)
+Setup Nginx to handle incoming traffic and proxy it to the correct ports:
+- **Backend:** `http://localhost:4000`
+- **Frontend:** `http://localhost:3000`
+
+### 5. Services Checklist
+- [x] Redis server is running and accessible.
+- [x] MySQL database is migrated (`npm run migrate` in `packages/server`).
+- [x] SMTP credentials are valid (App Password for Gmail).
