@@ -16,8 +16,8 @@ type User = {
 
 
   if (!token) {
- 
-    return NextResponse.redirect(new URL('/', req.url));
+    // console.log("Middleware: No token properly received from Electron. Allowing Client-Side auth to handle it.");
+    // return NextResponse.redirect(new URL('/', req.url));
   }
 
   //try {

@@ -4,6 +4,7 @@ const router = express.Router();
 const { body } = require("express-validator");
 const userController = require("../controllers/user.controller");
 const permissionController = require("../controllers/permission.controller");
+const authController = require("../controllers/auth.controller");
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "uploads/school/"),
   filename: (req, file, cb) =>
@@ -52,4 +53,14 @@ router.post(
   upload.fields([{ name: 'img' }]),
   userController.school
 );
+router.post(
+  "/forgot-password",
+  authController.forgotPassword
+);
+
+router.post(
+  "/reset-password",
+  authController.resetPassword
+);
+
 module.exports = router;

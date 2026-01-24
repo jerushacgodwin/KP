@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 
 import { connectDb, sequelize } from './db/db';
+import { connectRedis } from './db/redis';
 import userRoutes from './routes/user.routes';
 import studentRoutes from './routes/student.routers';
 import teacherRoutes from './routes/teacher.routers';
@@ -13,6 +14,7 @@ import iclassRoutes from './routes/iclass.routes';
 
 dotenv.config();
 connectDb();
+connectRedis();
 
 // Define Express app
 const app: Application = express();
@@ -21,7 +23,10 @@ const app: Application = express();
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000', // Explicitly allow frontend origin
+  credentials: true // Allow cookies to be sent/received
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

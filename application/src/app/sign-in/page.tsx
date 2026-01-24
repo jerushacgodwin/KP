@@ -1,17 +1,17 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import InputField from "@src/components/InputField";
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
 
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters long" }),
+  remember: z.boolean().optional(),
 });
 
 type Inputs = z.infer<typeof schema>;
@@ -31,9 +31,9 @@ const LoginPage = () => {
 
   const onSubmit = handleSubmit(async (data: Inputs) => {
     setLoading(true);
+    
     try {
-      // 1. Login
-      const loginRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/login`, {
+      const loginRes = await fetch(`/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -45,40 +45,18 @@ const LoginPage = () => {
       }
 
       const loginData = await loginRes.json();
-      const user = loginData.user;
-      
-      // Store token and user
-      Cookies.set("token", loginData.token);
-      Cookies.set("log-user", JSON.stringify(user));
 
-      // 2. Fetch Permissions (Menu)
-      const roleRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/role`, {
-        method: "POST",
-        headers: { 
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${loginData.token}`
-        },
-        body: JSON.stringify({ role: user.role, userId: user.id }),
-      });
-
-      if (!roleRes.ok) {
-         // Even if role fetch fails, we might still want to proceed or handle gracefully
-         console.error("Failed to fetch menu permissions");
+      if (loginData.message === 'Success' && loginData.redirect) {
+          router.push(loginData.redirect);
+          router.refresh();
       } else {
-         const roleData = await roleRes.json();
-         if(roleData.userpermission) {
-             Cookies.set("log-menu", JSON.stringify(roleData.userpermission));
-         }
-      }
-
-      // Redirect
-      router.push("/");
-      router.refresh(); 
+          router.push("/");
+          router.refresh();
+      } 
 
     } catch (err: any) {
       console.error(err);
       setError("root", { message: err.message });
-    } finally {
       setLoading(false);
     }
   });
@@ -102,11 +80,22 @@ const LoginPage = () => {
             error={errors.password}
           />
           
+          <div className="flex items-center gap-2">
+            <input 
+              type="checkbox" 
+              id="remember" 
+              {...register("remember")}
+              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="remember" className="text-sm text-gray-500">Remember me</label>
+          </div>
+
           {errors.root && (
              <div className="text-red-500 text-sm">{errors.root.message}</div>
           )}
 
           <button
+            type="submit"
             className="bg-blue-400 text-white p-3 rounded-md hover:bg-blue-500 disabled:opacity-50"
             disabled={loading}
           >

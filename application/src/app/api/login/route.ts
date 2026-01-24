@@ -23,6 +23,7 @@ interface MenuResponse {
 export async function POST(req: Request) {
   const body = await req.json();
 
+
   try {
     const response = await apiFetch<LoginResponse>(
       `${apiUrl}/user/login`,
@@ -40,27 +41,29 @@ export async function POST(req: Request) {
       { role: response.user.role }
     );
 
+    const maxAge = body.remember ? 60 * 60 * 24 * 30 : 3600;
+
     const cookie = serialize('auth-token', response.token, {
       httpOnly: true,
       path: '/',
-      maxAge: 3600,
-      sameSite: 'strict',
+      maxAge: maxAge,
+      sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
     });
 
     const userData = serialize('log-user', JSON.stringify(response.user), {
       httpOnly: false,
       path: '/',
-      maxAge: 3600,
-      sameSite: 'strict',
+      maxAge: maxAge,
+      sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
     });
 
     const userMenu = serialize('log-menu', JSON.stringify(menuResponse.userpermission), {
       httpOnly: false,
       path: '/',
-      maxAge: 3600,
-      sameSite: 'strict',
+      maxAge: maxAge,
+      sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
     });
 
@@ -77,7 +80,14 @@ export async function POST(req: Request) {
         break;
     }
 
-    const res = NextResponse.json({ message: 'Success', redirect: `/${roleName}` }, { status: 200 });
+    const res = NextResponse.json({ 
+        message: 'Success', 
+        redirect: `/${roleName}`,
+        // Return sensitive data for client-side fallback (Electron)
+        token: response.token,
+        user: response.user,
+        userpermission: menuResponse.userpermission
+    }, { status: 200 });
     res.headers.append('Set-Cookie', cookie);
     res.headers.append('Set-Cookie', userData);
     res.headers.append('Set-Cookie', userMenu);

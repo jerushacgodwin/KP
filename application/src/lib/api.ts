@@ -44,6 +44,7 @@ export async function apiFetch<T>(
     method,
     headers: finalHeaders,
     body: method !== "GET" ? body : undefined,
+    credentials: 'include', // Ensure cookies are sent (critical for Electron/CORS)
   });
 
   if (!res.ok) {
