@@ -2,24 +2,44 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from 'next/navigation';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Loader from "../components/Loader";
+import Cookies from "js-cookie";
 
 const Homepage = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(false);
   const [error, setError] = useState('');
-const [loading, setLoading] = useState(false);
- const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  const [loading, setLoading] = useState(false);
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  useEffect(() => {
+    const userCookie = Cookies.get("log-user");
+    if (userCookie) {
+      try {
+        const user = JSON.parse(userCookie);
+        let roleName = "student";
+        if (user.role === 1) roleName = "admin";
+        else if (user.role === 2) roleName = "teacher";
+        else if (user.role === 3) roleName = "student";
+        
+        router.push(`/${roleName}`);
+      } catch (e) {
+        console.error("Failed to parse user cookie", e);
+      }
+    }
+  }, [router]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-  setLoading(true);
+    setLoading(true);
     try {
       const res = await fetch(`/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, remember }),
       });
 
       const data = await res.json();
@@ -31,9 +51,9 @@ const [loading, setLoading] = useState(false);
       }
     } catch (err) {
       setError('Something went wrong.');
-    }finally {
-    setLoading(false);
-  }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -63,7 +83,7 @@ const [loading, setLoading] = useState(false);
                 placeholder="Enter your email"
                 className="w-full px-4 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 value={email}
-          onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
@@ -73,12 +93,17 @@ const [loading, setLoading] = useState(false);
                 placeholder="Enter your password"
                 className="w-full px-4 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                  value={password}
-          onChange={(e) => setPassword(e.target.value)}
+                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center">
-                <input type="checkbox" className="mr-2" />
+                <input 
+                  type="checkbox" 
+                  className="mr-2" 
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
+                />
                 Remember me
               </label>
               <a href="#" className="text-indigo-600 hover:underline">
@@ -86,14 +111,14 @@ const [loading, setLoading] = useState(false);
               </a>
             </div>
           <button
-  type="submit"
-  disabled={loading}
-  className={`w-full bg-indigo-600 text-white py-2 rounded-md transition ${
-    loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700'
-  }`}
->
-  {loading ? 'Signing In...' : 'Sign In'}
-</button>
+            type="submit"
+            disabled={loading}
+            className={`w-full bg-indigo-600 text-white py-2 rounded-md transition ${
+                loading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-indigo-700'
+            }`}
+            >
+            {loading ? 'Signing In...' : 'Sign In'}
+            </button>
           </form>
 
           <p className="mt-4 text-center text-sm">
