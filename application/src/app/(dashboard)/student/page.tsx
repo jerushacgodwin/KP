@@ -3,6 +3,7 @@
 import Timetable from "@src/components/TimeTable";
 import EventCalendar from "@src/components/EventCalendar";
 import { apiFetch } from "@src/lib/api";
+import Link from "next/link";
 import Cookies from "js-cookie"
 import { useEffect,useState } from "react";
 import { weekdays } from "@src/lib/utility";
@@ -45,7 +46,12 @@ const StudentPage = () => {
       {/* LEFT */}
       <div className="w-full xl:w-2/3">
         <div className="h-full bg-white p-4 rounded-md">
-          <h1 className="text-xl font-semibold">Schedule ({userTimeTable[0]?.class})</h1>
+           <div className="flex justify-between items-center mb-4">
+              <h1 className="text-xl font-semibold">Schedule ({userTimeTable[0]?.class})</h1>
+              <Link href="/student/lessons" className="bg-lamaSky text-white px-4 py-2 rounded-md text-sm hover:bg-black">
+                 View My Lessons
+              </Link>
+           </div>
           <Timetable data={userTimeTable}  weekdays={weekdays} timeSlots={timeSlots}/>
         </div>
       </div>

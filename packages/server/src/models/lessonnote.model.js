@@ -9,7 +9,10 @@ const LessonNote = sequelize.define(
     lesson_title: DataTypes.STRING,
     chapter_title: DataTypes.STRING,
     accordion_data: DataTypes.JSON,
-    attachment: DataTypes.STRING,
+    video_urls: {
+      type: DataTypes.JSON,
+      defaultValue: []
+    },
     created_at: {
       type: DataTypes.DATE,
       allowNull: true,
@@ -42,17 +45,27 @@ LessonNote.associate = (models) => {
   return LessonNote;
 };
 LessonNote.LessonNoteForm = (parsed, files = {}) => {
-  const { class_id, subject_id, teacher_id, lession_title, chapter_title } =
+  const { class_id, subject_id, teacher_id, lesson_title, chapter_title } =
     parsed;
   const attachmentFile = files.img?.[0] ? files.img[0].filename : null;
+  
+  let video_urls = [];
+  try {
+     video_urls = parsed.video_urls ? JSON.parse(parsed.video_urls) : [];
+  } catch (e) {
+      // If it's already an array or not valid JSON string, handle gracefully
+     video_urls = Array.isArray(parsed.video_urls) ? parsed.video_urls : [];
+  }
+
   return {
     class_id,
     subject_id,
     teacher_id,
     lesson_title,
     chapter_title,
-    accordion_data: JSON.stringify(parsed.accordionData),
+    accordion_data: parsed.accordionData, 
     attachment: attachmentFile,
+    video_urls: video_urls,
     created_at: new Date(),
     updated_at: new Date(),
   };

@@ -13,9 +13,12 @@ const Homepage = () => {
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
+    setHydrated(true);
+    console.log("LOGIN PAGE HYDRATED");
     const userCookie = Cookies.get("log-user");
     if (userCookie) {
       try {
@@ -34,6 +37,7 @@ const Homepage = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setLoading(true);
     try {
       const res = await fetch(`/api/login`, {
@@ -47,14 +51,18 @@ const Homepage = () => {
       if (res.ok) {
         router.push(data.redirect); // Redirect based on role
       } else {
+        alert(data.message || "Login failed");
         setError(data.message);
       }
     } catch (err) {
+      alert("Something went wrong");
       setError('Something went wrong.');
     } finally {
       setLoading(false);
     }
   };
+
+  if (!hydrated) return null; // Prevent hydration mismatch
 
   return (
     <div className="bg-gray-100 min-h-screen flex items-center justify-center">
@@ -63,7 +71,7 @@ const Homepage = () => {
         {/* Left Side - Form */}
         <div className="w-1/2 p-10">
           <div className="mb-6 text-center">
-            <button className="w-full flex items-center justify-center border rounded-md py-2 px-4 gap-2 hover:bg-gray-50 transition">
+            <button type="button" className="w-full flex items-center justify-center border rounded-md py-2 px-4 gap-2 hover:bg-gray-50 transition">
               
               <Image src="/google.svg" alt="" width={20} height={20}/>
               Sign in with Google

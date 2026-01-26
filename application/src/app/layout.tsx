@@ -25,7 +25,12 @@ export default function RootLayout({
 }>) {
   const cookieStore = cookies();
   const userString = cookieStore.get("log-user")?.value;
-  const user = userString ? JSON.parse(userString) : null;
+  let user = null;
+  try {
+    user = userString ? JSON.parse(userString) : null;
+  } catch (e) {
+    console.error("Error parsing user cookie", e);
+  }
 
 
   return (

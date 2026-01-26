@@ -30,6 +30,7 @@ export async function POST(req: Request) {
       'POST',
       body
     );
+    console.log("Login attempt for:", body.email, "Response:", response);
 
     if (!response || !response.token || !response.user) {
       return NextResponse.json({ message: 'Invalid user' }, { status: 400 });
@@ -94,6 +95,7 @@ export async function POST(req: Request) {
     
     return res;
   } catch (err: any) {
+    console.error("Login Error:", err);
     return NextResponse.json({ message: err.message || "Internal Server Error" }, { status: 401 });
   }
 }

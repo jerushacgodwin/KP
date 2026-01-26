@@ -19,11 +19,13 @@ const OtherPage = () => {
   const [totalRecords, setTotalRecords] = useState(0);
   const [loading, setLoading] = useState(false);
   const [first, setFirst] = useState(0); // row offset
+  const [sortField, setSortField] = useState<string | undefined>(undefined);
+  const [sortOrder, setSortOrder] = useState<0 | 1 | -1 | null>(null);
 const [globalFilterValue, setGlobalFilterValue] = useState("");
   const rowsPerPage = 20;
 
   // Lazy loading function (fetch only one page)
-  const loadLazyData = useCallback(async (pageOffset = 0,filterValue = "") => {
+  const loadLazyData = useCallback(async (pageOffset = 0, filterValue = "", sField?: string, sOrder?: number | null) => {
     setLoading(true);
 
     const currentPage = Math.floor(pageOffset / rowsPerPage) + 1;
@@ -34,7 +36,9 @@ const [globalFilterValue, setGlobalFilterValue] = useState("");
         page: currentPage,
         size: rowsPerPage,
         school_id: user?.school_id,
-         search: filterValue,
+        search: filterValue,
+        sortField: sField,
+        sortOrder: sOrder === 1 ? 'ASC' : sOrder === -1 ? 'DESC' : undefined
       });
 
       // Replace data (NOT append — for pagination)
@@ -53,19 +57,29 @@ const [globalFilterValue, setGlobalFilterValue] = useState("");
   // PrimeReact paginator event
   const onLazyLoad = (event: { first: number; rows: number; page: number }) => {
     setFirst(event.first);
-    loadLazyData(event.first, globalFilterValue);
+    loadLazyData(event.first, globalFilterValue, sortField, sortOrder);
   };
+
+  const onSort = (event: any) => {
+      setSortField(event.sortField);
+      setSortOrder(event.sortOrder);
+      loadLazyData(0, globalFilterValue, event.sortField, event.sortOrder);
+  };
+
  const onGlobalSearch = (value: string) => {
     setGlobalFilterValue(value);
    setFirst(0);
-    loadLazyData(0, value);
+    loadLazyData(0, value, sortField, sortOrder);
   };
   const columns = [
     { field: "user_id", header: "User Id" },
     { field: "name", header: "Name" },
-    { field: "class_group", header: "Class Group" },
-    { field: "email", header: "Email" },
-    { field: "phone_no", header: "Phone No" },
+    { field: "class_group", header: "Class Group" }, // Renamed from class for clarity if needed, or keeping matching backend
+    { field: "tuition_fee", header: "Tuition Fee" },
+    { field: "exam_fee", header: "Exam Fee" },
+    { field: "other_fee", header: "Other Fee" },
+    { field: "total_due", header: "Total Due" },
+    { field: "action", header: "Action" },
   
   ];
 
@@ -79,6 +93,9 @@ const [globalFilterValue, setGlobalFilterValue] = useState("");
         totalRecords={totalRecords}
         loading={loading}
         onLazyLoad={onLazyLoad}
+        onSort={onSort}
+        sortField={sortField}
+        sortOrder={sortOrder}
         columns={columns}
         globalFilter={globalFilterFields}
         first={first}

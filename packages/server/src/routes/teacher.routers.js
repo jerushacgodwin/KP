@@ -1,5 +1,6 @@
 const express = require("express");
 const multer = require("multer");
+const path = require("path");
 const router = express.Router();
 const { param, body } = require("express-validator");
 const attendanceController = require("../controllers/attendance.controller");
@@ -8,11 +9,28 @@ const staffController = require("../controllers/staff.controller");
 const staffRolesController=require("../controllers/staff.role.controller");
 const lessonController = require("../controllers/lesson.controller");
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/staff/"),
+  destination: (req, file, cb) => cb(null, path.join(__dirname, "../uploads/staff/")),
   filename: (req, file, cb) =>
     cb(null, Date.now() + "_" + file.originalname.replace(/\s+/g, "_")),
 });
 const upload = multer({ storage });
+
+const parseMultipartJson = (req, res, next) => {
+  if (req.body.accordionData && typeof req.body.accordionData === 'string') {
+    try {
+      req.body.accordionData = JSON.parse(req.body.accordionData);
+    } catch (e) {
+      // Keep as string if parsing fails, let validator handle it
+    }
+  }
+  if (req.body.video_urls && typeof req.body.video_urls === 'string') {
+    try {
+        req.body.video_urls = JSON.parse(req.body.video_urls);
+    } catch (e) {}
+  }
+  next();
+};
+
 //router.get('/staff',attendanceController.student)
 router.post(
   "/attendance",
@@ -33,6 +51,7 @@ router.post(
   "/addlessons",
   [
     upload.fields([{ name: "img" }]),
+    parseMultipartJson,
     body("class_id").notEmpty().withMessage("Invalid Class ID"),
     body("subject_id").notEmpty().withMessage("Invalid Subject ID"),
     body("lesson_title").notEmpty().withMessage("Invalid Lesson Title"),
@@ -43,6 +62,21 @@ router.post(
   ],
   lessonController.createLesson
 );
+router.post(
+  "/updatelessons/:id",
+    [
+    upload.fields([{ name: "img" }]),
+    // validators can be added if needed
+  ],
+  lessonController.updateLesson
+);
+
+router.delete(
+  "/deletelessons/:id",
+  [param("id").notEmpty().withMessage("Invalid Lesson ID")],
+  lessonController.deleteLesson
+);
+
 router.get(
   "/result/:id",
   [param("id").notEmpty().withMessage("Invalid Role")],

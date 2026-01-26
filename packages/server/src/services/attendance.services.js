@@ -141,7 +141,7 @@ module.exports.getStudentAttendanceList = async ({
     user_id: student.user_id,
     class_id: student.class_id,
     name: student.name,
-    attendance_date: student.attendance_date ? student.attendance_date : today,
+    attendance_date: student["attendances.attendance_date"] ? student["attendances.attendance_date"] : today,
     present:
     student["attendances.present"] === "1"
       ? "Present"

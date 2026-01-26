@@ -49,7 +49,8 @@ export async function apiFetch<T>(
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
-    throw new Error(error?.message || "API Error");
+    // Prefer specific debug 'error' or 'message' from server
+    throw new Error(error?.error || error?.message || "API Error");
   }
 
   return res.json();

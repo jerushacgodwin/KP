@@ -55,6 +55,12 @@ if (search) {
 
 //console.log('Before association - Student associations:', Object.keys(Student.associations || {}));
 //console.log('Before association - iClass associations:', Object.keys(iClass.associations || {}));
+// Handle Sorting
+let orderClause = [["user_id", "ASC"]];
+if (studentDetail.sortField && studentDetail.sortOrder) {
+    orderClause = [[studentDetail.sortField, studentDetail.sortOrder]];
+}
+
 const students = await Student.findAndCountAll({
     where: {...whereClause },
     attributes: ['id','user_id', 'name', 'email', 'phone_no', 'class_id'] ,
@@ -67,7 +73,7 @@ const students = await Student.findAndCountAll({
      {
           model: db.FeeStructure,
           as: "feeStructures",         
-          attributes: ["amount", "due_date"]
+          attributes: ["amount", "due_date", "fee_type"] // Added fee_type
         }
   
   ],
@@ -76,12 +82,43 @@ const students = await Student.findAndCountAll({
   subQuery: false, 
   offset,
   distinct: true, 
-  order: [["user_id", "ASC"]],
+  order: orderClause,
 
 });
 //console.log('Students fetched:', students.rows[0].feeStructures);
      const studentData = students.rows.map(student => {
-            return extractAndMergeNestedData(student.toJSON(), fieldsToExtract); // .toJSON() to get plain object
+            const plainStudent = student.toJSON();
+            const merged = extractAndMergeNestedData(plainStudent, fieldsToExtract);
+
+            // Calculate Fee Breakdown
+            let tuition_fee = 0;
+            let exam_fee = 0;
+            let other_fee = 0;
+            let total_due = 0;
+
+            if (plainStudent.feeStructures) {
+                plainStudent.feeStructures.forEach(fee => {
+                    const amount = parseFloat(fee.amount) || 0;
+                    total_due += amount;
+
+                    const type = (fee.fee_type || "").toLowerCase();
+                    if (type.includes("tuition")) {
+                        tuition_fee += amount;
+                    } else if (type.includes("exam")) {
+                        exam_fee += amount;
+                    } else {
+                        other_fee += amount;
+                    }
+                });
+            }
+
+            return {
+                ...merged,
+                tuition_fee,
+                exam_fee,
+                other_fee,
+                total_due
+            };
         });
 //console.log('Extracted Student Data:', studentData);
     return {
