@@ -88,4 +88,12 @@ router.post(
   [body("email").isEmail().withMessage("Invalid Email")],
   timeTableController.TimeTable
 );
+
+router.post(
+  "/get-attendance",
+  [
+     // Optional: validators
+  ],
+  attendanceController.student
+);
 module.exports = router;

@@ -5,7 +5,7 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 type User = {
   id: string;
   name: string;
-  role: number; // 1 for student, 2 for teacher, 3 for admin
+  role: number; // 1: Admin, 2: Teacher, 3: Student
   email: string;
 };
 

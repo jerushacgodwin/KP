@@ -8,37 +8,54 @@ const {
   Staff,
 } = require("../models/studentStaff.utility.model");
 const { Op, fn, col, where, literal } = require("sequelize");
-const startOfMonth = moment().startOf("month").toDate(); // e.g. 2025-06-01
-const endOfMonth = moment().endOf("month").toDate();
 const today = new Date().toISOString().split("T")[0];
-module.exports.getStudentAttendance = async (email) => {
+module.exports.getStudentAttendance = async (email, user_id) => {
   try {
-    if (!email) {
+    const startOfMonth = moment().startOf("month").format("YYYY-MM-DD");
+    const endOfMonth = moment().endOf("month").format("YYYY-MM-DD");
+    console.log(`AttendanceService: Date Range: ${startOfMonth} to ${endOfMonth}`);
+    
+    if (!email && !user_id) {
       throw new Error("All field Required");
     }
-    const Student = await studentUti.findOne({
-      where: { email },
-    });
-    if (!Student) {
-      throw new Error("Staff not found");
+    
+    let Student;
+    if (user_id) {
+        Student = await studentUti.findOne({ where: { user_id } });
+    } else {
+        Student = await studentUti.findOne({ where: { email } });
     }
+
+    if (!Student) {
+      console.log("AttendanceService: Student not found for", email || user_id);
+      throw new Error("Student not found");
+    }
+    console.log(`AttendanceService: Found Student. UserID=${Student.user_id}, Name=${Student.name}`);
+    
     const [presentCount, absentCount] = await Promise.all([
-      studentatt.findAll({
+      studentatt.count({
         where: {
-          [Op.and]: [
-            { registration_id: Student.user_id },
-            { attendance_date: { [Op.between]: [startOfMonth, endOfMonth] } },
-          ],
+          registration_id: Student.user_id,
+          attendance_date: { [Op.between]: [startOfMonth, endOfMonth] },
+          [Op.or]: [{ present: 1 }, { present: "1" }]
+        },
+      }),
+      studentatt.count({
+        where: {
+         registration_id: Student.user_id,
+          attendance_date: { [Op.between]: [startOfMonth, endOfMonth] },
+          [Op.or]: [{ present: 0 }, { present: "0" }]
         },
       }),
     ]);
+    console.log(`AttendanceService: Counts Found - Present=${presentCount}, Absent=${absentCount}`);
     return {
       present: presentCount,
       absent: absentCount,
     };
   } catch (error) {
     console.error("Error fetching attendance counts:", error);
-    throw new Error("Internal server error");
+    throw error;
   }
 };
 module.exports.getStaffAttendance = async (email) => {
@@ -66,7 +83,7 @@ module.exports.getStaffAttendance = async (email) => {
     };
   } catch (error) {
     console.error("Error fetching attendance counts:", error);
-    throw new Error("Internal server error");
+    throw error;
   }
 };
 module.exports.getStudentAttendanceList = async ({
@@ -190,6 +207,6 @@ module.exports.setStudentAttendance = async (data
   
   } catch (error) {
     console.error("Error setting student attendance:", error);
-    throw new Error("Internal server error");
+    throw error;
   }
 };

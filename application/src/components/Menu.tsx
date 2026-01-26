@@ -82,6 +82,13 @@ const menuItems = [
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
+        icon: "/calendar.png",
+        label: "Events",
+        href: "/events", // This might need dynamic handling or separate pages
+        // Actually, let's map it based on role
+        visible: ["admin", "teacher", "student", "parent"],
+      },
+      {
         icon: "/message.png",
         label: "Messages",
         href: "/list/messages",
@@ -179,6 +186,16 @@ const Menu = ({menulist,userDetail}: {menulist: any, userDetail: any}) => {
             }
           })}
         </div>
+         {/* Hardcoded Events Link for when it's missing from DB permissions */}
+         {(user?.role === 1 || user?.role === 2 || user?.role === 3) && (
+             <Link
+               href={user?.role === 3 ? "/student/events" : "/teacher/events"}
+               className="flex cursor-pointer items-center justify-center lg:justify-start gap-4 text-gray-500 py-2 md:px-2 rounded-md hover:bg-lamaSkyLight"
+             >
+               <Image src="/calendar.png" alt="" width={20} height={20} />
+               <span className="hidden lg:block">Events</span>
+             </Link>
+         )}
     
     </div>
     </>
