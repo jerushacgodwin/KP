@@ -29,20 +29,25 @@ module.exports.login = async (req, res, next) => {
     return res.status(400).json({ errors: error.array() });
   }
   const { email, password } = req.body;
-  const user = await userService.loginUser({ email, password });
-  const token = user.generateToken();
-  res.status(201).json({
-    message: "User created successfully",
-    token,
-    user: {
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      school_id: user.school_id,
-      role: user.UserRole.get("role_id"),
-      user_id: user.UserRole.get("user_id"),
-    },
-  });
+  try {
+    const user = await userService.loginUser({ email, password });
+    const token = user.generateToken();
+    res.status(200).json({
+      message: "Login successfully",
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        school_id: user.school_id,
+        role: user.UserRole.get("role_id"),
+        user_id: user.UserRole.get("user_id"),
+      },
+    });
+  } catch (error) {
+    console.error("Login Controller Error:", error);
+    return res.status(401).json({ message: error.message || "Authentication failed" });
+  }
 };
 module.exports.profile = async (req, res, next) => {
   const error = validationResult(req);

@@ -6,9 +6,9 @@ module.exports.TimeTable = async (req, res, next) => {
   if (!error.isEmpty()) {
     return res.status(400).json({ errors: error.array() });
   }
-  const { email } = req.body;
+  const { email, user_id } = req.body;
   //console.log(email,'email in timetable controller')
-  const timeTable = await timetable.getTimetableStudent(email);
+  const timeTable = await timetable.getTimetableStudent(email, user_id);
   res.status(201).json({
     message: "User created successfully",
 
@@ -20,12 +20,12 @@ module.exports.TimeTableStaff = async (req, res, next) => {
   if (!error.isEmpty()) {
     return res.status(400).json({ errors: error.array() });
   }
-  const { email } = req.body;
+  const { email, user_id } = req.body;
   //console.log(email,'email in timetable controller')
-  const timeTable = await timetable.getTimetableStaff(email);
+  const result = await timetable.getTimetableStaff(email, user_id);
   res.status(201).json({
     message: "User created successfully",
 
-    timetable: timeTable,
+    timetable: result,
   });
 };

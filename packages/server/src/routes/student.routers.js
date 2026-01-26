@@ -49,6 +49,11 @@ router.get(
   subjectController.getSubjects
 );
 router.get(
+  "/getlessons/:class_id",
+  [param("class_id").notEmpty().withMessage("Invalid classid")],
+  lessonController.getLessons
+);
+router.get(
   "/getlessons/:class_id/:subject_id",
   [param("class_id").notEmpty().withMessage("Invalid classid"),
    param("subject_id").notEmpty().withMessage("Invalid subjectid")],
@@ -82,5 +87,13 @@ router.post(
   "/timetble/",
   [body("email").isEmail().withMessage("Invalid Email")],
   timeTableController.TimeTable
+);
+
+router.post(
+  "/get-attendance",
+  [
+     // Optional: validators
+  ],
+  attendanceController.student
 );
 module.exports = router;

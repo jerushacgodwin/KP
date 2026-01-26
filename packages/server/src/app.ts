@@ -20,7 +20,7 @@ connectRedis();
 const app: Application = express();
 
 // Static uploads folder
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+app.use('/uploads', express.static(path.join(process.cwd(), 'src/uploads')));
 
 // Middleware
 app.use(cors({

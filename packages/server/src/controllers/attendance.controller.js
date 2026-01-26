@@ -18,12 +18,11 @@ module.exports.student = async (req, res, next) => {
   if (!error.isEmpty()) {
     return res.status(400).json({ errors: error.array() });
   }
-  const { email } = req.body;
-  const result = await attendance.getStudentAttendance(email);
+  const { email, user_id } = req.body;
+  const result = await attendance.getStudentAttendance(email, user_id);
   res.status(201).json({
     message: "User created successfully",
-   result:result.present,
-      
+    result: result,      
   });
 };
 module.exports.studentAttendanceList = async (req, res, next) => {

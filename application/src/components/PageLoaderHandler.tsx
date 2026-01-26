@@ -24,7 +24,7 @@ export default function PageLoaderHandler({ children }: { children: React.ReactN
 
   return (
     <>
-      {loading && <Loader />}
+      {loading && <div className="fixed inset-0 z-50 bg-white/50"><Loader /></div>}
       {children}
     </>
   );

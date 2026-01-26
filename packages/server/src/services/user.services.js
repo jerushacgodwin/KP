@@ -36,7 +36,11 @@ module.exports.loginUser=async({email,password})=>{
     model: roleModel,
     attributes: ['role_id','user_id',], 
   }] });
- // console.log('selectUser',selectUser)
+   // console.log('selectUser',selectUser)
+     if (!selectUser) {
+        throw new Error('User not found');
+     }
+
      const md5Hash = crypto.createHash('md5').update(password).digest('hex');
     if (selectUser.password!==md5Hash) {
       throw new Error('Check Email OR Password');
@@ -45,9 +49,8 @@ module.exports.loginUser=async({email,password})=>{
   return selectUser
       
 }catch (error) {
-    console.error('Register error:', error);
-      throw new Error('Internal server error');
-    //res.status(500).json({ message: 'Internal server error' });
+    console.error('Login error:', error.message);
+      throw error; // Re-throw the specific error instead of masking it
   }
 }
 module.exports.GetPermission=async(role)=>{
