@@ -717,6 +717,7 @@
     "multer" "^2.0.1"
     "mysql2" "^3.14.1"
     "nodemailer" "^7.0.12"
+    "redis" "^5.10.0"
     "sequelize" "^6.37.7"
     "validator" "^13.15.15"
     "zod" "^3.25.67"
@@ -849,6 +850,46 @@
   "version" "14.2.5"
   dependencies:
     "glob" "10.3.10"
+
+"@next/swc-darwin-arm64@13.4.8":
+  "integrity" "sha512-dTHKfaFO/xMJ3kzhXYgf64VtV6MMwDs2viedDOdP+ezd0zWMOQZkxcwOfdcQeQCpouTr9b+xOqMCUXxgLizl8Q=="
+  "resolved" "https://registry.npmjs.org/@next/swc-darwin-arm64/-/swc-darwin-arm64-14.2.31.tgz"
+  "version" "14.2.31"
+
+"@next/swc-darwin-x64@13.4.8":
+  "integrity" "sha512-iSavebQgeMukUAfjfW8Fi2Iz01t95yxRl2w2wCzjD91h5In9la99QIDKcKSYPfqLjCgwz3JpIWxLG6LM/sxL4g=="
+  "resolved" "https://registry.npmjs.org/@next/swc-darwin-x64/-/swc-darwin-x64-14.2.31.tgz"
+  "version" "14.2.31"
+
+"@next/swc-linux-arm64-gnu@13.4.8":
+  "integrity" "sha512-XJb3/LURg1u1SdQoopG6jDL2otxGKChH2UYnUTcby4izjM0il7ylBY5TIA7myhvHj9lG5pn9F2nR2s3i8X9awQ=="
+  "resolved" "https://registry.npmjs.org/@next/swc-linux-arm64-gnu/-/swc-linux-arm64-gnu-14.2.31.tgz"
+  "version" "14.2.31"
+
+"@next/swc-linux-arm64-musl@13.4.8":
+  "integrity" "sha512-IInDAcchNCu3BzocdqdCv1bKCmUVO/bKJHnBFTeq3svfaWpOPewaLJ2Lu3GL4yV76c/86ZvpBbG/JJ1lVIs5MA=="
+  "resolved" "https://registry.npmjs.org/@next/swc-linux-arm64-musl/-/swc-linux-arm64-musl-14.2.31.tgz"
+  "version" "14.2.31"
+
+"@next/swc-linux-x64-gnu@13.4.8":
+  "integrity" "sha512-YTChJL5/9e4NXPKW+OJzsQa42RiWUNbE+k+ReHvA+lwXk+bvzTsVQboNcezWOuCD+p/J+ntxKOB/81o0MenBhw=="
+  "resolved" "https://registry.npmjs.org/@next/swc-linux-x64-gnu/-/swc-linux-x64-gnu-14.2.31.tgz"
+  "version" "14.2.31"
+
+"@next/swc-linux-x64-musl@13.4.8":
+  "integrity" "sha512-A0JmD1y4q/9ufOGEAhoa60Sof++X10PEoiWOH0gZ2isufWZeV03NnyRlRmJpRQWGIbRkJUmBo9I3Qz5C10vx4w=="
+  "resolved" "https://registry.npmjs.org/@next/swc-linux-x64-musl/-/swc-linux-x64-musl-14.2.31.tgz"
+  "version" "14.2.31"
+
+"@next/swc-win32-arm64-msvc@13.4.8":
+  "integrity" "sha512-nowJ5GbMeDOMzbTm29YqrdrD6lTM8qn2wnZfGpYMY7SZODYYpaJHH1FJXE1l1zWICHR+WfIMytlTDBHu10jb8A=="
+  "resolved" "https://registry.npmjs.org/@next/swc-win32-arm64-msvc/-/swc-win32-arm64-msvc-14.2.31.tgz"
+  "version" "14.2.31"
+
+"@next/swc-win32-ia32-msvc@13.4.8":
+  "integrity" "sha512-pk9Bu4K0015anTS1OS9d/SpS0UtRObC+xe93fwnm7Gvqbv/W1ZbzhK4nvc96RURIQOux3P/bBH316xz8wjGSsA=="
+  "resolved" "https://registry.npmjs.org/@next/swc-win32-ia32-msvc/-/swc-win32-ia32-msvc-14.2.31.tgz"
+  "version" "14.2.31"
 
 "@next/swc-win32-x64-msvc@13.4.8":
   "integrity" "sha512-UIRKoByVKbuR6SnFG4JM8EMFlJrfEGuUQ1ihxzEleWcNwRMMiVaCj1KyqfTOW8VTQhJ0u8P1Ngg6q1RwnIBTtw=="
@@ -6029,44 +6070,6 @@
     "tailwindcss" "^3.4.1"
     "zod" "^3.23.8"
 
-"lama-dev-next-dashboard@file:":
-  "version" "0.1.0"
-  dependencies:
-    "@hookform/resolvers" "^3.9.0"
-    "@kp/billing" "*"
-    "@kp/server" "*"
-    "@kp/shop" "*"
-    "@tiptap/extension-blockquote" "^2.23.0"
-    "@tiptap/extension-code" "^2.23.0"
-    "@tiptap/extension-heading" "^2.23.0"
-    "@tiptap/extension-link" "^2.23.0"
-    "@tiptap/extension-subscript" "^2.23.0"
-    "@tiptap/extension-superscript" "^2.23.0"
-    "@tiptap/extension-text-align" "^2.23.0"
-    "@tiptap/extension-underline" "^2.23.0"
-    "@tiptap/react" "^2.23.0"
-    "@tiptap/starter-kit" "^2.23.0"
-    "@types/react-big-calendar" "^1.8.9"
-    "cookie" "^1.0.2"
-    "dompurify" "^3.2.6"
-    "express-validator" "^7.2.1"
-    "js-cookie" "^3.0.5"
-    "jsonwebtoken" "^9.0.2"
-    "jwt-decode" "^4.0.0"
-    "lama-dev-next-dashboard" "file:"
-    "lucide-react" "^0.512.0"
-    "moment" "^2.30.1"
-    "next" "^14.2.31"
-    "react" "^18.3.1"
-    "react-big-calendar" "^1.13.2"
-    "react-calendar" "^5.0.0"
-    "react-dom" "^18.3.1"
-    "react-hook-form" "^7.52.2"
-    "react-icons" "^5.5.0"
-    "recharts" "^2.12.7"
-    "school-management-dashboard-frontend" "file:"
-    "zod" "^3.23.8"
-
 "language-subtag-registry@^0.3.20":
   "integrity" "sha512-0K65Lea881pHotoGEa5gDlMxt3pctLi2RplBb7Ezh4rRdLEOtgi7n4EwK9lamnUCkKBqaeKRVebTq6BAxSkpXQ=="
   "resolved" "https://registry.npmjs.org/language-subtag-registry/-/language-subtag-registry-0.3.23.tgz"
@@ -6820,7 +6823,7 @@
   dependencies:
     "moment" "^2.29.4"
 
-"moment@^2.29.4", "moment@^2.30.1":
+"moment@^2.29.4":
   "integrity" "sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how=="
   "resolved" "https://registry.npmjs.org/moment/-/moment-2.30.1.tgz"
   "version" "2.30.1"
@@ -8714,44 +8717,6 @@
   "version" "0.23.2"
   dependencies:
     "loose-envify" "^1.1.0"
-
-"school-management-dashboard-frontend@file:":
-  "version" "0.1.0"
-  dependencies:
-    "@hookform/resolvers" "^3.9.0"
-    "@kp/billing" "*"
-    "@kp/server" "*"
-    "@kp/shop" "*"
-    "@tiptap/extension-blockquote" "^2.23.0"
-    "@tiptap/extension-code" "^2.23.0"
-    "@tiptap/extension-heading" "^2.23.0"
-    "@tiptap/extension-link" "^2.23.0"
-    "@tiptap/extension-subscript" "^2.23.0"
-    "@tiptap/extension-superscript" "^2.23.0"
-    "@tiptap/extension-text-align" "^2.23.0"
-    "@tiptap/extension-underline" "^2.23.0"
-    "@tiptap/react" "^2.23.0"
-    "@tiptap/starter-kit" "^2.23.0"
-    "@types/react-big-calendar" "^1.8.9"
-    "cookie" "^1.0.2"
-    "dompurify" "^3.2.6"
-    "express-validator" "^7.2.1"
-    "js-cookie" "^3.0.5"
-    "jsonwebtoken" "^9.0.2"
-    "jwt-decode" "^4.0.0"
-    "lama-dev-next-dashboard" "file:"
-    "lucide-react" "^0.512.0"
-    "moment" "^2.30.1"
-    "next" "^14.2.31"
-    "react" "^18.3.1"
-    "react-big-calendar" "^1.13.2"
-    "react-calendar" "^5.0.0"
-    "react-dom" "^18.3.1"
-    "react-hook-form" "^7.52.2"
-    "react-icons" "^5.5.0"
-    "recharts" "^2.12.7"
-    "school-management-dashboard-frontend" "file:"
-    "zod" "^3.23.8"
 
 "semver@^5.6.0":
   "integrity" "sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g=="
