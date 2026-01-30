@@ -54,8 +54,8 @@ lerna-debug.log
 *.tsbuildinfo
 
 # Lock Files (User requested)
-package-lock.json
-yarn.lock
+# package-lock.json
+# yarn.lock
 pnpm-lock.yaml
 bun.lockb
 
