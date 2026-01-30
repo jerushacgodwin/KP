@@ -58,7 +58,13 @@ If SCP is slow with many files:
 3.  **On VM**: `unzip project.zip`
 
 ## 3. Configuration
-Create a `.env` file in the root directory on your VM or locally before transfer.
+**First, navigate into the project folder:**
+```bash
+cd kpripo
+```
+*(If you renamed the folder during upload, use that name. Run `ls` to see what folders are there.)*
+
+Create a `.env` file from the example:
 
 ```bash
 cp .env.example .env
