@@ -99,3 +99,22 @@ sudo docker compose up -d --build
   ```bash
   sudo docker compose logs -f
   ```
+
+### Build Stuck or Slow? (Add Swap Space)
+If `npm ci` hangs for more than 10 minutes or fails with "Killed", your VM likely ran out of RAM (common on small EC2/GCP instances).
+
+**Fix: Create a 2GB Swap File**
+Run these commands on the VM:
+```bash
+# Create a 2GB file
+sudo fallocate -l 2G /swapfile
+# Set permissions
+sudo chmod 600 /swapfile
+# Mark as swap
+sudo mkswap /swapfile
+# Enable it
+sudo swapon /swapfile
+# Make it permanent
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+Then try the build command again.
