@@ -185,11 +185,11 @@ const FessList: React.FC<FessListProps> = ({
                 </div>
             }
             onFilter={(e) => setFilters(e.filters)}
+            rowClassName={() => 'hover:bg-blue-50 transition-colors border-b border-gray-50'}
             pt={{
                 header: { className: 'bg-transparent border-b-0 mb-4' },
                 thead: { className: 'bg-gray-50 text-gray-400 text-xs font-semibold uppercase tracking-wider' },
                 tbody: { className: 'text-sm text-gray-700' },
-                row: { className: 'hover:bg-blue-50 transition-colors border-b border-gray-50' }
             }}
           >
             {/* <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column> Removed checkbox column */}
