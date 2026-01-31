@@ -1,6 +1,6 @@
 export async function apiFetch<T>(
   url: string,
-  method: "GET" | "POST" | "PUT" | "DELETE" = "GET",
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" = "GET",
   data?: any,
   headers: Record<string, string> = {},
   isMultipart: boolean = false
@@ -45,6 +45,7 @@ export async function apiFetch<T>(
     headers: finalHeaders,
     body: method !== "GET" ? body : undefined,
     credentials: 'include', // Ensure cookies are sent (critical for Electron/CORS)
+    cache: 'no-store',
   });
 
   if (!res.ok) {

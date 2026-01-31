@@ -8,7 +8,7 @@ async function dropColumns() {
     // Check if columns exist before dropping (optional, but safe)
     // For simplicity, we assume they exist as we just added them.
     // Using raw query to drop
-    await sequelize.query('ALTER TABLE Users DROP COLUMN otp, DROP COLUMN otp_expires_at;');
+    await sequelize.query('ALTER TABLE users DROP COLUMN otp, DROP COLUMN otp_expires_at;');
     
     console.log('Columns dropped successfully.');
     process.exit(0);

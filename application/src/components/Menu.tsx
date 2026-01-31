@@ -148,19 +148,19 @@ const Menu = ({menulist,userDetail}: {menulist: any, userDetail: any}) => {
     //navigate(item.slug);
   };
 
-  if (menu.length&&user.role) {
+  if (user?.role) {
   return (
     <>
    
       <div className="mt-4 text-sm">
-
         <div className="flex flex-col gap-2">
-          <span className="hidden lg:block text-gray-400 font-light my-4">
-         Menu
+
+          <span className="lg:block text-gray-400 font-light my-4">
+            Dynamic Menu ({menu?.length || 0} items)
           </span>
             
           {menu.map((item:any,index: number) => {
-            if (item.group_id==user?.role) {
+            if (user?.role == 1 || item.group_id == user?.role) {
               return (
                 <div key={item.name}>
                    {index === 0 && (
@@ -185,17 +185,18 @@ const Menu = ({menulist,userDetail}: {menulist: any, userDetail: any}) => {
               );
             }
           })}
-        </div>
+        
          {/* Hardcoded Events Link for when it's missing from DB permissions */}
-         {(user?.role === 1 || user?.role === 2 || user?.role === 3) && (
+         {(user?.role == 1 || user?.role == 2 || user?.role == 3) && (
              <Link
-               href={user?.role === 3 ? "/student/events" : "/teacher/events"}
+               href={user?.role == 3 ? "/student/events" : "/teacher/events"}
                className="flex cursor-pointer items-center justify-center lg:justify-start gap-4 text-gray-500 py-2 md:px-2 rounded-md hover:bg-lamaSkyLight"
              >
                <Image src="/calendar.png" alt="" width={20} height={20} />
                <span className="hidden lg:block">Events</span>
              </Link>
          )}
+         </div>
     
     </div>
     </>

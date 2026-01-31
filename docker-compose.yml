@@ -31,7 +31,7 @@ services:
     build:
       context: .
       dockerfile: packages/server/Dockerfile
-    container_name: kp-server
+    command: npm run start
     restart: always
     environment:
       - PORT=4000
@@ -41,12 +41,14 @@ services:
       - DB_NAME=${DB_NAME:-sms_2_0}
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=${JWT_SECRET:-supersecretkey}
-      # Add other env vars here
     ports:
       - "4000:4000"
     depends_on:
       - mysql
       - redis
+    volumes:
+      - .:/app
+      - /app/node_modules
     networks:
       - app-network
 
@@ -56,7 +58,7 @@ services:
       dockerfile: application/Dockerfile
       args:
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:4000}
-    container_name: kp-application
+    command: npm run dev
     restart: always
     environment:
       API_URL: "http://server:4000"
@@ -65,6 +67,10 @@ services:
       - "3000:3000"
     depends_on:
       - server
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/application/.next
     networks:
       - app-network
 
