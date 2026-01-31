@@ -41,8 +41,19 @@ module.exports.loginUser=async({email,password})=>{
         throw new Error('User not found');
      }
 
+     const bcrypt = require('bcryptjs');
      const md5Hash = crypto.createHash('md5').update(password).digest('hex');
-    if (selectUser.password!==md5Hash) {
+     
+     let isMatch = false;
+     if (selectUser.password === md5Hash) {
+       isMatch = true;
+     } else if (selectUser.password.startsWith('$2y$') || selectUser.password.startsWith('$2a$') || selectUser.password.startsWith('$2b$')) {
+       // Convert $2y$ to $2a$ for bcryptjs if needed, or just try as is
+       const normalizedHash = selectUser.password.replace(/^\$2y\$/, '$2a$');
+       isMatch = bcrypt.compareSync(password, normalizedHash);
+     }
+
+    if (!isMatch) {
       throw new Error('Check Email OR Password');
     }
 ///console.log('............',selectUser)
@@ -55,22 +66,26 @@ module.exports.loginUser=async({email,password})=>{
 }
 module.exports.GetPermission=async(role)=>{
     try {
-        //console.log('role',role) 
         if( !role){
         throw new Error('All field Required')
     }
-    //console.log('role',role)
-   //userModel.hasOne(roleModel, { foreignKey: 'user_id' });
-     const userPermission = await permissionModel.findAll({ where: { group_id:role } });
+    
+   // For admin (role 1), return all permissions
+   // For other roles, filter by group_id
+     let userPermission;
+     if (role == 1) {
+       // Admin gets all permissions
+       userPermission = await permissionModel.findAll();
+     } else {
+       // Other roles get permissions filtered by their group_id
+       userPermission = await permissionModel.findAll({ where: { group_id: role } });
+     }
   
-
-//console.log('............',selectUser)
   return userPermission
       
 }catch (error) {
-    console.error('Register error:', error);
+    console.error('GetPermission error:', error);
       throw new Error('Internal server error');
-    //res.status(500).json({ message: 'Internal server error' });
   }
 }
 module.exports.getUserProfile=async(user)=>{

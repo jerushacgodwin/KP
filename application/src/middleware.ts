@@ -32,34 +32,33 @@ type User = {
     // };
     
          const url = new URL(req.url);
-    if(menuCookie) {
-
- const userMenu=JSON.parse(menuCookie) as any;
- //console.log("User Menu:", userMenu);
-  if (userMenu.includes(url.pathname) ) {
-      return NextResponse.redirect(new URL('/', req.url));
+  if (menuCookie && user?.role !== 1) {
+    try {
+      const userMenu = JSON.parse(menuCookie) as any[];
+      const path = url.pathname;
+      const isAllowed = userMenu.some((item: any) => item.slug === path);
+      
+      if (['/admin', '/teacher', '/student', '/hr', '/library', '/transport', '/hostel'].some(p => path.startsWith(p)) && !isAllowed) {
+         return NextResponse.redirect(new URL('/', req.url));
+      }
+    } catch (e) {
+      console.error("Middleware error parsing menu:", e);
     }
-    }    
-   
+  }
 
-    // if (url.pathname.startsWith('/student') && user.role !== 1) {
-    //   return NextResponse.redirect(new URL('/unauthorized', req.url));
-    // }
-
-    // if (url.pathname.startsWith('/teacher') && decoded.role !== 'teacher') {
-    //   return NextResponse.redirect(new URL('/unauthorized', req.url));
-    // }
-//return new NextResponse('Middleware Intercepted This Page')
-
-     return NextResponse.next();
-//  } catch (err) {
-//     console.error('JWT verification failed:', err);
-//     return NextResponse.redirect(new URL('/login', req.url));
-//    }
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/student/:path*', '/teacher/:path*'],
+  matcher: [
+    '/admin/:path*', 
+    '/student/:path*', 
+    '/teacher/:path*',
+    '/hr/:path*',
+    '/library/:path*',
+    '/transport/:path*',
+    '/hostel/:path*'
+  ],
 }
 //import { NextResponse } from 'next/server'
 

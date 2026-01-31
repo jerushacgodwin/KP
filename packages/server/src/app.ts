@@ -11,6 +11,10 @@ import teacherRoutes from './routes/teacher.routers';
 import financeRoutes from './routes/finance.routes';
 import eventRoutes from './routes/event.routes';
 import iclassRoutes from './routes/iclass.routes';
+import hrRoutes from './routes/hr.routes';
+import libraryRoutes from './routes/library.routes';
+import transportRoutes from './routes/transport.routes';
+import hostelRoutes from './routes/hostel.routes';
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 connectDb();
@@ -42,5 +46,9 @@ app.use('/teacher', teacherRoutes);
 app.use('/finance', financeRoutes);
 app.use('/events', eventRoutes);
 app.use('/class', iclassRoutes);
+app.use('/hr', hrRoutes);
+app.use('/library', libraryRoutes);
+app.use('/transport', transportRoutes);
+app.use('/hostel', hostelRoutes);
 
 export default app;
