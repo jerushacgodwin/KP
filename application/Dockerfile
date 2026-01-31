@@ -27,7 +27,7 @@ ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
 # Build all packages. This ensures dependencies like @kp/billing are built before application is built.
 # The root 'build' script runs 'lerna run build', which executes 'build' script in all workspaces.
-RUN npm run build
+RUN npx lerna run build --concurrency 1 --stream
 
 # Set working directory to the application
 WORKDIR /app/application
