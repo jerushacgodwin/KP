@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "dist",
     "declaration": true,
-    "emitDeclarationOnly": false, 
+    "emitDeclarationOnly": false,
     "module": "CommonJS",
     "target": "ESNext",
     "moduleResolution": "Node",
@@ -11,16 +11,16 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "baseUrl": ".",    
+    "baseUrl": ".",
     "allowJs": true,
     "checkJs": false,
     "paths": {
-      "@kp/server": ["../packages/shop/dist"]
+      "@kp/server": [
+        "./dist"
+      ]
     }
   },
-
-
-"include": [
+  "include": [
     "src",
     "declarations.d.ts"
   ]

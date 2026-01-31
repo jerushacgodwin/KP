@@ -6,13 +6,15 @@
     "emitDeclarationOnly": false,
     "baseUrl": ".",
     "paths": {
-      "@kp/shop": ["../packages/shop/dist"]
+      "@kp/shop": [
+        "./dist"
+      ]
     }
-
   },
   "scripts": {
-  "build": "tsc"
-},
-
-  "include": ["src"]
+    "build": "tsc"
+  },
+  "include": [
+    "src"
+  ]
 }

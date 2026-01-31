@@ -31,6 +31,11 @@ async function runMigrations() {
       console.log(`\n🚀 Running migration: ${file}`);
       const migration = require(path.join(migrationsDir, file));
       
+      if (migration && migration.disabled) {
+        console.log(`⏭️ Skipping disabled migration: ${file}`);
+        continue;
+      }
+
       if (typeof migration.up !== 'function') {
         console.warn(`⚠️  Skipping ${file}: No "up" function found.`);
         continue;
