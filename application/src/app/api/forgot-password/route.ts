@@ -1,7 +1,7 @@
 import { apiFetch } from '../../../lib/api';
 import { NextResponse } from 'next/server';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
 
 export async function POST(req: Request) {
   try {

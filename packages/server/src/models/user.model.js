@@ -28,7 +28,7 @@ school_id: { type: DataTypes.STRING, allowNull: false },
 }, {
   timestamps: false, // adds createdAt and updatedAt
  
-   tableName: 'Users'
+   tableName: 'users'
      // adds deletedAt for soft tableName: 'users',deletes
 });
 User.prototype.generateToken = function () {
