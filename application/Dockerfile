@@ -12,7 +12,10 @@ COPY packages/shop/package.json ./packages/shop/
 COPY application/package.json ./application/
 
 # Install dependencies
-RUN npm ci
+# Add network resilience for slow/flaky connections
+RUN npm config set fetch-retry-maxtimeout 120000 && \
+    npm config set fetch-retries 5 && \
+    npm ci
 
 # Copy all source code
 COPY packages ./packages
