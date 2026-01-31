@@ -2,7 +2,7 @@ import { apiFetch } from '../../../lib/api';
 import { serialize } from 'cookie';
 import { NextResponse } from 'next/server';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
 
 interface User {
   role: number;
@@ -22,7 +22,6 @@ interface MenuResponse {
 
 export async function POST(req: Request) {
   const body = await req.json();
-
 
   try {
     const response = await apiFetch<LoginResponse>(
@@ -95,7 +94,7 @@ export async function POST(req: Request) {
     
     return res;
   } catch (err: any) {
-    console.error("Login Error:", err);
-    return NextResponse.json({ message: err.message || "Internal Server Error" }, { status: 401 });
+    console.error("CRITICAL Login Error:", err.message, err.stack);
+    return NextResponse.json({ message: err.message || "Internal Server Error" }, { status: 500 });
   }
 }
