@@ -29,7 +29,7 @@ export async function POST(req: Request) {
       'POST',
       body
     );
-    console.log("Login attempt for:", body.email, "Response:", response);
+
 
     if (!response || !response.token || !response.user) {
       return NextResponse.json({ message: 'Invalid user' }, { status: 400 });
@@ -41,9 +41,6 @@ export async function POST(req: Request) {
       { role: response.user.role }
     );
     
-    console.log("Menu Response received:", menuResponse);
-    console.log("Has userpermission?", !!menuResponse?.userpermission);
-    console.log("Permission count:", menuResponse?.userpermission?.length || 0);
     
     if (!menuResponse || !menuResponse.userpermission || menuResponse.userpermission.length === 0) {
       console.error("ERROR: No permissions returned from API!");
@@ -98,11 +95,6 @@ export async function POST(req: Request) {
         userpermission: menuResponse.userpermission
     };
     
-    // Debug logging
-    console.log("🍪 Setting 3 cookies...");
-    console.log("Cookie 1 (auth-token):", cookie.substring(0, 50) + "...");
-    console.log("Cookie 2 (log-user):", userData.substring(0, 50) + "...");
-    console.log("Cookie 3 (log-menu):", userMenu.substring(0, 50) + "...");
     
     // Create response with all cookies using NextResponse
     const finalResponse = NextResponse.json(responseData, { status: 200 });
@@ -136,8 +128,6 @@ export async function POST(req: Request) {
       group: p.group
     }));
     
-    console.log("Original permissions size:", JSON.stringify(menuResponse.userpermission).length);
-    console.log("Compact permissions size:", JSON.stringify(compactPermissions).length);
     
     finalResponse.cookies.set({
       name: 'log-menu',
@@ -149,7 +139,6 @@ export async function POST(req: Request) {
       secure: false
     });
     
-    console.log("✅ All 3 cookies set successfully!");
     
     return finalResponse;
   } catch (err: any) {

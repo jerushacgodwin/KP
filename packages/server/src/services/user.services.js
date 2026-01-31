@@ -81,7 +81,6 @@ module.exports.GetPermission=async(role)=>{
        userPermission = await permissionModel.findAll({ where: { group_id: role } });
      }
   
-  console.log('Fetched permissions for role', role, ':', userPermission.length, 'permissions');
   return userPermission
       
 }catch (error) {
