@@ -3,7 +3,6 @@
   "private": true,
   "workspaces": [
     "application",
-
     "packages/*"
   ],
   "devDependencies": {
@@ -18,8 +17,10 @@
     "build": "lerna run build --stream"
   },
   "dependencies": {
+    "mysql2": "^3.16.2",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
-    "primereact": "^10.9.7"
+    "primereact": "^10.9.7",
+    "sequelize": "^6.37.7"
   }
 }

@@ -10,4 +10,12 @@ router.post("/records", hostelController.addRecord);
 router.get("/fees", hostelController.getFees);
 router.patch("/fees/:id", hostelController.updateFee);
 
+// Attendance
+router.get("/attendance", hostelController.getAttendance);
+router.post("/attendance", hostelController.addAttendance);
+
+// Leaves
+router.get("/leaves", hostelController.getLeaves);
+router.post("/leaves", hostelController.addLeave);
+
 module.exports = router;

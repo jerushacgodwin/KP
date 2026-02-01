@@ -52,11 +52,43 @@ module.exports.getAttendance = async (req, res, next) => {
   }
 };
 
+
 module.exports.markAttendance = async (req, res, next) => {
   try {
     const attendance = await hrService.markAttendance(req.body);
     res.status(201).json({ message: "Attendance marked successfully", result: attendance });
   } catch (err) {
+    next(err);
+  }
+};
+
+// --- Pay Slips ---
+module.exports.getPaySlips = async (req, res, next) => {
+  try {
+    const paySlips = await hrService.getPaySlips(req.query);
+    res.status(200).json({ message: "Pay slips fetched successfully", result: paySlips });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports.createPaySlip = async (req, res, next) => {
+  try {
+    const paySlip = await hrService.createPaySlip(req.body);
+    res.status(201).json({ message: "Pay slip created successfully", result: paySlip });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// --- Dashboard ---
+module.exports.getDashboardStats = async (req, res, next) => {
+  try {
+    const { school_id } = req.query; // Assuming school_id is passed or extracted from user context
+    const stats = await hrService.getDashboardStats(school_id);
+    res.status(200).json({ message: "Dashboard stats fetched successfully", result: stats });
+  } catch (err) {
+      console.error(err); // Log for debug
     next(err);
   }
 };

@@ -38,3 +38,41 @@ module.exports.updateFee = async (req, res, next) => {
     next(err);
   }
 };
+
+// --- Attendance ---
+module.exports.getAttendance = async (req, res, next) => {
+  try {
+    const attendance = await hostelService.getAttendance(req.query);
+    res.status(200).json({ message: "Hostel attendance fetched successfully", result: attendance });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports.addAttendance = async (req, res, next) => {
+  try {
+    const attendance = await hostelService.createAttendance(req.body);
+    res.status(201).json({ message: "Hostel attendance marked successfully", result: attendance });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// --- Leave ---
+module.exports.getLeaves = async (req, res, next) => {
+  try {
+    const leaves = await hostelService.getLeaves(req.query);
+    res.status(200).json({ message: "Hostel leaves fetched successfully", result: leaves });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports.addLeave = async (req, res, next) => {
+  try {
+    const leave = await hostelService.createLeave(req.body);
+    res.status(201).json({ message: "Hostel leave request created successfully", result: leave });
+  } catch (err) {
+    next(err);
+  }
+};

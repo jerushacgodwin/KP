@@ -42,13 +42,14 @@ services:
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=${JWT_SECRET:-supersecretkey}
     ports:
-      - "4000:4000"
+      - "4001:4000"
     depends_on:
       - mysql
       - redis
     volumes:
       - .:/app
       - /app/node_modules
+      - /app/packages/server/node_modules
     networks:
       - app-network
 
@@ -62,7 +63,7 @@ services:
     restart: always
     environment:
       API_URL: "http://server:4000"
-      NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL:-http://localhost:4000}"
+      NEXT_PUBLIC_API_URL: "${NEXT_PUBLIC_API_URL:-http://localhost:4001}"
     ports:
       - "3000:3000"
     depends_on:

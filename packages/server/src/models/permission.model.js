@@ -25,6 +25,11 @@ const Permission = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    menuoder: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
     created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,

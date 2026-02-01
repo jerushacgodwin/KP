@@ -7,30 +7,30 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const data = [
-  {
-    name: "Total",
-    count: 1000,
-    fill: "white",
-  },
-  {
-    name: "Girls",
-    count: 800,
-    fill: "#FAE27C",
-  },
-  {
-    name: "Boys",
-    count: 53,
-    fill: "#C3EBFA",
-  },
-];
+const CountChart = ({ type = "Students", data }: { type?: string, data?: any }) => {
+  const chartData = data && data.length > 0 ? data : [];
+  
+  // Dynamic label logic
+  // If data has "Present" and "Absent", use those. Else defaults.
+  const isAttendance = chartData.some((d: any) => d.name === "Present" || d.name === "Absent");
+  
+  const value1 = isAttendance 
+    ? chartData.find((d:any) => d.name === "Present")?.count || 0 
+    : chartData.find((d:any) => d.name === "Boys")?.count || 0;
+    
+  const label1 = isAttendance ? "Present" : "Boys (55%)";
+  
+  const value2 = isAttendance 
+    ? chartData.find((d:any) => d.name === "Absent")?.count || 0 
+    : chartData.find((d:any) => d.name === "Girls")?.count || 0;
+    
+  const label2 = isAttendance ? "Absent" : "Girls (45%)";
 
-const CountChart = () => {
   return (
     <div className="bg-white rounded-xl w-full h-full p-4">
       {/* TITLE */}
       <div className="flex justify-between items-center">
-        <h1 className="text-lg font-semibold">Students</h1>
+        <h1 className="text-lg font-semibold">{type}</h1>
         <Image src="/moreDark.png" alt="" width={20} height={20} />
       </div>
       {/* CHART */}
@@ -42,7 +42,7 @@ const CountChart = () => {
             innerRadius="40%"
             outerRadius="100%"
             barSize={32}
-            data={data}
+            data={chartData}
           >
             <RadialBar background dataKey="count" />
           </RadialBarChart>
@@ -59,13 +59,13 @@ const CountChart = () => {
       <div className="flex justify-center gap-16">
         <div className="flex flex-col gap-1">
           <div className="w-5 h-5 bg-lamaSky rounded-full" />
-          <h1 className="font-bold">1,234</h1>
-          <h2 className="text-xs text-gray-300">Boys (55%)</h2>
+          <h1 className="font-bold">{value1}</h1>
+          <h2 className="text-xs text-gray-300">{label1}</h2>
         </div>
         <div className="flex flex-col gap-1">
           <div className="w-5 h-5 bg-lamaYellow rounded-full" />
-          <h1 className="font-bold">1,234</h1>
-          <h2 className="text-xs text-gray-300">Girls (45%)</h2>
+          <h1 className="font-bold">{value2}</h1>
+          <h2 className="text-xs text-gray-300">{label2}</h2>
         </div>
       </div>
     </div>

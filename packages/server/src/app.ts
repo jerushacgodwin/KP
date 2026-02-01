@@ -48,7 +48,17 @@ app.use('/events', eventRoutes);
 app.use('/class', iclassRoutes);
 app.use('/hr', hrRoutes);
 app.use('/library', libraryRoutes);
+
 app.use('/transport', transportRoutes);
 app.use('/hostel', hostelRoutes);
+
+// Global Error Handler
+app.use((err: any, req: Request, res: Response, next: any) => {
+  console.error("Server Error:", err);
+  res.status(err.status || 500).json({
+    error: err.message || "Internal Server Error",
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
 
 export default app;

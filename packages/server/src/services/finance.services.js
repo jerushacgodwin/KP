@@ -13,15 +13,28 @@ module.exports.getFinanceOfYear = async () => {
       ],
       where: where(fn("YEAR", col("date")), currentYear),
       group: ["month", "type"],
-      order: [["month", "ASC"]],
+      order: [["date", "ASC"]], // Order by date to get months correctly
     });
-    return results.map((row) => ({
-      date: row.get("month"),
-      type: row.get("type"),
-      total: parseFloat(row.get("total_amount")),
-    }));
+
+    // Initialize all months with 0
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthData = months.map(m => ({ name: m, income: 0, expense: 0 }));
+
+    results.forEach(row => {
+        const monthName = row.get("month");
+        const type = row.get("type"); // 'income' or 'expense'
+        const amount = parseFloat(row.get("total_amount"));
+        
+        const monthEntry = monthData.find(m => m.name === monthName);
+        if (monthEntry) {
+            if (type === 'income') monthEntry.income = amount;
+            if (type === 'expense') monthEntry.expense = amount;
+        }
+    });
+
+    return monthData;
   } catch (error) {
-    console.error("Error fetching attendance counts:", error);
+    console.error("Error fetching finance stats:", error);
     throw new Error("Internal server error");
   }
 };

@@ -58,3 +58,22 @@ module.exports.addStaff = async (req, res, next) => {
     next(err);
   }
 };
+
+// --- Students ---
+module.exports.getStudents = async (req, res, next) => {
+  try {
+    const students = await transportService.getTransportStudents(req.query);
+    res.status(200).json({ message: "Transport students fetched successfully", result: students });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports.addStudent = async (req, res, next) => {
+  try {
+    const student = await transportService.addTransportStudent(req.body);
+    res.status(201).json({ message: "Student added to transport successfully", result: student });
+  } catch (err) {
+    next(err);
+  }
+};

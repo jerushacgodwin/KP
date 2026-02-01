@@ -76,8 +76,13 @@ const {
 });
 
 
- const StaffAttendance =sequelize.define('StaffAttendance ', {
-    Id: {
+ const StaffAttendance =sequelize.define('StaffAttendance', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    employee_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },

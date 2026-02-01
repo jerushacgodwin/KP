@@ -125,7 +125,8 @@ export async function POST(req: Request) {
       slug: p.slug,
       name: p.name,
       icon: p.icon,
-      group: p.group
+      group: p.group,
+      group_id: p.group_id
     }));
     
     
