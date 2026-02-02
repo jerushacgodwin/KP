@@ -134,7 +134,6 @@ export async function POST(req: Request) {
     
     // Store ONLY minimal slugs in the cookie for Middleware security
     const minimalisticSlugs = compactPermissions.map((p: any) => p.slug);
-    
     finalResponse.cookies.set({
       name: 'log-menu',
       value: JSON.stringify(minimalisticSlugs),
@@ -147,8 +146,7 @@ export async function POST(req: Request) {
     
     return finalResponse;
   } catch (err: any) {
-    console.error("CRITICAL Login Error:", err);
-    console.error("CRITICAL Login Error Message:", err.message);
+    console.error("CRITICAL Login Error:", err.message);
     const status = err.status || 500;
     return NextResponse.json({ message: err.message || "Internal Server Error" }, { status });
   }
