@@ -1,4 +1,4 @@
-const { HostelRecord, HostelFee, Student } = require("../models");
+const { HostelRecord, HostelFee, Student, HostelAttendance, HostelLeave } = require("../models");
 
 // --- Resident Management ---
 module.exports.getAllHostelRecords = async (query) => {
@@ -30,4 +30,40 @@ module.exports.updateHostelFee = async (id, data) => {
   const fee = await HostelFee.findByPk(id);
   if (!fee) throw new Error("Hostel fee record not found");
   return await fee.update(data);
+};
+
+// --- Attendance ---
+module.exports.createAttendance = async (data) => {
+  return await HostelAttendance.create(data);
+};
+
+module.exports.getAttendance = async (query) => {
+  const { student_id, date } = query;
+  const where = {};
+  if (student_id) where.student_id = student_id;
+  if (date) where.attendance_date = date;
+  
+  return await HostelAttendance.findAll({
+    where,
+    include: [{ model: Student, as: "student", attributes: ["name"] }],
+    order: [['attendance_date', 'DESC']]
+  });
+};
+
+// --- Leave ---
+module.exports.createLeave = async (data) => {
+  return await HostelLeave.create(data);
+};
+
+module.exports.getLeaves = async (query) => {
+  const { student_id, status } = query;
+  const where = {};
+  if (student_id) where.student_id = student_id;
+  if (status) where.status = status;
+
+  return await HostelLeave.findAll({
+    where,
+    include: [{ model: Student, as: "student", attributes: ["name"] }],
+    order: [['created_at', 'DESC']]
+  });
 };

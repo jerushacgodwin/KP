@@ -2072,3 +2072,8 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+-- Admin Data Insertion
+INSERT INTO schools (code, name, address) VALUES ('SCH001', 'Knowledge Pitch', 'Default Address');
+INSERT INTO users (school_id, name, username, email, password, status, created_at, updated_at) VALUES ('SCH001', 'Admin User', 'admin', 'admin@knowledgepitch.com', '$2a$10$g3tde7c7lvNLTMnGjUVd3erqeqQ6h5T9ozlXAh1NhZoW9NNADrHUi', '1', NOW(), NOW());
+INSERT INTO user_roles (user_id, role_id, created_at, updated_at) SELECT id, 1, NOW(), NOW() FROM users WHERE username = 'admin';

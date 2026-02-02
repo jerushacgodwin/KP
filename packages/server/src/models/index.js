@@ -20,10 +20,13 @@ const HostelFee = require("./hostelFee.model");
 const Student = require("./student.model");
 const iClass = require("./iclass.model");
 const FeeStructure = require("./feestructure.model");
-
-// If you add more models (School, StudentAttendance, etc.), require them here.
-// const School = require("./school.model");
-// const StudentAttendance = require("./studentattendance.model");
+// const { student: StudentAttendance } = require("./attendance.model");
+// const SchoolFinance = require("./financemodel");
+// const SchoolFees = require("./schoolfees.model");
+const PaySlip = require("./payslip.model");
+const HostelAttendance = require("./hostelAttendance.model");
+const HostelLeave = require("./hostelLeave.model");
+const TransportStudent = require("./transportStudent.model");
 
 const models = {
   User,
@@ -40,13 +43,19 @@ const models = {
   Bus,
   BusRoot,
   BusStaff,
+  TransportStudent,
   HostelRecord,
   HostelFee,
+  HostelAttendance,
+  HostelLeave,
   Student,
   iClass,
   FeeStructure,
-  // School,
+  PaySlip,
   // StudentAttendance,
+  // SchoolFinance,
+  // SchoolFees,
+  // School,
 };
 
 // Run associations (if declared)

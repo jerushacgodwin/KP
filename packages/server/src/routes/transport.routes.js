@@ -14,4 +14,8 @@ router.post("/roots", transportController.addRoot);
 router.get("/staff/:bus_id", transportController.getStaff);
 router.post("/staff", transportController.addStaff);
 
+// Students
+router.get("/students", transportController.getStudents);
+router.post("/students", transportController.addStudent);
+
 module.exports = router;

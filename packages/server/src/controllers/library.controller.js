@@ -29,6 +29,15 @@ module.exports.getCategories = async (req, res, next) => {
   }
 };
 
+module.exports.addCategory = async (req, res, next) => {
+  try {
+    const category = await libraryService.createCategory(req.body);
+    res.status(201).json({ message: "Category added successfully", result: category });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // --- Circulation ---
 module.exports.issueBook = async (req, res, next) => {
   try {

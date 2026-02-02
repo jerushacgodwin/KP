@@ -59,4 +59,76 @@ module.exports.setStudentAttendance = async (req, res, next) => {
     message: "User created successfully",
     result: results,
   });
-}
+};
+
+module.exports.weeklyAttendance = async (req, res, next) => {
+  try {
+    const result = await attendance.getWeeklyAttendance();
+    res.status(200).json({
+      message: "Weekly attendance fetched successfully",
+      result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports.dailyAttendance = async (req, res, next) => {
+  try {
+    const result = await attendance.getDailyAttendanceStats();
+    res.status(200).json({
+      message: "Daily attendance fetched successfully",
+      result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports.weeklyStaffAttendance = async (req, res, next) => {
+  try {
+    const result = await attendance.getStaffWeeklyAttendance();
+    res.status(200).json({
+      message: "Weekly staff attendance fetched successfully",
+      result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports.dailyStaffAttendance = async (req, res, next) => {
+  try {
+    const result = await attendance.getStaffDailyAttendanceStats();
+    res.status(200).json({
+      message: "Daily staff attendance fetched successfully",
+      result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports.monthlyAttendance = async (req, res, next) => {
+  try {
+    const result = await attendance.getMonthlyAttendance();
+    res.status(200).json({
+      message: "Monthly attendance fetched successfully",
+      result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports.monthlyStaffAttendance = async (req, res, next) => {
+  try {
+    const result = await attendance.getStaffMonthlyAttendance();
+    res.status(200).json({
+      message: "Monthly staff attendance fetched successfully",
+      result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -1,4 +1,4 @@
-const { Leave, StaffType, EmployeeAttendance, Employee } = require("../models");
+const { Leave, StaffType, EmployeeAttendance, Employee, PaySlip } = require("../models");
 const { Op } = require("sequelize");
 
 // --- Leave Management ---
@@ -44,6 +44,32 @@ module.exports.getAttendanceByEmployee = async (employee_id, startDate, endDate)
   return await EmployeeAttendance.findAll({ where });
 };
 
+
 module.exports.markAttendance = async (data) => {
   return await EmployeeAttendance.create(data);
+};
+
+// --- Pay Slip Management ---
+module.exports.createPaySlip = async (data) => {
+  return await PaySlip.create(data);
+};
+
+module.exports.getPaySlips = async (query) => {
+  const { employee_id, month, year, school_id } = query;
+  const where = {};
+  if (employee_id) where.employee_id = employee_id;
+  if (month) where.month = month;
+  if (year) where.year = year;
+  if (school_id) where.school_id = school_id;
+
+  return await PaySlip.findAll({
+    where,
+    include: [{ model: Employee, as: "employee", attributes: ["name", "designation", "email"] }],
+    order: [['created_at', 'DESC']]
+  });
+};
+
+// --- Dashboard Stats ---
+module.exports.getDashboardStats = async (school_id) => {
+ return { message: "Debug Mode" };
 };

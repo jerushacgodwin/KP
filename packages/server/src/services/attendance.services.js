@@ -58,6 +58,79 @@ module.exports.getStudentAttendance = async (email, user_id) => {
     throw error;
   }
 };
+
+module.exports.getWeeklyAttendance = async () => {
+  try {
+    const startOfWeek = moment().startOf("isoWeek").format("YYYY-MM-DD");
+    const endOfWeek = moment().endOf("isoWeek").format("YYYY-MM-DD");
+
+    console.log(`Fetching student weekly attendance from ${startOfWeek} to ${endOfWeek}`);
+
+    const results = await studentatt.findAll({
+      attributes: [
+        [fn("DATE_FORMAT", col("attendance_date"), "%a"), "day"],
+        [fn("SUM", literal("CASE WHEN present = '1' THEN 1 ELSE 0 END")), "present"],
+        [fn("SUM", literal("CASE WHEN present = '0' THEN 1 ELSE 0 END")), "absent"],
+      ],
+      where: {
+        attendance_date: {
+          [Op.between]: [startOfWeek, endOfWeek],
+        },
+      },
+      group: ["day"],
+      order: [["attendance_date", "ASC"]],
+    });
+
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+    const formattedData = days.map((day) => {
+      const found = results.find((r) => r.get("day") === day);
+      return {
+        name: day,
+        present: found ? parseInt(found.get("present")) : 0,
+        absent: found ? parseInt(found.get("absent")) : 0,
+      };
+    });
+
+    return formattedData;
+  } catch (error) {
+    console.error("Error fetching student weekly attendance:", error);
+    throw new Error("Internal server error");
+  }
+};
+
+module.exports.getDailyAttendanceStats = async () => {
+  try {
+    const todayDate = moment().format("YYYY-MM-DD");
+    
+    // Count total students
+    const totalStudents = await studentUti.count();
+
+    const [presentCount, absentCount] = await Promise.all([
+      studentatt.count({
+        where: {
+          attendance_date: todayDate,
+          [Op.or]: [{ present: 1 }, { present: "1" }],
+        },
+      }),
+      studentatt.count({
+        where: {
+          attendance_date: todayDate,
+          [Op.or]: [{ present: 0 }, { present: "0" }],
+        },
+      }),
+    ]);
+
+    return [
+      { name: "Total", count: totalStudents, fill: "white" },
+      { name: "Present", count: presentCount, fill: "#FAE27C" },
+      { name: "Absent", count: absentCount, fill: "#C3EBFA" },
+    ];
+  } catch (error) {
+    console.error("Error fetching student daily attendance stats:", error);
+    throw new Error("Internal server error");
+  }
+};
+
 module.exports.getStaffAttendance = async (email) => {
   try {
     if (!email) {
@@ -208,5 +281,162 @@ module.exports.setStudentAttendance = async (data
   } catch (error) {
     console.error("Error setting student attendance:", error);
     throw error;
+  }
+
+};
+
+module.exports.getStaffWeeklyAttendance = async () => {
+  try {
+    const startOfWeek = moment().startOf("isoWeek").format("YYYY-MM-DD");
+    const endOfWeek = moment().endOf("isoWeek").format("YYYY-MM-DD");
+
+    console.log(`Fetching staff weekly attendance from ${startOfWeek} to ${endOfWeek}`);
+
+    const results = await staffatt.findAll({
+      attributes: [
+        [fn("DATE_FORMAT", col("attendance_date"), "%a"), "day"], // Mon, Tue, Wed
+        [fn("SUM", literal("CASE WHEN present = '1' THEN 1 ELSE 0 END")), "present"],
+        [fn("SUM", literal("CASE WHEN present = '0' THEN 1 ELSE 0 END")), "absent"],
+      ],
+      where: {
+        attendance_date: {
+          [Op.between]: [startOfWeek, endOfWeek],
+        },
+      },
+      group: ["day"],
+      order: [["attendance_date", "ASC"]],
+    });
+
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+    const formattedData = days.map((day) => {
+      const found = results.find((r) => r.get("day") === day);
+      return {
+        name: day,
+        present: found ? parseInt(found.get("present")) : 0,
+        absent: found ? parseInt(found.get("absent")) : 0,
+      };
+    });
+
+    return formattedData;
+  } catch (error) {
+    console.error("Error fetching staff weekly attendance:", error);
+    throw new Error("Internal server error");
+  }
+};
+
+module.exports.getStaffDailyAttendanceStats = async () => {
+  try {
+    const todayDate = moment().format("YYYY-MM-DD");
+    
+    // Count total staff
+    const totalStaff = await Staff.count();
+
+    const [presentCount, absentCount] = await Promise.all([
+      staffatt.count({
+        where: {
+          attendance_date: todayDate,
+          [Op.or]: [{ present: 1 }, { present: "1" }],
+        },
+      }),
+      staffatt.count({
+        where: {
+          attendance_date: todayDate,
+          [Op.or]: [{ present: 0 }, { present: "0" }],
+        },
+      }),
+    ]);
+
+    return [
+      { name: "Total", count: totalStaff, fill: "white" },
+      { name: "Present", count: presentCount, fill: "#FAE27C" },
+      { name: "Absent", count: absentCount, fill: "#C3EBFA" },
+    ];
+  } catch (error) {
+    console.error("Error fetching staff daily attendance stats:", error);
+    throw new Error("Internal server error");
+  }
+};
+
+module.exports.getMonthlyAttendance = async () => {
+  try {
+    const startOfMonth = moment().startOf("month").format("YYYY-MM-DD");
+    const endOfMonth = moment().endOf("month").format("YYYY-MM-DD");
+
+    console.log(`Fetching monthly attendance from ${startOfMonth} to ${endOfMonth}`);
+
+    const results = await studentatt.findAll({
+      attributes: [
+        [fn("DATE_FORMAT", col("attendance_date"), "%d"), "day"],
+        [fn("SUM", literal("CASE WHEN present = '1' THEN 1 ELSE 0 END")), "present"],
+        [fn("SUM", literal("CASE WHEN present = '0' THEN 1 ELSE 0 END")), "absent"],
+      ],
+      where: {
+        attendance_date: {
+          [Op.between]: [startOfMonth, endOfMonth],
+        },
+      },
+      group: ["day"],
+      order: [["attendance_date", "ASC"]],
+    });
+
+    const daysInMonth = moment().daysInMonth();
+    const formattedData = [];
+
+    for (let i = 1; i <= daysInMonth; i++) {
+        const dayStr = i.toString().padStart(2, '0');
+        const found = results.find((r) => r.get("day") === dayStr);
+        formattedData.push({
+            name: i.toString(),
+            present: found ? parseInt(found.get("present")) : 0,
+            absent: found ? parseInt(found.get("absent")) : 0,
+        });
+    }
+
+    return formattedData;
+  } catch (error) {
+    console.error("Error fetching monthly attendance:", error);
+    throw new Error("Internal server error");
+  }
+};
+
+module.exports.getStaffMonthlyAttendance = async () => {
+  try {
+    const startOfMonth = moment().startOf("month").format("YYYY-MM-DD");
+    const endOfMonth = moment().endOf("month").format("YYYY-MM-DD");
+
+    console.log(`Fetching staff monthly attendance from ${startOfMonth} to ${endOfMonth}`);
+
+    const results = await staffatt.findAll({
+      attributes: [
+        [fn("DATE_FORMAT", col("attendance_date"), "%d"), "day"],
+        [fn("SUM", literal("CASE WHEN present = '1' THEN 1 ELSE 0 END")), "present"],
+        [fn("SUM", literal("CASE WHEN present = '0' THEN 1 ELSE 0 END")), "absent"],
+      ],
+      where: {
+        attendance_date: {
+          [Op.between]: [startOfMonth, endOfMonth],
+        },
+      },
+      group: ["day"],
+      order: [["attendance_date", "ASC"]],
+    });
+
+    const daysInMonth = moment().daysInMonth();
+    const formattedData = [];
+
+    for (let i = 1; i <= daysInMonth; i++) {
+        const dayStr = i.toString().padStart(2, '0');
+        const found = results.find((r) => r.get("day") === dayStr);
+        formattedData.push({
+            name: i.toString(),
+            present: found ? parseInt(found.get("present")) : 0,
+            absent: found ? parseInt(found.get("absent")) : 0,
+        });
+    }
+
+    return formattedData;
+  } catch (error) {
+    console.error("Error fetching staff monthly attendance:", error);
+    throw new Error("Internal server error");
   }
 };

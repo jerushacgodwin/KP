@@ -8,6 +8,7 @@ router.post("/books", libraryController.addBook);
 
 // Categories
 router.get("/categories", libraryController.getCategories);
+router.post("/categories", libraryController.addCategory);
 
 // Circulation
 router.post("/issue", libraryController.issueBook);

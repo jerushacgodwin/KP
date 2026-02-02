@@ -19,7 +19,7 @@ module.exports.registerUser = async (req, res, next) => {
       id: user.id,
       username: user.username,
       email: user.email,
-      role: user.UserRole.get("role_id"),
+      role: user.UserRole ? user.UserRole.get("role_id") : null,
     },
   });
 };
@@ -40,13 +40,13 @@ module.exports.login = async (req, res, next) => {
         username: user.username,
         email: user.email,
         school_id: user.school_id,
-        role: user.UserRole.get("role_id"),
-        user_id: user.UserRole.get("user_id"),
+        role: user.UserRole ? user.UserRole.get("role_id") : null,
+        user_id: user.UserRole ? user.UserRole.get("user_id") : null,
       },
     });
   } catch (error) {
     console.error("Login Controller Error:", error);
-    return res.status(401).json({ message: error.message || "Authentication failed" });
+    return res.status(error.message === 'Check Email OR Password' ? 401 : 500).json({ message: error.message || "Authentication failed" });
   }
 };
 module.exports.profile = async (req, res, next) => {

@@ -40,7 +40,11 @@ export async function apiFetch<T>(
     body = JSON.stringify(data);
   }
 
-  const res = await fetch(url, {
+
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+  const fullUrl = url.startsWith("/") ? `${apiUrl}${url}` : url;
+
+  const res = await fetch(fullUrl, {
     method,
     headers: finalHeaders,
     body: method !== "GET" ? body : undefined,

@@ -17,8 +17,8 @@ const menuItems = [
       },
       {
         icon: "/teacher.png",
-        label: "Teachers",
-        href: "/list/teachers",
+        label: "Staff",
+        href: "/list/staff",
         visible: ["admin", "teacher"],
       },
       {
@@ -148,10 +148,11 @@ const Menu = ({menulist,userDetail}: {menulist: any, userDetail: any}) => {
     //navigate(item.slug);
   };
 
+  // Create a set of allowed slugs for faster lookup
+  const currentPermissions = new Set(menu?.map((p: any) => p.slug) || []);
+
   if (user?.role) {
-  return (
-    <>
-   
+    return (
       <div className="mt-4 text-sm">
         <div className="flex flex-col gap-2">
 
@@ -162,10 +163,10 @@ const Menu = ({menulist,userDetail}: {menulist: any, userDetail: any}) => {
           {menu.map((item:any,index: number) => {
             if (user?.role == 1 || item.group_id == user?.role) {
               return (
-                <div key={item.name}>
-                   {index === 0 && (
+                <div key={item.name + index}>
+                  {index === 0 && (
           <Link
-            href={`/${item.group}`}
+            href={`/${item.group || ''}`}
             className="flex items-center justify-center lg:justify-start gap-4 text-blue-500 py-2 md:px-2 rounded-md hover:bg-blue-100 font-semibold"
           >
             <Image src="/home.png" alt="Dashboard" width={20} height={20} />
@@ -173,13 +174,12 @@ const Menu = ({menulist,userDetail}: {menulist: any, userDetail: any}) => {
           </Link>
         )}
                 <Link
-                  href={item.slug}
+                  href={item.slug || '#'}
                   key={item.name}
-                  onClick={handleClick}
                   className="flex cursor-pointer items-center justify-center lg:justify-start gap-4 text-gray-500 py-2 md:px-2 rounded-md hover:bg-lamaSkyLight"
                 >
-                  <Image src={`/${item.icon.toLowerCase()}.png`} alt="" width={20} height={20} />
-                  <span className="hidden lg:block">{item.name.replace('List ','')}</span>
+                  <Image src={`/${(item.icon?.toLowerCase() || 'home')}.png`} alt="" width={20} height={20} />
+                  <span className="hidden lg:block">{(item.name || '').replace('List ','')}</span>
                 </Link>
                 </div>
               );
@@ -199,9 +199,10 @@ const Menu = ({menulist,userDetail}: {menulist: any, userDetail: any}) => {
          </div>
     
     </div>
-    </>
-  );
-}
+    );
+  }
+  return null;
 };
+
 
 export default Menu;

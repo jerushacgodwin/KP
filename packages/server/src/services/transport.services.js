@@ -1,4 +1,5 @@
-const { Bus, BusRoot, BusStaff } = require("../models");
+const { Bus, BusRoot, BusStaff, TransportStudent, Student } = require("../models");
+const { Op } = require("sequelize");
 
 // --- Fleet Management ---
 module.exports.getAllBuses = async () => {
@@ -30,4 +31,24 @@ module.exports.getBusStaff = async (bus_id) => {
 
 module.exports.addBusStaff = async (data) => {
   return await BusStaff.create(data);
+};
+
+
+// --- Student Transport ---
+module.exports.getTransportStudents = async (query) => {
+  const { bus_id } = query;
+  const where = {};
+  if (bus_id) where.bus_id = bus_id;
+
+  return await TransportStudent.findAll({
+    where,
+    include: [
+        { model: Student, as: "student", attributes: ["name"] },
+        { model: BusRoot, as: "root", attributes: ["location", "arrival_time"] }
+    ]
+  });
+};
+
+module.exports.addTransportStudent = async (data) => {
+  return await TransportStudent.create(data);
 };

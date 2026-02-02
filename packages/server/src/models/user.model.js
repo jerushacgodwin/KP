@@ -8,6 +8,10 @@ const User = sequelize.define('user', {
     allowNull: false,
     unique: true
   },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
   school_id: { 
     type: DataTypes.STRING, 
     allowNull: false 
