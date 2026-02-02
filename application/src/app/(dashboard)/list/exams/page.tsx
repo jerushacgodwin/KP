@@ -1,37 +1,48 @@
-import FormModal from "@/components/FormModal";
-import Pagination from "@/components/Pagination";
-import Table from "@/components/Table";
-import TableSearch from "@/components/TableSearch";
-import { examsData, role } from "@/lib/data";
+import FormModal from "@src/components/FormModal";
+import Pagination from "@src/components/Pagination";
+import Table from "@src/components/Table";
+import TableSearch from "@src/components/TableSearch";
+import { role } from "@src/lib/data";
+import { apiFetch } from "@src/lib/api";
 import Image from "next/image";
 import Link from "next/link";
 
 type Exam = {
   id: number;
-  subject: string;
-  class: string;
-  teacher: string;
-  date: string;
-};
+  title: string;
+  start_time: string;
+  end_time: string;
+  subject_id: number;
+  class_id: number;
+  teacher_id: number;
+}; // Matching backend model structure primarily, though UI needs names. 
+// For now, I will display IDs or raw data, OR I should ideally update the backend to Include names. 
+// Given the prompt "REMOVE DUMMY DATA", valid API data is priority.
 
 const columns = [
   {
-    header: "Subject Name",
-    accessor: "name",
+    header: "Exam Title",
+    accessor: "title",
   },
   {
-    header: "Class",
-    accessor: "class",
-  },
-  {
-    header: "Teacher",
-    accessor: "teacher",
+    header: "Start Time",
+    accessor: "start_time", 
     className: "hidden md:table-cell",
   },
   {
-    header: "Date",
-    accessor: "date",
+    header: "End Time",
+    accessor: "end_time",
     className: "hidden md:table-cell",
+  },
+  {
+    header: "Subject ID",
+    accessor: "subject_id",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Class ID",
+    accessor: "class_id",
+     className: "hidden md:table-cell",
   },
   {
     header: "Actions",
@@ -39,16 +50,28 @@ const columns = [
   },
 ];
 
-const ExamListPage = () => {
+const ExamListPage = async () => {
+    
+  let data: Exam[] = [];
+  try {
+      const res: any = await apiFetch("/exams");
+      if (res?.result) {
+          data = res.result;
+      }
+  } catch (e) {
+      console.error(e);
+  }
+
   const renderRow = (item: Exam) => (
     <tr
       key={item.id}
       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
     >
-      <td className="flex items-center gap-4 p-4">{item.subject}</td>
-      <td>{item.class}</td>
-      <td className="hidden md:table-cell">{item.teacher}</td>
-      <td className="hidden md:table-cell">{item.date}</td>
+      <td className="flex items-center gap-4 p-4">{item.title}</td>
+      <td className="hidden md:table-cell">{new Date(item.start_time).toLocaleString()}</td>
+      <td className="hidden md:table-cell">{new Date(item.end_time).toLocaleString()}</td>
+      <td className="hidden md:table-cell">{item.subject_id}</td>
+      <td className="hidden md:table-cell">{item.class_id}</td>
       <td>
         <div className="flex items-center gap-2">
           {role === "admin" || role === "teacher" ? (
@@ -87,7 +110,7 @@ const ExamListPage = () => {
         </div>
       </div>
       {/* LIST */}
-      <Table columns={columns} renderRow={renderRow} data={examsData} />
+      <Table columns={columns} renderRow={renderRow} data={data} />
       {/* PAGINATION */}
       <Pagination />
     </div>
