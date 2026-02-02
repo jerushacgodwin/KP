@@ -6,7 +6,7 @@ import { role } from "@src/lib/data";
 import Image from "next/image";
 import Link from "next/link";
 
-const SingleTeacherPage = () => {
+const SingleStaffPage = () => {
   return (
     <div className="flex-1 p-4 flex flex-col gap-4 xl:flex-row">
       {/* LEFT */}
@@ -131,8 +131,8 @@ const SingleTeacherPage = () => {
         </div>
         {/* BOTTOM */}
         <div className="mt-4 bg-white rounded-md p-4 h-[800px]">
-          <h1>Teacher&apos;s Schedule</h1>
-          <BigCalendar />
+          <h1>Staff&apos;s Schedule</h1>
+          <BigCalendar calendarData={[]} />
         </div>
       </div>
       {/* RIGHT */}
@@ -157,11 +157,11 @@ const SingleTeacherPage = () => {
             </Link>
           </div>
         </div>
-        <Performance />
+        <Performance attendance={{ present: 20, absent: 2 }} />
         <Announcements />
       </div>
     </div>
   );
 };
 
-export default SingleTeacherPage;
+export default SingleStaffPage;
