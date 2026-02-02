@@ -27,6 +27,7 @@ const PaySlip = require("./payslip.model");
 const HostelAttendance = require("./hostelAttendance.model");
 const HostelLeave = require("./hostelLeave.model");
 const TransportStudent = require("./transportStudent.model");
+const AuditLog = require("./auditLog.model");
 
 const models = {
   User,
@@ -52,6 +53,7 @@ const models = {
   iClass,
   FeeStructure,
   PaySlip,
+  AuditLog,
   // StudentAttendance,
   // SchoolFinance,
   // SchoolFees,

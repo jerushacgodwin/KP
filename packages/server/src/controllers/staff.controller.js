@@ -1,5 +1,6 @@
 const staffService = require("../services/staff.service");
 const {schema} = require("./staff.schema");
+const AuditService = require("../services/audit.service");
 
 module.exports.createStaff = async (req, res, next) => {
   try {
@@ -12,6 +13,7 @@ module.exports.createStaff = async (req, res, next) => {
       message: "Staff created successfully",
       result: staff, // not student.present, unless you really want only that
     });
+    await AuditService.logAction(req, "CREATE", "STAFF", staff.id, null, parsed);
   } catch (err) {
     // Handle zod validation errors
     if (err.name === "ZodError") {

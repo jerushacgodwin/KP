@@ -1,5 +1,6 @@
 const attendance = require("../services/attendance.services");
 const { validationResult } = require("express-validator");
+const AuditService = require("../services/audit.service");
 
 module.exports.staff = async (req, res, next) => {
   const error = validationResult(req);
@@ -51,14 +52,19 @@ module.exports.setStudentAttendance = async (req, res, next) => {
   const requests = Array.isArray(req.body) ? req.body : [req.body];
   const results = [];
   //console.log(requests, "requests in attendance controller");
-  for (const request of requests) {
-    const result = await attendance.setStudentAttendance(request);
-    results.push(result);
+  try {
+    for (const request of requests) {
+      const result = await attendance.setStudentAttendance(request);
+      results.push(result);
+    }
+    res.status(201).json({
+      message: "User created successfully",
+      result: results,
+    });
+    await AuditService.logAction(req, "SET_ATTENDANCE", "ATTENDANCE", null, null, requests);
+  } catch (error) {
+    next(error);
   }
-  res.status(201).json({
-    message: "User created successfully",
-    result: results,
-  });
 };
 
 module.exports.weeklyAttendance = async (req, res, next) => {

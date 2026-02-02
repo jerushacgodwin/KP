@@ -3,6 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 module.exports = {
+  disabled: true,
   up: async (queryInterface, Sequelize) => {
     const dumpPath = path.join(__dirname, 'sql/init_dump_full.sql');
     console.log(`Reading dump from ${dumpPath}`);

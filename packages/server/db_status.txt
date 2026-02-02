@@ -1,0 +1,11 @@
+﻿Field	Type	Null	Key	Default	Extra
+id	int	NO	PRI	NULL	auto_increment
+user_id	varchar(255)	YES		NULL	
+action	varchar(255)	NO		NULL	
+module	varchar(255)	NO		NULL	
+entity_id	varchar(255)	YES		NULL	
+old_value	text	YES		NULL	
+new_value	text	YES		NULL	
+ip_address	varchar(255)	YES		NULL	
+user_agent	text	YES		NULL	
+created_at	datetime	NO		CURRENT_TIMESTAMP	DEFAULT_GENERATED
