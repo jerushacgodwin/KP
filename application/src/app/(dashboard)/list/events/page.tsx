@@ -1,8 +1,8 @@
-import FormModal from "@/components/FormModal";
-import Pagination from "@/components/Pagination";
-import Table from "@/components/Table";
-import TableSearch from "@/components/TableSearch";
-import { eventsData, role } from "@/lib/data";
+import FormModal from "@src/components/FormModal";
+import Pagination from "@src/components/Pagination";
+import Table from "@src/components/Table";
+import TableSearch from "@src/components/TableSearch";
+import { eventsData, role } from "@src/lib/data";
 import Image from "next/image";
 import Link from "next/link";
 
