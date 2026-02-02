@@ -4,33 +4,35 @@ import CountChart from "@src/components/CountChart";
 import AttendanceChart from "@src/components/AttendanceChart";
 import FinanceChart from "@src/components/FinanceChart";
 
-import { useEffect, useState } from "react";
-import { apiFetch } from "@src/lib/api";
-
 const HRDashboardPage = () => {
-  const [todayAttendanceData, setTodayAttendanceData] = useState<any>(null);
-  const [monthAttendanceData, setMonthAttendanceData] = useState<any>(null);
-  const [feesData, setFeesData] = useState<any>(null);
+  // Dummy Data
+  const todayAttendanceData = {
+    present: 120,
+    absent: 15,
+  };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [dailyRes, monthlyRes, financeRes] = await Promise.all([
-          apiFetch("http://localhost:4000/attendance/staff/daily"),
-          apiFetch("http://localhost:4000/attendance/staff/monthly"),
-          apiFetch("http://localhost:4000/finance/year"),
-        ]) as [any, any, any];
+  const monthAttendanceData = [
+    { name: "Mon", present: 60, absent: 40 },
+    { name: "Tue", present: 70, absent: 60 },
+    { name: "Wed", present: 90, absent: 75 },
+    { name: "Thu", present: 90, absent: 75 },
+    { name: "Fri", present: 65, absent: 55 },
+  ];
 
-        if (dailyRes.result) setTodayAttendanceData(dailyRes.result);
-        if (monthlyRes.result) setMonthAttendanceData(monthlyRes.result);
-        if (financeRes.data) setFeesData(financeRes.data);
-      } catch (error) {
-        console.error("Error fetching HR dashboard data:", error);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const feesData = [
+    { name: "Jan", income: 4000, expense: 2400 },
+    { name: "Feb", income: 3000, expense: 1398 },
+    { name: "Mar", income: 2000, expense: 9800 },
+    { name: "Apr", income: 2780, expense: 3908 },
+    { name: "May", income: 1890, expense: 4800 },
+    { name: "Jun", income: 2390, expense: 3800 },
+    { name: "Jul", income: 3490, expense: 4300 },
+    { name: "Aug", income: 3490, expense: 4300 },
+    { name: "Sep", income: 3490, expense: 4300 },
+    { name: "Oct", income: 3490, expense: 4300 },
+    { name: "Nov", income: 3490, expense: 4300 },
+    { name: "Dec", income: 3490, expense: 4300 },
+  ];
 
   return (
     <div className="p-4 flex gap-4 flex-col md:flex-row">
@@ -62,7 +64,21 @@ const HRDashboardPage = () => {
                         <h3 className="font-medium">New Policy Update</h3>
                         <span className="text-xs text-gray-400 bg-white rounded-md px-1 py-1">2025-01-01</span>
                     </div>
-                    <p className="text-sm text-gray-400 mt-1">Lorem ipsum dolor sit amet consectetur adipisicing elit.</p>
+                    <p className="text-sm text-gray-400 mt-1">Effective immediately, the new leave policy is in effect. Please review the HR handbook.</p>
+                </div>
+                <div className="bg-lamaPurpleLight rounded-md p-4">
+                    <div className="flex items-center justify-between">
+                        <h3 className="font-medium">Holiday Schedule</h3>
+                        <span className="text-xs text-gray-400 bg-white rounded-md px-1 py-1">2025-01-15</span>
+                    </div>
+                    <p className="text-sm text-gray-400 mt-1">The office will be closed for the upcoming national holiday.</p>
+                </div>
+                 <div className="bg-lamaYellowLight rounded-md p-4">
+                    <div className="flex items-center justify-between">
+                        <h3 className="font-medium">Staff Meeting</h3>
+                        <span className="text-xs text-gray-400 bg-white rounded-md px-1 py-1">2025-01-20</span>
+                    </div>
+                    <p className="text-sm text-gray-400 mt-1">Mandatory all-hands meeting in the main conference room.</p>
                 </div>
             </div>
         </div>

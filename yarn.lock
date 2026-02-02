@@ -6833,7 +6833,7 @@
   "resolved" "https://registry.npmjs.org/mute-stream/-/mute-stream-0.0.8.tgz"
   "version" "0.0.8"
 
-"mysql2@^3.14.1", "mysql2@^3.16.2":
+"mysql2@^3.16.2":
   "integrity" "sha512-JsqBpYNy7pH20lGfPuSyRSIcCxSeAIwxWADpV64nP9KeyN3ZKpHZgjKXuBKsh7dH6FbOvf1bOgoVKjSUPXRMTw=="
   "resolved" "https://registry.npmjs.org/mysql2/-/mysql2-3.16.2.tgz"
   "version" "3.16.2"
