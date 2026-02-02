@@ -133,9 +133,9 @@ const Menu = ({menulist,userDetail}: {menulist: any, userDetail: any}) => {
 
  const user = userDetail || userFromHook;
 
-  const menu=menulist
+  const menu = menulist || [];
  // console.log("Menu component rendered with role:", menulist);
-  if (!menu&&!user) {
+  if (!menu.length && !user) {
     return (
       <div className="h-screen flex items-center justify-center">
         <p className="text-gray-500">Loading menu...</p>
@@ -178,7 +178,12 @@ const Menu = ({menulist,userDetail}: {menulist: any, userDetail: any}) => {
                   key={item.name}
                   className="flex cursor-pointer items-center justify-center lg:justify-start gap-4 text-gray-500 py-2 md:px-2 rounded-md hover:bg-lamaSkyLight"
                 >
-                  <Image src={`/${(item.icon?.toLowerCase() || 'home')}.png`} alt="" width={20} height={20} />
+                  <Image 
+                    src={`/${item.icon?.replace(/^\//, '').replace(/\.png$/, '').toLowerCase() || 'home'}.png`} 
+                    alt="" 
+                    width={20} 
+                    height={20} 
+                  />
                   <span className="hidden lg:block">{(item.name || '').replace('List ','')}</span>
                 </Link>
                 </div>

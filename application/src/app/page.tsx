@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useEffect } from "react";
 import Loader from "../components/Loader";
 import Cookies from "js-cookie";
+import { savePermissions, deleteDatabase } from "@src/lib/indexedDB";
 
 const Homepage = () => {
   const router = useRouter();
@@ -40,6 +41,9 @@ const Homepage = () => {
     e.stopPropagation();
     setLoading(true);
     try {
+      // Aggressively delete old DB before even attempting login
+      await deleteDatabase();
+      
       const res = await fetch(`/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -49,6 +53,18 @@ const Homepage = () => {
       const data = await res.json();
 
       if (res.ok) {
+        console.log("LOGIN SUCCESS: Response data", data);
+        if (data.userpermission && data.userpermission.length > 0) {
+            console.log("LOGIN: Saving fresh permissions to new IndexedDB...");
+            try {
+                await savePermissions(data.userpermission);
+                console.log("LOGIN: Fresh permissions saved successfully!");
+            } catch (dbErr) {
+                console.error("LOGIN: Failed to save fresh IndexedDB", dbErr);
+            }
+        } else {
+            console.warn("LOGIN: No permissions found in response!");
+        }
         router.push(data.redirect); // Redirect based on role
       } else {
         alert(data.message || "Login failed");
@@ -71,11 +87,7 @@ const Homepage = () => {
         {/* Left Side - Form */}
         <div className="w-1/2 p-10">
           <div className="mb-6 text-center">
-            <button type="button" className="w-full flex items-center justify-center border rounded-md py-2 px-4 gap-2 hover:bg-gray-50 transition">
-              
-              <Image src="/google.svg" alt="" width={20} height={20}/>
-              Sign in with Google
-            </button>
+          
             <div className="my-4 flex items-center justify-between">
               <hr className="w-1/3 border-gray-300" />
               <span className="text-sm text-gray-500">Or sign in with email</span>

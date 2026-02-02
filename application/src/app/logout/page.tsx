@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { deleteDatabase } from "@src/lib/indexedDB";
 
 const LogoutPage = () => {
   const router = useRouter();
@@ -11,6 +12,7 @@ const LogoutPage = () => {
     const logout = async () => {
       try {
         await fetch("/api/logout");
+        await deleteDatabase();
         // Clear any client-side accessible cookies just in case
         Cookies.remove("log-user");
         Cookies.remove("log-menu");

@@ -34,10 +34,16 @@ type User = {
          const url = new URL(req.url);
   if (menuCookie && user?.role !== 1) {
     try {
-      const userMenu = JSON.parse(menuCookie) as any[];
+      const userMenu = JSON.parse(menuCookie) as string[];
       const path = url.pathname;
-      const isAllowed = userMenu.some((item: any) => item.slug === path);
       
+      // Implicitly allow dashboard roots based on role
+      let isAllowed = userMenu.includes(path);
+      if (user.role === 1 && path === '/admin') isAllowed = true;
+      if (user.role === 2 && path === '/teacher') isAllowed = true;
+      if (user.role === 3 && path === '/student') isAllowed = true;
+
+      // Handle sub-paths
       if (['/admin', '/teacher', '/student', '/hr', '/library', '/transport', '/hostel'].some(p => path.startsWith(p)) && !isAllowed) {
          return NextResponse.redirect(new URL('/', req.url));
       }
