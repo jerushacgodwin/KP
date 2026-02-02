@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  server:
+    build:
+      context: .
+      dockerfile: packages/server/Dockerfile
+    container_name: kp-server
+    command: npm run start
+    restart: always
+    environment:
+      - PORT=4000
+      - DB_HOST=host.docker.internal
+      - DB_USER=root
+      - DB_PASSWORD=${DB_PASSWORD:-root}
+      - DB_NAME=${DB_NAME:-sms_2_0}
+      - REDIS_URL=redis://kp-redis:6379
+      - JWT_SECRET=${JWT_SECRET:-supersecretkey}
+    ports:
+      - "4001:4000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    external: true

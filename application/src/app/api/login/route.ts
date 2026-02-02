@@ -22,57 +22,41 @@ interface MenuResponse {
 
 export async function POST(req: Request) {
   const body = await req.json();
+  console.log("DEBUG_LOGIN: Received login request", { email: body.email });
 
   try {
+    const loginUrl = `${apiUrl}/user/login`;
+    console.log("DEBUG_LOGIN: Fetching login from", loginUrl);
+    
     const response = await apiFetch<LoginResponse>(
-      `${apiUrl}/user/login`,
+      loginUrl,
       'POST',
       body
     );
-
+    console.log("DEBUG_LOGIN: Login API response received", { status: response ? 'OK' : 'NULL' });
 
     if (!response || !response.token || !response.user) {
+      console.error("DEBUG_LOGIN: Invalid response content", response);
       return NextResponse.json({ message: 'Invalid user' }, { status: 400 });
     }
 
+    const roleUrl = `${apiUrl}/user/role`;
+    console.log("DEBUG_LOGIN: Fetching roles from", roleUrl);
     const menuResponse = await apiFetch<MenuResponse>(
-      `${apiUrl}/user/role`,
+      roleUrl,
       'POST',
       { role: response.user.role }
     );
+    console.log("DEBUG_LOGIN: Role API response received");
     
-    
-    if (!menuResponse || !menuResponse.userpermission || menuResponse.userpermission.length === 0) {
-      console.error("ERROR: No permissions returned from API!");
+    if (!menuResponse || !menuResponse.userpermission) {
+      console.error("DEBUG_LOGIN: No permissions returned from API!", menuResponse);
       return NextResponse.json({ message: 'Failed to fetch user permissions' }, { status: 500 });
     }
 
     const maxAge = body.remember ? 60 * 60 * 24 * 30 : 3600;
 
-    const cookie = serialize('auth-token', response.token, {
-      httpOnly: true,
-      path: '/',
-      maxAge: maxAge,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-    });
-
-    const userData = serialize('log-user', JSON.stringify(response.user), {
-      httpOnly: false,
-      path: '/',
-      maxAge: maxAge,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-    });
-
-    const userMenu = serialize('log-menu', JSON.stringify(menuResponse.userpermission), {
-      httpOnly: false,
-      path: '/',
-      maxAge: maxAge,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-    });
-
+    // RESTORED: roleName definition
     let roleName = 'student';
     switch (response.user.role) {
       case 3:
@@ -86,17 +70,45 @@ export async function POST(req: Request) {
         break;
     }
 
+    // Process and deduplicate permissions
+    let compactPermissions: any[] = [];
+    try {
+        if (Array.isArray(menuResponse.userpermission)) {
+            const rawPermissions = menuResponse.userpermission
+              .filter((p: any) => response.user.role == 1 || p.group_id == response.user.role);
+            
+            // Deduplicate by slug
+            const uniquePermissionsMap = new Map();
+            rawPermissions.forEach((p: any) => {
+                if (!uniquePermissionsMap.has(p.slug)) {
+                    uniquePermissionsMap.set(p.slug, {
+                        slug: p.slug,
+                        name: p.name,
+                        icon: p.icon,
+                        group: p.group,
+                        group_id: p.group_id
+                    });
+                }
+            });
+            
+            compactPermissions = Array.from(uniquePermissionsMap.values());
+            console.log("DEBUG_LOGIN: Permissions processed. Count:", compactPermissions.length);
+        } else {
+             console.warn("DEBUG_LOGIN: userpermission is not an array", menuResponse.userpermission);
+        }
+    } catch (filterError) {
+        console.error("DEBUG_LOGIN: ERROR during permission filtering:", filterError);
+    }
+
     const responseData = { 
         message: 'Success', 
         redirect: `/${roleName}`,
-        // Return sensitive data for client-side fallback (Electron)
         token: response.token,
         user: response.user,
-        userpermission: menuResponse.userpermission
+        userpermission: compactPermissions 
     };
-    
-    
-    // Create response with all cookies using NextResponse
+
+    console.log("DEBUG_LOGIN: Sending success response");
     const finalResponse = NextResponse.json(responseData, { status: 200 });
     
     // CRITICAL: Use the cookies() method which properly handles multiple cookies
@@ -120,28 +132,12 @@ export async function POST(req: Request) {
       secure: false
     });
     
-    // Reduce permissions data size - only store essential fields
-    let compactPermissions: any[] = [];
-    try {
-        // console.log("DEBUG: Processing permissions for role:", response.user.role);
-        if (Array.isArray(menuResponse.userpermission)) {
-            compactPermissions = menuResponse.userpermission
-              .filter((p: any) => p.group_id == response.user.role) 
-              .map((p: any) => ({
-                slug: p.slug,
-                name: p.name,
-                icon: p.icon,
-                group: p.group,
-                group_id: p.group_id
-            }));
-            // console.log(`DEBUG: Filtered permissions count: ${compactPermissions.length}`);
-        }
-    } catch (filterError) {
-        console.error("DEBUG ERROR during permission filtering:", filterError);
-    }
+    // Store ONLY minimal slugs in the cookie for Middleware security
+    const minimalisticSlugs = compactPermissions.map((p: any) => p.slug);
+    
     finalResponse.cookies.set({
       name: 'log-menu',
-      value: JSON.stringify(compactPermissions),
+      value: JSON.stringify(minimalisticSlugs),
       httpOnly: false,
       path: '/',
       maxAge: maxAge,
@@ -149,10 +145,10 @@ export async function POST(req: Request) {
       secure: false
     });
     
-    
     return finalResponse;
   } catch (err: any) {
-    console.error("CRITICAL Login Error:", err.message);
+    console.error("CRITICAL Login Error:", err);
+    console.error("CRITICAL Login Error Message:", err.message);
     const status = err.status || 500;
     return NextResponse.json({ message: err.message || "Internal Server Error" }, { status });
   }
