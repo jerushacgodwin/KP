@@ -196,7 +196,6 @@ const Menu = ({menulist,userDetail}: {menulist: any, userDetail: any}) => {
                <span className="hidden lg:block">Events</span>
              </Link>
          )}
-         
          </div>
     
     </div>

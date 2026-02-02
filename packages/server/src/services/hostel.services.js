@@ -31,6 +31,7 @@ module.exports.updateHostelFee = async (id, data) => {
   if (!fee) throw new Error("Hostel fee record not found");
   return await fee.update(data);
 };
+
 // --- Attendance ---
 module.exports.createAttendance = async (data) => {
   return await HostelAttendance.create(data);

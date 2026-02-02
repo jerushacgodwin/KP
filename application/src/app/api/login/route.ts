@@ -123,7 +123,7 @@ export async function POST(req: Request) {
     // Reduce permissions data size - only store essential fields
     let compactPermissions: any[] = [];
     try {
-        console.log("DEBUG: Processing permissions for role:", response.user.role);
+        // console.log("DEBUG: Processing permissions for role:", response.user.role);
         if (Array.isArray(menuResponse.userpermission)) {
             compactPermissions = menuResponse.userpermission
               .filter((p: any) => p.group_id == response.user.role) 
@@ -134,15 +134,11 @@ export async function POST(req: Request) {
                 group: p.group,
                 group_id: p.group_id
             }));
-            console.log(`DEBUG: Filtered permissions count: ${compactPermissions.length} (from ${menuResponse.userpermission.length})`);
-        } else {
-            console.error("DEBUG ERROR: menuResponse.userpermission is NOT an array:", typeof menuResponse.userpermission);
+            // console.log(`DEBUG: Filtered permissions count: ${compactPermissions.length}`);
         }
     } catch (filterError) {
         console.error("DEBUG ERROR during permission filtering:", filterError);
-        // Fallback to empty array prevents 500 error
     }
-
     finalResponse.cookies.set({
       name: 'log-menu',
       value: JSON.stringify(compactPermissions),
@@ -154,7 +150,6 @@ export async function POST(req: Request) {
     });
     
     
-    return finalResponse;
     return finalResponse;
   } catch (err: any) {
     console.error("CRITICAL Login Error:", err.message);

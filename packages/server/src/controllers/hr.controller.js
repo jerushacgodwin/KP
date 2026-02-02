@@ -52,7 +52,6 @@ module.exports.getAttendance = async (req, res, next) => {
   }
 };
 
-
 module.exports.markAttendance = async (req, res, next) => {
   try {
     const attendance = await hrService.markAttendance(req.body);

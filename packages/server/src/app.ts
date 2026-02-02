@@ -50,7 +50,6 @@ app.use('/events', eventRoutes);
 app.use('/class', iclassRoutes);
 app.use('/hr', hrRoutes);
 app.use('/library', libraryRoutes);
-
 app.use('/transport', transportRoutes);
 app.use('/hostel', hostelRoutes);
 app.use('/attendance', attendanceRoutes);

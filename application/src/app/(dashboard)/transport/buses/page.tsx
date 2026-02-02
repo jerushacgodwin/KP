@@ -33,8 +33,6 @@ type TransportStudent = {
     status: string;
 };
 
-
-
 const TransportPage = () => {
     const [activeTab, setActiveTab] = useState("buses"); // buses, stops, students
     const [loading, setLoading] = useState(false);
@@ -226,14 +224,12 @@ const TransportPage = () => {
                              </select>
                              <select className="p-2 rounded" required onChange={e=>{
                                  setNewStudent({...newStudent, bus_id: e.target.value});
-                                 // Clear root choice if bus changes?
                              }}>
                                  <option value="">Select Bus</option>
                                  {buses.map(b => <option key={b.bus_id} value={b.bus_id}>{b.bus_title}</option>)}
                              </select>
                               <select className="p-2 rounded" required onChange={e=>setNewStudent({...newStudent, root_id: parseInt(e.target.value)})}>
                                  <option value="">Select Drop Stop</option>
-                                 {/* Only show roots for selected bus if possible. Simple filter: */}
                                  {buses.find(b => b.bus_id === newStudent.bus_id)?.roots?.map(r => (
                                      <option key={r.s_no} value={r.s_no}>{r.location} - {r.arrival_time}</option>
                                  ))}

@@ -35,6 +35,7 @@ const columns = [
   {
     header: "Author",
     accessor: "BookAuthor",
+    className: "hidden md:table-cell",
   },
   {
     header: "Category",
@@ -143,7 +144,7 @@ const LibraryPage = () => {
         >
             <td className="p-4 font-semibold">{item.BookName}</td>
             <td>{item.BookCode}</td>
-            <td className="">{item.BookAuthor}</td>
+            <td className="hidden md:table-cell">{item.BookAuthor}</td>
             <td className="hidden lg:table-cell">{item.category?.BookCategory || "General"}</td>
             <td className="hidden lg:table-cell">
                 <span className={`px-2 py-1 rounded-md text-xs ${
@@ -178,6 +179,12 @@ const LibraryPage = () => {
                           className="flex items-center justify-center gap-2 bg-lamaYellow text-black px-4 py-2 rounded-md text-xs"
                         >
                             + Add Book
+                        </button>
+                        <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
+                            <Image src="/filter.png" alt="" width={14} height={14} />
+                        </button>
+                        <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
+                            <Image src="/sort.png" alt="" width={14} height={14} />
                         </button>
                     </div>
                 </div>

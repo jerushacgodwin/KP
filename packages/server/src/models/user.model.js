@@ -10,10 +10,7 @@ const User = sequelize.define('user', {
   },
   name: {
     type: DataTypes.STRING,
-    allowNull: true // Set to true initially to avoid breaking existing reads if null, though DB says no default. 
-    // Actually error said "Field 'name' doesn't have a default value", implying it is NOT NULL. 
-    // But safely, I should mark it as allowNull: false if I want to enforce it, or just match DB.
-    // I will set it to DataTypes.STRING.
+    allowNull: true
   },
   school_id: { 
     type: DataTypes.STRING, 

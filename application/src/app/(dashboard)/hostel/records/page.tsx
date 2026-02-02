@@ -3,6 +3,7 @@
 import Pagination from "@src/components/Pagination";
 import Table from "@src/components/Table";
 import TableSearch from "@src/components/TableSearch";
+import { role } from "@src/lib/data";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@src/lib/api";
@@ -142,8 +143,8 @@ const HostelPage = () => {
 
     const renderRecordRow = (item: HostelRecord) => (
         <tr key={item.HostelRecordId} className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight">
-            <td className="p-4">{item.student?.name || item.StudentId}</td>
-            <td>{item.HostelTermNo}</td>
+            <td className="p-4">{item.student?.name || "Student #" + item.StudentId}</td>
+            <td>Term {item.HostelTermNo}</td>
             <td>${item.HostelTermFee}</td>
             <td className="hidden lg:table-cell">{item.TermPaidDate}</td>
         </tr>
@@ -201,9 +202,14 @@ const HostelPage = () => {
              <div className="flex items-center justify-between mb-4">
                  <TableSearch />
                  <div className="flex items-center gap-4">
-                     <button onClick={() => setShowForms(!showForms)} className="bg-lamaYellow text-black px-4 py-2 rounded-md text-xs font-semibold">
-                        + Add {activeTab === 'records' ? 'Student' : activeTab === 'leaves' ? 'Leave' : activeTab === 'attendance' ? 'Attendance' : ''}
-                     </button>
+                     {(role === "admin" || role === "teacher") && (
+                         <button onClick={() => setShowForms(!showForms)} className="bg-lamaYellow text-black px-4 py-2 rounded-md text-xs font-semibold">
+                            + Add {activeTab === 'records' ? 'Student' : activeTab === 'leaves' ? 'Leave' : activeTab === 'attendance' ? 'Attendance' : ''}
+                         </button>
+                     )}
+                     <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
+                        <Image src="/filter.png" alt="" width={14} height={14} />
+                    </button>
                  </div>
              </div>
 
