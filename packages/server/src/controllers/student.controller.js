@@ -1,5 +1,6 @@
 const studentService = require("../services/student.services");
 const {schema} = require("./student.schema");
+const AuditService = require("../services/audit.service");
 
 module.exports.createStudent = async (req, res, next) => {
   try {
@@ -14,6 +15,7 @@ module.exports.createStudent = async (req, res, next) => {
       message: "Student created successfully",
       result: student, // not student.present, unless you really want only that
     });
+    await AuditService.logAction(req, "CREATE", "STUDENT", student.id, null, parsed);
   } catch (err) {
     // Handle zod validation errors
     if (err.name === "ZodError") {

@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 const userService = require("../services/user.services");
 const UserRole = require("../models/user.role.model");
+const AuditService = require("../services/audit.service");
 
 module.exports.registerUser = async (req, res, next) => {
   const error = validationResult(req);
@@ -22,6 +23,7 @@ module.exports.registerUser = async (req, res, next) => {
       role: user.UserRole ? user.UserRole.get("role_id") : null,
     },
   });
+  await AuditService.logAction(req, "REGISTER", "USER", user.id, null, { username: user.username, email: user.email });
 };
 module.exports.login = async (req, res, next) => {
   const error = validationResult(req);
@@ -44,6 +46,7 @@ module.exports.login = async (req, res, next) => {
         user_id: user.UserRole ? user.UserRole.get("user_id") : null,
       },
     });
+    await AuditService.logAction(req, "LOGIN", "USER", user.id);
   } catch (error) {
     console.error("Login Controller Error:", error);
     return res.status(error.message === 'Check Email OR Password' ? 401 : 500).json({ message: error.message || "Authentication failed" });

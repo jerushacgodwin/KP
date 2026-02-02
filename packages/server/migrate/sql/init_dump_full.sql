@@ -2077,3 +2077,18 @@ COMMIT;
 INSERT INTO schools (code, name, address) VALUES ('SCH001', 'Knowledge Pitch', 'Default Address');
 INSERT INTO users (school_id, name, username, email, password, status, created_at, updated_at) VALUES ('SCH001', 'Admin User', 'admin', 'admin@knowledgepitch.com', '$2a$10$g3tde7c7lvNLTMnGjUVd3erqeqQ6h5T9ozlXAh1NhZoW9NNADrHUi', '1', NOW(), NOW());
 INSERT INTO user_roles (user_id, role_id, created_at, updated_at) SELECT id, 1, NOW(), NOW() FROM users WHERE username = 'admin';
+
+-- Admin Data Insertion
+INSERT INTO schools (code, name, address) VALUES ('SCH001', 'Knowledge Pitch', 'Default Address');
+INSERT INTO users (school_id, name, username, email, password, status, created_at, updated_at) VALUES ('SCH001', 'Admin User', 'admin', 'admin@knowledgepitch.com', '$2a$10$ODVDZGopGMDQb.pyauiW5e9c6ge6GD5RlZRbXWDIMiK5KA7jlTBsa', '1', NOW(), NOW());
+INSERT INTO user_roles (user_id, role_id, created_at, updated_at) SELECT id, 1, NOW(), NOW() FROM users WHERE username = 'admin';
+
+-- Admin Data Insertion
+INSERT INTO schools (code, name, address) VALUES ('SCH001', 'Knowledge Pitch', 'Default Address');
+INSERT INTO users (school_id, name, username, email, password, status, created_at, updated_at) VALUES ('SCH001', 'Admin User', 'admin', 'admin@knowledgepitch.com', '$2a$10$yRNyho9Mn.govDcEZ7OU8eNI33XskzMCaZ4isvMXYi1QA7sL8/Lm.', '1', NOW(), NOW());
+INSERT INTO user_roles (user_id, role_id, created_at, updated_at) SELECT id, 1, NOW(), NOW() FROM users WHERE username = 'admin';
+
+-- Admin Data Insertion
+INSERT INTO schools (code, name, address) VALUES ('SCH001', 'Knowledge Pitch', 'Default Address');
+INSERT INTO users (school_id, name, username, email, password, status, created_at, updated_at) VALUES ('SCH001', 'Admin User', 'admin', 'admin@knowledgepitch.com', '$2a$10$q5qGt8WeYHWsp9KMVL/Jyuzz2Hnl8DApZxB8CvATavv1z8xqMLkY2', '1', NOW(), NOW());
+INSERT INTO user_roles (user_id, role_id, created_at, updated_at) SELECT id, 1, NOW(), NOW() FROM users WHERE username = 'admin';
