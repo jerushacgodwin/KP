@@ -17,6 +17,7 @@ import transportRoutes from './routes/transport.routes';
 import hostelRoutes from './routes/hostel.routes';
 import attendanceRoutes from './routes/attendance.routes';
 import examRoutes from './routes/exam.routes';
+import chapterRoutes from './routes/chapter.routes';
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 connectDb();
@@ -30,7 +31,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'src/uploads')));
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:3000', // Explicitly allow frontend origin
+  origin: ['http://localhost:3000', 'http://localhost:3001'], // Explicitly allow frontend origin
   credentials: true // Allow cookies to be sent/received
 }));
 app.use(express.json());
@@ -54,6 +55,7 @@ app.use('/transport', transportRoutes);
 app.use('/hostel', hostelRoutes);
 app.use('/attendance', attendanceRoutes);
 app.use('/exams', examRoutes);
+app.use('/chapters', chapterRoutes);
 
 // Global Error Handler
 app.use((err: any, req: Request, res: Response, next: any) => {

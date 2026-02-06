@@ -61,7 +61,7 @@ const StudentPage = () => {
         <div className="h-full bg-white p-4 rounded-md">
            <div className="flex justify-between items-center mb-4">
               <h1 className="text-xl font-semibold">Schedule ({userTimeTable[0]?.class || 'No Class'})</h1>
-              <Link href="/student/lessons" className="bg-lamaSky text-white px-4 py-2 rounded-md text-sm hover:bg-black">
+              <Link href="/lessons/student" className="bg-lamaSky text-white px-4 py-2 rounded-md text-sm hover:bg-black">
                  View My Lessons
               </Link>
            </div>
