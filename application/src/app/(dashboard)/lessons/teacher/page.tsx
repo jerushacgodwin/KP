@@ -32,16 +32,8 @@ const lessonSchema = z.object({
     .number({ invalid_type_error: "Class is required!" })
     .min(1, { message: "Class is required!" }),
      teacher_id: z.number().optional(), 
-  img: z
-    .preprocess(
-      (val) => (val instanceof FileList ? val[0] : val),
-      z
-        .custom<File>((file) => file instanceof File && file.size > 0, {
-          message: "Invalid file!",
-        })
-        .optional()
-    )
-    .optional(),
+  img: z.preprocess((val) => (val instanceof FileList ? val[0] : val), z.custom<File>().optional()).optional(),
+  file: z.preprocess((val) => (val instanceof FileList ? val[0] : val), z.custom<File>().optional()).optional(),
   accordionData: z
     .array(
       z.object({

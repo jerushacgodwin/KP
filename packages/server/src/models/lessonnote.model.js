@@ -13,6 +13,10 @@ const LessonNote = sequelize.define(
       type: DataTypes.JSON,
       defaultValue: []
     },
+    file_path: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     created_at: {
       type: DataTypes.DATE,
       allowNull: true,
@@ -65,6 +69,7 @@ LessonNote.LessonNoteForm = (parsed, files = {}) => {
     chapter_title,
     accordion_data: parsed.accordionData, 
     attachment: attachmentFile,
+    file_path: files.file?.[0] ? files.file[0].filename : null,
     video_urls: video_urls,
     created_at: new Date(),
     updated_at: new Date(),
