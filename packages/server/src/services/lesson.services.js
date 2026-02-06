@@ -17,7 +17,7 @@ module.exports.createLesson = async (data,file) => {
 module.exports.getAllLessons = async (class_id, subject_id) => {
     try {
         const lessons = await lessonnote.findAll({
-            attributes: ['id', 'accordion_data', 'lesson_title','chapter_title', 'subject_id', 'class_id', 'created_at', 'video_urls'],
+            attributes: ['id', 'accordion_data', 'lesson_title','chapter_title', 'subject_id', 'class_id', 'created_at', 'video_urls', 'file_path'],
             where: {
                 [Op.and]: [
                             ...(subject_id ? [{ subject_id: subject_id }] : []),
@@ -60,6 +60,11 @@ module.exports.updateLesson = async (id, data, file) => {
         // If file is provided, update attachment
         if (file && file.img && file.img[0]) {
             updateData.attachment = file.img[0].filename;
+        }
+
+        // If file is provided, update file_path
+        if (file && file.file && file.file[0]) {
+             updateData.file_path = file.file[0].filename;
         }
 
         // Accordion data formatting similar to creating

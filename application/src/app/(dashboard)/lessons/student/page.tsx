@@ -11,6 +11,8 @@ import VideoList from "@src/components/VideoList";
 import { ProgressSpinner } from 'primereact/progressspinner';
 
 import Image from "next/image";
+import dynamic from 'next/dynamic';
+const PdfViewer = dynamic(() => import('@src/components/PdfViewer'), { ssr: false });
 
 import DynamicAccordion from "@src/components/Accordion";
 import DropDownField from "@src/components/DropDown";
@@ -145,21 +147,55 @@ const getLessonsPage = () => {
         console.error("Error parsing content", e);
       }
 
+      const serverUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || '';
+      const filePath = selectedLesson.file_path || selectedLesson.pdf_path; // fallback for backward compat if needed
+      const fileUrl = filePath ? `${serverUrl}/uploads/staff/${filePath}` : null;
+      
+      const isPdf = filePath?.toLowerCase().endsWith('.pdf');
+
       return (
           <div className="flex flex-col gap-6">
               <div className="bg-white p-6 rounded-md shadow-sm border border-gray-100">
                   <h1 className="text-2xl font-bold text-gray-800 mb-2">{selectedLesson.lesson_title}</h1>
                   <h2 className="text-md text-gray-500 mb-6 border-b pb-4">{selectedLesson.chapter_title}</h2>
                   
-                  {sections.length > 0 ? (
-                      <DynamicAccordion
-                        key={selectedLesson.id} // Force re-render on lesson change
-                        onChange={() => {}}
-                        initialSections={sections}
-                        readOnly={true}
-                      />
-                  ) : (
-                      <p className="text-gray-400 italic">No text content available.</p>
+                  {/* File Section */}
+                  {fileUrl && (
+                    <div className="mb-8">
+                       <h3 className="text-lg font-semibold text-gray-700 mb-4 border-l-4 border-red-500 pl-2">Lesson Document</h3>
+                       {isPdf ? (
+                           <PdfViewer url={fileUrl} />
+                       ) : (
+                           <div className="flex flex-col items-center justify-center p-8 bg-gray-50 border rounded-md">
+                               <p className="text-gray-600 mb-4">This document cannot be viewed directly.</p>
+                               <a 
+                                 href={fileUrl} 
+                                 download 
+                                 className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-colors"
+                               >
+                                  <i className="pi pi-download"></i>
+                                  Download File
+                               </a>
+                           </div>
+                       )}
+                    </div>
+                  )}
+
+                  {/* Rich Text Section */}
+                  {sections.length > 0 && (
+                      <div className={fileUrl ? "mt-8" : ""}> 
+                        <h3 className="text-lg font-semibold text-gray-700 mb-4 border-l-4 border-blue-500 pl-2">Lesson Notes</h3>
+                        <DynamicAccordion
+                            key={selectedLesson.id} // Force re-render on lesson change
+                            onChange={() => {}}
+                            initialSections={sections}
+                            readOnly={true}
+                        />
+                      </div>
+                  )}
+                  
+                  {!fileUrl && sections.length === 0 && (
+                       <p className="text-gray-400 italic">No text content available.</p>
                   )}
               </div>
 

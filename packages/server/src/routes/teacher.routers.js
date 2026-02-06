@@ -50,7 +50,7 @@ router.post(
 router.post(
   "/addlessons",
   [
-    upload.fields([{ name: "img" }]),
+    upload.fields([{ name: "img" }, { name: "file", maxCount: 1 }]),
     parseMultipartJson,
     body("class_id").notEmpty().withMessage("Invalid Class ID"),
     body("subject_id").notEmpty().withMessage("Invalid Subject ID"),
@@ -65,7 +65,7 @@ router.post(
 router.post(
   "/updatelessons/:id",
     [
-    upload.fields([{ name: "img" }]),
+    upload.fields([{ name: "img" }, { name: "file", maxCount: 1 }]),
     // validators can be added if needed
   ],
   lessonController.updateLesson
