@@ -13,6 +13,7 @@ type DropDownProps = {
   optionLabel?: string;
   placeholder?: string;
   error?: FieldError;
+  disabled?: boolean;
 };
 
 const DropDownField = ({
@@ -25,6 +26,7 @@ const DropDownField = ({
   optionLabel = "label",
   placeholder = "Select an option",
   error,
+  disabled,
 }: DropDownProps) => {
   return (
     <div className="flex flex-col gap-2 w-full ">
@@ -47,6 +49,7 @@ const DropDownField = ({
             className={`ring-[1.5px] ring-gray-300 rounded-md text-sm w-full ${
               error ? "p-invalid" : ""
             }`}
+            disabled={disabled}
           />
         )}
       />
