@@ -2,12 +2,11 @@ const { Student } = require("../models/studentStaff.utility.model");
 const Events = require("../models/event.model");
 const { Op, fn, col, where } = require("sequelize");
 
-console.log("EventServices: Student Model Import:", Student ? "Found" : "Missing", "Is Model:", !!Student?.findOne);
 
 //const currentYear = new Date().getFullYear();
 module.exports.getEventList = async (email, role, user_id) => {
   try {
-    //console.log(email, "email in event service");
+    //
     const whereCondition = {
       // event_time: {
       //   [Op.gte]: new Date(), // today and onwards
@@ -20,8 +19,7 @@ module.exports.getEventList = async (email, role, user_id) => {
     } else if (email || user_id) {
        // logic for student filtering
        // ... existing code ...
-      console.log(`Fetching student for email: ${email}, user_id: ${user_id}`);
-      
+            
       let student;
       if (user_id) {
           student = await Student.findOne({ where: { user_id } });
@@ -35,8 +33,7 @@ module.exports.getEventList = async (email, role, user_id) => {
         // throw new Error("Student not found"); 
          whereCondition.class_id = null; // Show only global events if student profile missing
       } else {
-         console.log("Student found:", student.id, "Class:", student.class_id, "Type:", typeof student.class_id);
-         
+                  
          const classId = student.class_id;
          whereCondition[Op.or] = [
             { class_id: classId },
@@ -50,15 +47,12 @@ module.exports.getEventList = async (email, role, user_id) => {
     // const fs = require('fs');
     // const path = require('path');
     
-    console.log(`Fetching events for: ${email}, Role: ${role}`); 
-
+    
     const events = await Events.findAll({
       where: whereCondition,
     });
-    console.log("Found events:", events.length);
-    if (email) {
-         console.log(`Where Condition: ${JSON.stringify(whereCondition)}`);
-    }
+        if (email) {
+             }
     return events;
   } catch (error) {
     console.error("Error fetching Event :", error);

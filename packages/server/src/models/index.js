@@ -66,8 +66,7 @@ Object.keys(models).forEach((name) => {
   if (typeof model.associate === "function") {
     model.associate(models);
     // eslint-disable-next-line no-console
-    console.log(`Associated: ${name}`);
-  }
+      }
 });
 
 // Export a unified db object

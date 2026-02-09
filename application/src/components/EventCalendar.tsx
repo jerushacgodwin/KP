@@ -41,7 +41,7 @@ const EventCalendar = () => {
        }
    }
 
-   // console.log("EventCalendar: User is", user);
+   // 
    if (!user?.email) {
      console.warn("EventCalendar: No user email, skipping fetch");
      return;

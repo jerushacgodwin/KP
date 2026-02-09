@@ -53,15 +53,13 @@ const BillingPage = () => {
   }, [id]);
 
  const handleDataChange = (data: { items: any[]; total: number }) => {
-  console.log("Receipt Data:", data);
-    setReceiptData(data);
+      setReceiptData(data);
   };
 
 
 const handleSubmit = async () => {
   // Handle form submission logic here
-  console.log("Submitting Receipt Data:", receiptData);
-   apiFetch(`${apiUrl}/finance/addfee`, "POST", { data: receiptData });
+     apiFetch(`${apiUrl}/finance/addfee`, "POST", { data: receiptData });
 };
 
   return (

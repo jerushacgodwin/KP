@@ -17,7 +17,7 @@ const fieldsToExtract = [
 module.exports.createStudent = async (data,file)=>{
    const user_id = await getNextSequenceValue('user_id');
  const studentData = Student.studentForm(data, file);
-//console.log(studentData)
+//
     studentData.user_id = user_id;
 const created = await Student.create(studentData);
   return created;
@@ -53,8 +53,8 @@ if (search) {
  ]
 }
 
-//console.log('Before association - Student associations:', Object.keys(Student.associations || {}));
-//console.log('Before association - iClass associations:', Object.keys(iClass.associations || {}));
+//
+//
 // Handle Sorting
 let orderClause = [["user_id", "ASC"]];
 if (studentDetail.sortField && studentDetail.sortOrder) {
@@ -85,7 +85,7 @@ const students = await Student.findAndCountAll({
   order: orderClause,
 
 });
-//console.log('Students fetched:', students.rows[0].feeStructures);
+//
      const studentData = students.rows.map(student => {
             const plainStudent = student.toJSON();
             const merged = extractAndMergeNestedData(plainStudent, fieldsToExtract);
@@ -120,7 +120,7 @@ const students = await Student.findAndCountAll({
                 total_due
             };
         });
-//console.log('Extracted Student Data:', studentData);
+//
     return {
       data: studentData,
       total: students.count,

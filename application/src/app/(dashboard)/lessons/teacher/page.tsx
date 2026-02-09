@@ -178,8 +178,7 @@ const AddLessonsPage = () => {
             {},
             true
           );
-          console.log("Form valid, submitting:", addLesson);
-          // e.g. send to server, clear form, etc.
+                    // e.g. send to server, clear form, etc.
           // Reset video urls
           setVideoUrls([]);
           setNewVideoUrl("");
@@ -198,7 +197,7 @@ const AddLessonsPage = () => {
       }
   };
   const setSelectedClass = (value: { selected: any }) => {
-    //console.log("Selected class:", value.selected);
+    //
     setDropDownSelected(value.selected);
   };
   const setSelectedSubject = (value: { selected: any }) => {

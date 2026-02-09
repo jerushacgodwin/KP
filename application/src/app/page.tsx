@@ -19,8 +19,7 @@ const Homepage = () => {
 
   useEffect(() => {
     setHydrated(true);
-    console.log("LOGIN PAGE HYDRATED");
-    const userCookie = Cookies.get("log-user");
+        const userCookie = Cookies.get("log-user");
     if (userCookie) {
       try {
         const user = JSON.parse(userCookie);
@@ -53,13 +52,10 @@ const Homepage = () => {
       const data = await res.json();
 
       if (res.ok) {
-        console.log("LOGIN SUCCESS: Response data", data);
-        if (data.userpermission && data.userpermission.length > 0) {
-            console.log("LOGIN: Saving fresh permissions to new IndexedDB...");
-            try {
+                if (data.userpermission && data.userpermission.length > 0) {
+                        try {
                 await savePermissions(data.userpermission);
-                console.log("LOGIN: Fresh permissions saved successfully!");
-            } catch (dbErr) {
+                            } catch (dbErr) {
                 console.error("LOGIN: Failed to save fresh IndexedDB", dbErr);
             }
         } else {

@@ -13,8 +13,7 @@ module.exports.getStudentAttendance = async (email, user_id) => {
   try {
     const startOfMonth = moment().startOf("month").format("YYYY-MM-DD");
     const endOfMonth = moment().endOf("month").format("YYYY-MM-DD");
-    console.log(`AttendanceService: Date Range: ${startOfMonth} to ${endOfMonth}`);
-    
+        
     if (!email && !user_id) {
       throw new Error("All field Required");
     }
@@ -27,11 +26,9 @@ module.exports.getStudentAttendance = async (email, user_id) => {
     }
 
     if (!Student) {
-      console.log("AttendanceService: Student not found for", email || user_id);
-      throw new Error("Student not found");
+            throw new Error("Student not found");
     }
-    console.log(`AttendanceService: Found Student. UserID=${Student.user_id}, Name=${Student.name}`);
-    
+        
     const [presentCount, absentCount] = await Promise.all([
       studentatt.count({
         where: {
@@ -48,8 +45,7 @@ module.exports.getStudentAttendance = async (email, user_id) => {
         },
       }),
     ]);
-    console.log(`AttendanceService: Counts Found - Present=${presentCount}, Absent=${absentCount}`);
-    return {
+        return {
       present: presentCount,
       absent: absentCount,
     };
@@ -64,8 +60,7 @@ module.exports.getWeeklyAttendance = async () => {
     const startOfWeek = moment().startOf("isoWeek").format("YYYY-MM-DD");
     const endOfWeek = moment().endOf("isoWeek").format("YYYY-MM-DD");
 
-    console.log(`Fetching student weekly attendance from ${startOfWeek} to ${endOfWeek}`);
-
+    
     const results = await studentatt.findAll({
       attributes: [
         [fn("DATE_FORMAT", col("attendance_date"), "%a"), "day"],
@@ -225,7 +220,7 @@ module.exports.getStudentAttendanceList = async ({
     raw: true,
   });
   return studentsWithAttendance.map((student) => (
-    //console.log("Student:",  student["attendances.present"]),
+    //,
     {
     
     user_id: student.user_id,
@@ -244,7 +239,7 @@ module.exports.setStudentAttendance = async (data
 ) => {
   try {
     
-     //console.log("Data received:", data);
+     //
     const { class_id, attendance_date, user_id, present } = data;
     if (!class_id || !attendance_date || !user_id || present === undefined) {
       throw new Error("All fields are required");
@@ -265,8 +260,7 @@ module.exports.setStudentAttendance = async (data
       return existingAttendance;
       
     } else {
-      console.log("Creating new attendance record",present,class_id);
-
+      
       const newAttendance = await studentatt.create({
         academic_year_id: 1,  
         registration_id: user_id,       
@@ -290,8 +284,7 @@ module.exports.getStaffWeeklyAttendance = async () => {
     const startOfWeek = moment().startOf("isoWeek").format("YYYY-MM-DD");
     const endOfWeek = moment().endOf("isoWeek").format("YYYY-MM-DD");
 
-    console.log(`Fetching staff weekly attendance from ${startOfWeek} to ${endOfWeek}`);
-
+    
     const results = await staffatt.findAll({
       attributes: [
         [fn("DATE_FORMAT", col("attendance_date"), "%a"), "day"], // Mon, Tue, Wed
@@ -362,8 +355,7 @@ module.exports.getMonthlyAttendance = async () => {
     const startOfMonth = moment().startOf("month").format("YYYY-MM-DD");
     const endOfMonth = moment().endOf("month").format("YYYY-MM-DD");
 
-    console.log(`Fetching monthly attendance from ${startOfMonth} to ${endOfMonth}`);
-
+    
     const results = await studentatt.findAll({
       attributes: [
         [fn("DATE_FORMAT", col("attendance_date"), "%d"), "day"],
@@ -404,8 +396,7 @@ module.exports.getStaffMonthlyAttendance = async () => {
     const startOfMonth = moment().startOf("month").format("YYYY-MM-DD");
     const endOfMonth = moment().endOf("month").format("YYYY-MM-DD");
 
-    console.log(`Fetching staff monthly attendance from ${startOfMonth} to ${endOfMonth}`);
-
+    
     const results = await staffatt.findAll({
       attributes: [
         [fn("DATE_FORMAT", col("attendance_date"), "%d"), "day"],

@@ -22,33 +22,28 @@ interface MenuResponse {
 
 export async function POST(req: Request) {
   const body = await req.json();
-  console.log("DEBUG_LOGIN: Received login request", { email: body.email });
-
+  
   try {
     const loginUrl = `${apiUrl}/user/login`;
-    console.log("DEBUG_LOGIN: Fetching login from", loginUrl);
-    
+        
     const response = await apiFetch<LoginResponse>(
       loginUrl,
       'POST',
       body
     );
-    console.log("DEBUG_LOGIN: Login API response received", { status: response ? 'OK' : 'NULL' });
-
+    
     if (!response || !response.token || !response.user) {
       console.error("DEBUG_LOGIN: Invalid response content", response);
       return NextResponse.json({ message: 'Invalid user' }, { status: 400 });
     }
 
     const roleUrl = `${apiUrl}/user/role`;
-    console.log("DEBUG_LOGIN: Fetching roles from", roleUrl);
-    const menuResponse = await apiFetch<MenuResponse>(
+        const menuResponse = await apiFetch<MenuResponse>(
       roleUrl,
       'POST',
       { role: response.user.role }
     );
-    console.log("DEBUG_LOGIN: Role API response received");
-    
+        
     if (!menuResponse || !menuResponse.userpermission) {
       console.error("DEBUG_LOGIN: No permissions returned from API!", menuResponse);
       return NextResponse.json({ message: 'Failed to fetch user permissions' }, { status: 500 });
@@ -92,8 +87,7 @@ export async function POST(req: Request) {
             });
             
             compactPermissions = Array.from(uniquePermissionsMap.values());
-            console.log("DEBUG_LOGIN: Permissions processed. Count:", compactPermissions.length);
-        } else {
+                    } else {
              console.warn("DEBUG_LOGIN: userpermission is not an array", menuResponse.userpermission);
         }
     } catch (filterError) {
@@ -108,8 +102,7 @@ export async function POST(req: Request) {
         userpermission: compactPermissions 
     };
 
-    console.log("DEBUG_LOGIN: Sending success response");
-    const finalResponse = NextResponse.json(responseData, { status: 200 });
+        const finalResponse = NextResponse.json(responseData, { status: 200 });
     
     // CRITICAL: Use the cookies() method which properly handles multiple cookies
     finalResponse.cookies.set({

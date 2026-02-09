@@ -109,8 +109,7 @@ const FessList: React.FC<FessListProps> = ({
 
   const header = renderHeader();
    const handlePay = (id: string) => {
-    console.log("Pay clicked for ID:", id);
-  };
+      };
  
   const payButtonTemplate = (rowData: any) => {
     return (

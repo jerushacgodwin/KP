@@ -8,8 +8,7 @@ module.exports.getEvents=async(req,res,next)=>{
   }
 
     const { email, role, user_id } = req.body || {};
-    console.log("getEvents Controller - Body:", JSON.stringify(req.body));
-    const result= await events.getEventList(email || null, role, user_id);
+        const result= await events.getEventList(email || null, role, user_id);
     res.status(200).json({
       message: 'Event fetched successfully',
       events: result,
@@ -25,7 +24,7 @@ module.exports.createEvent = async (req, res, next) => {
   }
 
   const eventData = req.body;
-  // console.log(eventData, 'eventData');
+  // 
   try {
     const result = await events.createEvent(eventData);
     res.status(201).json({

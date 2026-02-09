@@ -128,13 +128,13 @@ const menuItems = [
 ];
 
 const Menu = ({menulist,userDetail}: {menulist: any, userDetail: any}) => {
-  //console.log(menulist);
+  //
  const userFromHook = useUser();
 
  const user = userDetail || userFromHook;
 
   const menu = menulist || [];
- // console.log("Menu component rendered with role:", menulist);
+ // 
   if (!menu.length && !user) {
     return (
       <div className="h-screen flex items-center justify-center">

@@ -32,14 +32,11 @@ export default function DashboardLayout({
   useEffect(() => {
    
    const fetchMenu = async () => {
-      console.log("DASHBOARD: Fetching menu permissions...");
-      // Try getting from IndexedDB first (Primary Source)
+            // Try getting from IndexedDB first (Primary Source)
       try {
         const dbPermissions = await getPermissions();
-        console.log("DASHBOARD: IDB Permissions:", dbPermissions);
-        if (dbPermissions && dbPermissions.length > 0) {
-            console.log("DASHBOARD: Loaded from IDB");
-            setMenuList(dbPermissions);
+                if (dbPermissions && dbPermissions.length > 0) {
+                        setMenuList(dbPermissions);
             const logUserCookie = Cookies.get('log-user');
             if (logUserCookie) {
                 setUser(JSON.parse(logUserCookie));
@@ -58,8 +55,7 @@ export default function DashboardLayout({
       const userCookie = Cookies.get('log-user');
 
       if (userCookie) {
-          console.log("DASHBOARD: IDB empty, attempting SELF-HEAL from API...");
-          try {
+                    try {
               const user = JSON.parse(userCookie);
               const response: any = await apiFetch(`${apiUrl}/user/role`, 'POST', { role: user.role });
               
@@ -76,8 +72,7 @@ export default function DashboardLayout({
                   });
                   const cleanPermissions = Array.from(uniquePermissionsMap.values());
                   
-                  console.log("DASHBOARD: Self-heal successful. Saving to IDB...", cleanPermissions.length);
-                  await import("@src/lib/indexedDB").then(mod => mod.savePermissions(cleanPermissions));
+                                    await import("@src/lib/indexedDB").then(mod => mod.savePermissions(cleanPermissions));
                   setMenuList(cleanPermissions);
                   setUser(user);
                   setLoading(true);
@@ -106,7 +101,7 @@ export default function DashboardLayout({
         if (response || response.siteDetail) {
           const siteData = JSON.parse(response.siteDetail.meta_value);
        setSiteDetail(siteData);
-       //console.log("Site Details:", siteData);
+       //
         }
       
     };

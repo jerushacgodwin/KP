@@ -4,7 +4,7 @@ const appMetas = require('../models/app_metas.model');
 const School = require('../models/school.model');
 const { getNextClassSequenceValue } = require('./sequence.service');
 module.exports.getAllClassesList = async () => {
-  ///console.log(email, "email in timetable service");
+  ///
   try {
     const allClass = await iClass.findAll({
      attributes: ['class_id', 'name', 'class_teacher', 'class_leader', 'group'],

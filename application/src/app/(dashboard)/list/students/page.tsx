@@ -68,7 +68,7 @@ const StudentListPage = () => {
                 page: 1,
                 size: 10
             });
-            // console.log("Students Fetched:", res);
+            // 
              if(res.result && res.result.data) {
                 // Map backend fields to frontend expected fields if necessary
                  const mapped = res.result.data.map((s: any) => ({
