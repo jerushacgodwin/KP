@@ -75,11 +75,14 @@ module.exports.GetPermission=async(role)=>{
      let userPermission;
      if (role == 1) {
        // Admin gets all permissions
+       console.log('Fetching all permissions for Admin');
        userPermission = await permissionModel.findAll();
      } else {
        // Other roles get permissions filtered by their group_id
+       console.log('Fetching permissions for group_id:', role);
        userPermission = await permissionModel.findAll({ where: { group_id: role } });
      }
+
   
   return userPermission
       

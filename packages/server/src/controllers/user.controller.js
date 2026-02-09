@@ -26,7 +26,10 @@ module.exports.registerUser = async (req, res, next) => {
   await AuditService.logAction(req, "REGISTER", "USER", user.id, null, { username: user.username, email: user.email });
 };
 module.exports.login = async (req, res, next) => {
+  console.log("BACKEND LOGIN CONTROLLER HIT");
+  console.log("Request body:", req.body);
   const error = validationResult(req);
+
   if (!error.isEmpty()) {
     return res.status(400).json({ errors: error.array() });
   }

@@ -29,6 +29,12 @@ const app: Application = express();
 // Static uploads folder
 app.use('/uploads', express.static(path.join(process.cwd(), 'src/uploads')));
 
+// Debug Middleware
+app.use((req, res, next) => {
+  console.log(`[DEBUG] ${req.method} ${req.url}`);
+  next();
+});
+
 // Middleware
 app.use(cors({
   origin: ['http://localhost:3000', 'http://localhost:3001'], // Explicitly allow frontend origin

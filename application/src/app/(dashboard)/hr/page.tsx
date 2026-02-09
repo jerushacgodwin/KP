@@ -3,6 +3,8 @@ import AttendanceChart from "@src/components/AttendanceChart";
 import FinanceChart from "@src/components/FinanceChart";
 import { apiFetch } from "@src/lib/api";
 
+export const dynamic = 'force-dynamic';
+
 const HRDashboardPage = async () => {
   let todayAttendanceData = { present: 0, absent: 0 };
   let monthAttendanceData = [];
