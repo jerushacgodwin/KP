@@ -76,7 +76,7 @@ const ProfilePage = () => {
       if (response && response.user) {
         setUserProfile(response.user);
       }
-      //console.log(response);
+      //
     } catch (error) {
       console.error("Failed to fetch profile data:", error);
     }
@@ -88,19 +88,19 @@ const ProfilePage = () => {
   const onSchoolSubmit = async (data: Inputs) => {
      const response = await apiFetch(`${apiUrl}/user/school`, "POST", data,{},true);
 
-    //console.log("Form submitted:", data);
+    //
   };
   const onClassSubmit = async (data: AddClassInputs) => {
      const response = await apiFetch(`${apiUrl}/class/addClass`, "POST", data);
 
-    //console.log("Class Form submitted:", response);
+    //
   };
 
 
   const onRoleSubmit = async (data: AddRoleInputs) => {
       const response = await apiFetch(`${apiUrl}/class/addRole`, "POST", data);
 
-    //console.log("Role Form submitted:", response);
+    //
   };
  const onAddClassTeacherSubmit = async (data: AddRoleInputs) => {
       const response = await apiFetch(`${apiUrl}/class/addClassTeacher`, "POST", data);

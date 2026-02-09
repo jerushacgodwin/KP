@@ -11,7 +11,7 @@ module.exports.registerUser = async (req, res, next) => {
   }
   const { userName, email, password } = req.body;
   const user = await userService.createUser({ userName, email, password });
-  // console.log(user,'..................')
+  // 
   const token = user.generateToken();
   res.status(201).json({
     message: "User created successfully",
@@ -26,9 +26,7 @@ module.exports.registerUser = async (req, res, next) => {
   await AuditService.logAction(req, "REGISTER", "USER", user.id, null, { username: user.username, email: user.email });
 };
 module.exports.login = async (req, res, next) => {
-  console.log("BACKEND LOGIN CONTROLLER HIT");
-  console.log("Request body:", req.body);
-  const error = validationResult(req);
+      const error = validationResult(req);
 
   if (!error.isEmpty()) {
     return res.status(400).json({ errors: error.array() });
@@ -77,7 +75,7 @@ module.exports.school = async (req, res, next) => {
     return res.status(400).json({ errors: error.array() });
   }
   const school = req.body;
-  //console.log(school,'school',req.files)
+  //
   try {
     const createdSchool = await userService.createSchool(school, req.files);
     res.status(201).json({

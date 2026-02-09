@@ -30,8 +30,7 @@ const StudentPage = () => {
         if (timetableResult.status === 'fulfilled') {
           const timetableRes = timetableResult.value as any;
           if (timetableRes) {
-             console.log("Timetable loaded:", timetableRes.timetable?.length);
-             setUserTimeTable(timetableRes.timetable || []);
+                          setUserTimeTable(timetableRes.timetable || []);
           }
         } else {
             console.error("Timetable fetch failed:", timetableResult.reason);
@@ -39,8 +38,7 @@ const StudentPage = () => {
 
         if (attendanceResult.status === 'fulfilled') {
              const attendanceRes = attendanceResult.value as any;
-             console.log("Attendance loaded:", attendanceRes);
-             setAttendanceData(attendanceRes.result); // Store attendance result
+                          setAttendanceData(attendanceRes.result); // Store attendance result
         } else {
              console.error("Attendance fetch failed:", attendanceResult.reason);
         }

@@ -138,14 +138,14 @@ const TeacherForm = ({
   const onSubmit = (data: Inputs) => {
     const cleaned = sanitizeFormData(data);
         const addstaff=  apiFetch(`${apiUrl}/teacher/addstaff`, 'POST',cleaned,{},true);
-      // console.log("Form valid, submitting:", addstaff);
+      // 
       staffFormRef.current?.reset();  
       setValue("img", undefined as any);
       setValue("idproof", undefined as any);
       setValue("resume", undefined as any);
       
         
-    //console.log(data);
+    //
   };
   const sexOptions = [
     { label: "Male", value: "male" },

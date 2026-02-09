@@ -16,7 +16,7 @@ type User = {
 
 
   if (!token) {
-    // console.log("Middleware: No token properly received from Electron. Allowing Client-Side auth to handle it.");
+    // 
     // return NextResponse.redirect(new URL('/', req.url));
   }
 
@@ -26,7 +26,7 @@ type User = {
   }
 
       
-       //console.log(usermenu)
+       //
     // const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
     //   role: string;
     // };

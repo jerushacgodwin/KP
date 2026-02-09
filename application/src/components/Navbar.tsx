@@ -2,7 +2,7 @@ import Image from "next/image"
 
 const Navbar = ({ userDetail }: { userDetail: any }) => {
   const { name, role } = userDetail || {};
-  //console.log("User Detail:", userDetail);
+  //
   return (
     <div className='flex items-center justify-between p-4'>
       {/* SEARCH BAR */}

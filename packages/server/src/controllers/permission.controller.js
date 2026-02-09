@@ -8,8 +8,7 @@ module.exports.Permission=async(req,res,next)=>{
         return res.status(400).json({errors:error.array()})
     }
      const {role}=req.body;
-     console.log('PERMISSION CONTROLLER HIT with role:', role);
-//Console.log(role,'role in permission controller')
+     //Console.log(role,'role in permission controller')
        const userPermission= await userService.GetPermission(role)
 
              res.status(201).json({

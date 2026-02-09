@@ -5,8 +5,7 @@ import path from 'path';
 async function runMigrations() {
   try {
     await sequelize.authenticate();
-    console.log('✅ Database connected.');
-
+    
     const migrationsDir = path.join(__dirname, '../migrate');
     
     if (!fs.existsSync(migrationsDir)) {
@@ -20,20 +19,16 @@ async function runMigrations() {
       .sort();
 
     if (migrationFiles.length === 0) {
-      console.log('No migrations to run.');
-      process.exit(0);
+            process.exit(0);
     }
 
-    console.log(`Found ${migrationFiles.length} migrations.`);
-    const queryInterface = sequelize.getQueryInterface();
+        const queryInterface = sequelize.getQueryInterface();
 
     for (const file of migrationFiles) {
-      console.log(`\n🚀 Running migration: ${file}`);
-      const migration = require(path.join(migrationsDir, file));
+            const migration = require(path.join(migrationsDir, file));
       
       if (migration && migration.disabled) {
-        console.log(`⏭️ Skipping disabled migration: ${file}`);
-        continue;
+                continue;
       }
 
       if (typeof migration.up !== 'function') {
@@ -43,15 +38,13 @@ async function runMigrations() {
 
       try {
         await migration.up(queryInterface, sequelize.constructor);
-        console.log(`✅ ${file} completed.`);
-      } catch (err) {
+              } catch (err) {
         console.error(`❌ Migration ${file} failed:`, err);
         process.exit(1);
       }
     }
 
-    console.log('\n✨ All migrations completed successfully.');
-    process.exit(0);
+        process.exit(0);
   } catch (error) {
     console.error('❌ Connection failed:', error);
     process.exit(1);

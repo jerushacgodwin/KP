@@ -4,7 +4,7 @@ const AuditService = require("../services/audit.service");
 
 module.exports.createStudent = async (req, res, next) => {
   try {
-    //console.log( req.files)
+    //
     // Validate input using Zod
     const parsed = schema.parse(req.body);
 

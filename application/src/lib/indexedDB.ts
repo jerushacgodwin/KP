@@ -66,8 +66,7 @@ export const deleteDatabase = (): Promise<void> => {
     if (typeof window === 'undefined') return resolve();
     const request = indexedDB.deleteDatabase(DB_NAME);
     request.onsuccess = () => {
-        console.log("IndexedDB deleted successfully");
-        resolve();
+                resolve();
     };
     request.onerror = () => reject(request.error);
     request.onblocked = () => {

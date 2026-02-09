@@ -4,9 +4,9 @@ const AuditService = require("../services/audit.service");
 
 module.exports.createStaff = async (req, res, next) => {
   try {
-     //console.log(req.body, "parsed data in staff controller");
+     //
      const parsed = schema.parse(req.body);
-     //console.log(parsed, "parsed data in staff controller");
+     //
    const staff = await staffService.createStaff(parsed, req.files);
 
     res.status(201).json({

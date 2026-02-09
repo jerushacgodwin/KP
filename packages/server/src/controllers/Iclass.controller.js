@@ -67,7 +67,7 @@ module.exports.addClassTeacher = async (req, res, next) => {
   }
 };
 module.exports.getSiteDetail = async (req, res, next) => {
-  //console.log(req)
+  //
   try {
 
     // Logic to get site details

@@ -31,8 +31,7 @@ app.use('/uploads', express.static(path.join(process.cwd(), 'src/uploads')));
 
 // Debug Middleware
 app.use((req, res, next) => {
-  console.log(`[DEBUG] ${req.method} ${req.url}`);
-  next();
+    next();
 });
 
 // Middleware

@@ -51,7 +51,7 @@ module.exports.setStudentAttendance = async (req, res, next) => {
 
   const requests = Array.isArray(req.body) ? req.body : [req.body];
   const results = [];
-  //console.log(requests, "requests in attendance controller");
+  //
   try {
     for (const request of requests) {
       const result = await attendance.setStudentAttendance(request);

@@ -135,11 +135,11 @@ const StudentForm = ({
   const onSubmit = (data: Inputs) => {
     const cleaned = sanitizeFormData(data);
     const addstudent=  apiFetch(`${apiUrl}/student/addstudent`, 'POST',cleaned,{},true);
-  //console.log("Form valid, submitting:", addstudent);
+  //
     // e.g. send to server, clear form, etc.
   };
   const setSelectedClass = (value: { selected: any }) => {
-    //console.log("Selected class:", value.selected);
+    //
     setDropDownSelected(value.selected);
   };
   const sexOptions = [
@@ -164,7 +164,7 @@ const StudentForm = ({
     { label: "Other", value: "other" },
   ];
   const setSelectedSex = (value: { selected: any }) => {
-    //console.log("Selected sex:", value.selected);
+    //
     setSexSelected(value.selected);
   };
     const setReligion = (value: { selected: any }) => {

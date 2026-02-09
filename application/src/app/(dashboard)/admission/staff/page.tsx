@@ -21,7 +21,7 @@ const StaffAdmission = () => {
           }
     //     const [timetable, eventsData,attendance] = await Promise.all([
     //  ]);
-        //console.log(timetable)
+        //
       
       } catch (error) {
         console.error('Failed to fetch:', error);

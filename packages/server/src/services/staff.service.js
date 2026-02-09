@@ -5,7 +5,7 @@ module.exports.createStaff = async (data,file)=>{
  const staffData = Staff.employeeForm(data, file);
 
     staffData.user_id = user_id;
-  //console.log(staffData, "staffData in staff service");
+  //
 const created = await Staff.create(staffData);
   return created;
 }

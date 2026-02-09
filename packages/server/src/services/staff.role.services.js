@@ -1,6 +1,6 @@
 const rols  = require('../models/staff.role.model');
 module.exports.getAllRoles = async () => {
-  ///console.log(email, "email in timetable service");
+  ///
   try {
     const allClass = await rols.findAll({
      attributes: ['id', 'name'],

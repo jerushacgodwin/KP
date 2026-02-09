@@ -71,7 +71,7 @@ const AdminPage = () => {
 export default AdminPage;
 // import withRole from '@src/components/CheckRole';
 
-// console.log('checkRole is:', withRole);
+// 
 
 // const AdminPage = () => <div>Hello Admin</div>;
 

@@ -36,7 +36,7 @@ module.exports.loginUser=async({email,password})=>{
     model: roleModel,
     attributes: ['role_id','user_id',], 
   }] });
-   // console.log('selectUser',selectUser)
+   // 
      if (!selectUser) {
         throw new Error('User not found');
      }
@@ -56,7 +56,7 @@ module.exports.loginUser=async({email,password})=>{
     if (!isMatch) {
       throw new Error('Check Email OR Password');
     }
-///console.log('............',selectUser)
+///
   return selectUser
       
 }catch (error) {
@@ -75,12 +75,10 @@ module.exports.GetPermission=async(role)=>{
      let userPermission;
      if (role == 1) {
        // Admin gets all permissions
-       console.log('Fetching all permissions for Admin');
-       userPermission = await permissionModel.findAll();
+              userPermission = await permissionModel.findAll();
      } else {
        // Other roles get permissions filtered by their group_id
-       console.log('Fetching permissions for group_id:', role);
-       userPermission = await permissionModel.findAll({ where: { group_id: role } });
+              userPermission = await permissionModel.findAll({ where: { group_id: role } });
      }
 
   
@@ -111,21 +109,21 @@ module.exports.getUserProfile=async(user)=>{
  
 
      return selectUser;
-    //console.log('user',user)
+    //
   } catch (error) {
     console.error('Get user profile error:', error);
     throw new Error('Internal server error');
   }
 }
 module.exports.createSchool = async (schoolData,file) => {
-  //console.log('schoolData', file)
+  //
   try {
     if (!schoolData.schoolName || !schoolData.address ) {
       throw new Error('All fields are required');
     }
     const existing = await appMetas.findOne({ where: { meta_key: 'institute_settings' } });
      if (existing) {
-      //console.log(file.img[0], 'file')
+      //
        await appMetas.update(
       {
         meta_key: 'institute_settings',

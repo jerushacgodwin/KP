@@ -31,8 +31,7 @@ class AuditService {
         user_agent
       });
       
-      console.log(`[AuditLog] ${action} on ${module} (Entity ID: ${entityId}) by ${user_id}`);
-    } catch (error) {
+          } catch (error) {
       console.error('[AuditLog Error] Failed to create audit log:', error);
     }
   }

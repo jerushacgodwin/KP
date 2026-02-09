@@ -43,7 +43,7 @@ const ProfilePage = () => {
       if (response && response.user) {
         setUserProfile(response.user);
       }
-      //console.log(response);
+      //
     } catch (error) {
       console.error("Failed to fetch profile data:", error);
     }

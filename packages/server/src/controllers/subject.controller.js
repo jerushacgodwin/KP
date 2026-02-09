@@ -1,7 +1,7 @@
 const subjectService =require( "../services/subject.service.js");
 exports.getSubjects = async (req, res) => {
   const class_id  = req.params.class_id;
-  //console.log("Class ID:", class_id);
+  //
   try {
     const subject = await subjectService.getSubject(class_id);
 

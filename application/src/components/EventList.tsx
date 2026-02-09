@@ -24,11 +24,9 @@ const EventList = () => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   const fetchEvents = async () => {
-    console.log("Fetching events for:", user?.email);
-    try {
+        try {
       const res = await apiFetch<EventsResponse>(`${apiUrl}/events`, 'POST', { email: user?.email });
-      console.log("Events response:", res);
-      if (res && res.events) {
+            if (res && res.events) {
         setEvents(res.events);
       }
     } catch (error) {

@@ -39,7 +39,7 @@ router.post(
   "/role",
   [
     body("role").notEmpty().withMessage("Invalid Role"),
-    //console.log('role')
+    //
     //body('userId').isEmpty().withMessage('Invalid User ID')
   ],
   permissionController.Permission
