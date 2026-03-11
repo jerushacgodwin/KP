@@ -1,54 +1,67 @@
 const { createServer } = require('http')
 const { parse } = require('url')
 const path = require('path')
+const fs = require('fs')
 
-console.log('--- STARTING KP UNIFIED ORCHESTRATOR (v25) ---');
-console.log('Running from:', __dirname);
+// DIAGNOSTIC LOGGING
+const SIGNATURE = '[KP-V27-STARTUP]';
+console.log(`${SIGNATURE} --- UNIFIED ORCHESTRATOR INIT ---`);
+console.log(`${SIGNATURE} Current __dirname:`, __dirname);
+console.log(`${SIGNATURE} Current Process CWD:`, process.cwd());
 
-// ADD ROOT node_modules TO RESOLUTION PATH
-module.paths.push(path.join(__dirname, 'node_modules'));
+// Helper to search for a package in common Hostinger locations
+function resolveModule(name) {
+    const homeDir = path.resolve(__dirname, '..');
+    const searchPaths = [
+        path.join(__dirname, 'node_modules', name),
+        path.join(homeDir, 'public_html', 'node_modules', name),
+        path.join(homeDir, 'nodejs', 'node_modules', name),
+        path.join(__dirname, 'application', 'node_modules', name),
+        name // Global fallback
+    ];
 
-// Robust require strategy for Next.js - Searching multiple root locations
-let next;
-const homeDir = path.resolve(__dirname, '..');
-const possibleNextPaths = [
-  'next', // Standard resolution
-  path.join(__dirname, 'node_modules', 'next'), // Local to current folder
-  path.join(homeDir, 'public_html', 'node_modules', 'next'), // In case it's in public_html
-  path.join(homeDir, 'nodejs', 'node_modules', 'next'), // In case it's in nodejs
-  path.join(__dirname, 'application', 'node_modules', 'next')
-];
+    console.log(`${SIGNATURE} Searching for module "${name}" in:`, searchPaths);
 
-console.log(`> [INFO] Searching for 'next' in:`, possibleNextPaths);
-
-for (const p of possibleNextPaths) {
-  try {
-    next = require(p);
-    console.log(`> [OK] Successfully loaded 'next' from: ${p}`);
-    break;
-  } catch (e) {
-    // Continue searching
-  }
+    for (const p of searchPaths) {
+        try {
+            const mod = require(p);
+            console.log(`${SIGNATURE} [SUCCESS] Loaded "${name}" from: ${p}`);
+            return mod;
+        } catch (e) {
+            // try next
+        }
+    }
+    return null;
 }
 
+// 1. Resolve Next.js
+const next = resolveModule('next');
 if (!next) {
-  console.error('FATAL: Module "next" not found after exhaustive search.');
-  console.error('Available paths:', possibleNextPaths);
-  console.error('Directory content of __dirname:', require('fs').readdirSync(__dirname));
-  process.exit(1);
+    console.error(`${SIGNATURE} [FATAL] Critical module "next" not found.`);
+    // Diagnostic: List directory contents to see what's actually there
+    try {
+        console.log(`${SIGNATURE} Directory listing of ${__dirname}:`, fs.readdirSync(__dirname));
+        console.log(`${SIGNATURE} Directory listing of parent:`, fs.readdirSync(path.resolve(__dirname, '..')));
+    } catch (err) {}
+    process.exit(1);
 }
 
 const dev = false
 const app = next({ dev, dir: '.' })
 const handle = app.getRequestHandler()
 
-// Initialize Backend
+// 2. Resolve Backend
 let expressApp;
 try {
-  expressApp = require('./packages/server/dist/app').default;
-  console.log(`> [OK] Loaded Backend services.`);
+    const backendPath = path.join(__dirname, 'packages', 'server', 'dist', 'app.js');
+    if (fs.existsSync(backendPath)) {
+        expressApp = require(backendPath).default;
+        console.log(`${SIGNATURE} [SUCCESS] Loaded Express Backend.`);
+    } else {
+        console.warn(`${SIGNATURE} [WARN] Backend dist not found at ${backendPath}`);
+    }
 } catch (e) {
-  console.warn('> [WARN] Backend services not loaded.');
+    console.warn(`${SIGNATURE} [WARN] Backend failed to load:`, e.message);
 }
 
 const port = process.env.PORT || 3000
@@ -58,17 +71,20 @@ app.prepare().then(() => {
     const parsedUrl = parse(req.url, true)
     const { pathname } = parsedUrl
 
+    // API Routes to Express
     const apiPrefixes = ['/user', '/student', '/teacher', '/finance', '/events', '/class', '/hr', '/library', '/transport', '/hostel', '/attendance', '/exams', '/chapters', '/uploads'];
     
     if (expressApp && apiPrefixes.some(prefix => pathname.startsWith(prefix))) {
       return expressApp(req, res);
     }
 
+    // Default to Next.js
     handle(req, res, parsedUrl)
   }).listen(port, (err) => {
     if (err) throw err
-    console.log(`> [SUCCESS] active on port: ${port}`)
+    console.log(`${SIGNATURE} [READY] Active on port: ${port}`)
   })
 }).catch((err) => {
+  console.error(`${SIGNATURE} [FATAL] Lifecycle error:`, err);
   process.exit(1);
 });

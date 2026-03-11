@@ -32,10 +32,10 @@ function run(cmd, cwd) {
 const root = __dirname;
 const backupDir = path.join(root, '.production_backup');
 
-console.log(`\n--- STARTING V25 MASTER BUILD ---`);
-console.log(`Root Directory: ${root}`);
+console.log(`\n--- [BUILD-V27-FINGERPRINT] STARTING UNIFIED DEPLOY ---`);
+console.log(`Execution Root: ${root}`);
 
-// 1. Backup critical files
+// 1. Backup critical orchestrator files
 if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
 ['server.js', 'index.js', 'package.json', '.npmrc', '.htaccess'].forEach(file => {
     const src = path.join(root, file);
@@ -46,52 +46,63 @@ if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
 run('npm run build', path.join(root, 'application'));
 run('npm run build', path.join(root, 'packages/server'));
 
-// 3. Flatten Standalone Bundle
+// 3. Prepare Universal Production Bundle in a temporary folder
+const tempDist = path.join(root, '.temp_production_bundle');
+if (fs.existsSync(tempDist)) fs.rmSync(tempDist, { recursive: true, force: true });
+fs.mkdirSync(tempDist, { recursive: true });
+
+// Copy Standalone Engine
 const standalonePath = path.join(root, 'application', '.next', 'standalone');
 if (fs.existsSync(standalonePath)) {
-    console.log(`\n> Deploying Standalone Engine to Root...`);
-    copyRecursiveSync(standalonePath, root);
-    
-    console.log(`> Restoring Orchestrator files...`);
-    ['server.js', 'index.js', 'package.json', '.npmrc', '.htaccess'].forEach(file => {
-        const src = path.join(backupDir, file);
-        if (fs.existsSync(src)) fs.copyFileSync(src, path.join(root, file));
-    });
+    console.log(`> Extracting Standalone Engine...`);
+    copyRecursiveSync(standalonePath, tempDist);
 }
 
-// 4. Static Assets Sync
-console.log(`\n> Copying Static Assets...`);
-copyRecursiveSync(path.join(root, 'application', '.next', 'static'), path.join(root, '.next', 'static'));
-copyRecursiveSync(path.join(root, 'application', 'public'), path.join(root, 'public'));
+// Sync Assets
+console.log(`> Syncing Static Assets...`);
+copyRecursiveSync(path.join(root, 'application', '.next', 'static'), path.join(tempDist, '.next', 'static'));
+copyRecursiveSync(path.join(root, 'application', 'public'), path.join(tempDist, 'public'));
 
-// 5. Backend Integration
-console.log(`\n> Integrating Backend Services...`);
-const backendDist = path.join(root, 'packages', 'server', 'dist');
-if (fs.existsSync(backendDist)) {
-    copyRecursiveSync(backendDist, path.join(root, 'packages', 'server', 'dist'));
+// Sync Backend
+console.log(`> Syncing Backend Services...`);
+copyRecursiveSync(path.join(root, 'packages', 'server', 'dist'), path.join(tempDist, 'packages', 'server', 'dist'));
+
+// Inject Orchestrator
+console.log(`> Injecting Unified Orchestrator...`);
+['server.js', 'index.js', 'package.json', '.npmrc', '.htaccess'].forEach(file => {
+    const src = path.join(backupDir, file);
+    if (fs.existsSync(src)) fs.copyFileSync(src, path.join(tempDist, file));
+});
+
+// 4. VERIFICATION: Ensure 'next' is in the bundle
+const nextPath = path.join(tempDist, 'node_modules', 'next');
+if (!fs.existsSync(nextPath)) {
+    console.log(`> [RECOVERY] 'next' module missing in bundle. Pulling from application...`);
+    copyRecursiveSync(path.join(root, 'application', 'node_modules', 'next'), nextPath);
 }
 
-// 6. MODULE RECOVERY (The "Next.js" Fix)
-console.log(`\n> Step 6: Verifying Critical Modules...`);
-const nextModRoot = path.join(root, 'node_modules', 'next');
-if (!fs.existsSync(nextModRoot)) {
-    console.log(`> [CRITICAL] 'next' module missing at root. Searching sub-packages...`);
-    const searchPaths = [
-        path.join(root, 'application', 'node_modules', 'next'),
-        path.join(root, 'packages', 'server', 'node_modules', 'next')
-    ];
-    for (const p of searchPaths) {
-        if (fs.existsSync(p)) {
-            console.log(`> Found 'next' at ${p}. Recovering to root...`);
-            copyRecursiveSync(p, nextModRoot);
-            break;
-        }
+// 5. BRUTE FORCE DEPLOYMENT: Deploy to ALL potential targets
+const targets = [
+    root,
+    path.join(root, 'public_html'),
+    path.join(root, 'nodejs')
+];
+
+targets.forEach(target => {
+    if (target === root) {
+         console.log(`\n> Deploying to ROOT: ${target}`);
+         copyRecursiveSync(tempDist, target);
+    } else {
+         console.log(`\n> Deploying to SECONDARY TARGET: ${target}`);
+         if (!fs.existsSync(target)) fs.mkdirSync(target, { recursive: true });
+         copyRecursiveSync(tempDist, target);
     }
-}
+});
 
-// 7. Hostinger Dummy Output
-const dummy = path.join(root, '.hostinger_verified');
-if (!fs.existsSync(dummy)) fs.mkdirSync(dummy);
-fs.writeFileSync(path.join(dummy, 'ok.txt'), 'ready');
+// 6. Hostinger Build Validator satisfying
+const marker = path.join(root, '.hostinger_v27_verified');
+if (!fs.existsSync(marker)) fs.mkdirSync(marker);
+fs.writeFileSync(path.join(marker, 'build.txt'), `Build V27 Successful - ${new Date().toISOString()}`);
 
-console.log(`\n--- V25 BUILD COMPLETED SUCCESSFULLY ---`);
+console.log(`\n--- [BUILD-V27-FINGERPRINT] ALL TARGETS POPULATED ---`);
+console.log(`App is now present in ROOT, public_html, and nodejs folders.`);
