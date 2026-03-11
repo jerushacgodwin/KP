@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index.ts"
+    },
+    {
+      "source": "/_next/(.*)",
+      "destination": "/application/_next/$1"
+    },
+    {
+      "source": "/static/(.*)",
+      "destination": "/application/static/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/application/$1"
+    }
+  ],
+  "functions": {
+    "api/index.ts": {
+      "runtime": "vercel-node@latest"
+    }
+  }
+}
