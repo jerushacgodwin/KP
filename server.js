@@ -5,12 +5,26 @@ const path = require('path')
 // Add current directory to module search path to help Hostinger find 'next'
 module.paths.push(path.join(__dirname, 'node_modules'));
 
-// Defensive require strategy for Next.js
+// Robust require strategy for Next.js
 let next;
-try {
-  next = require('next');
-} catch (e) {
-  console.error('Fatal: "next" module not found. Path searched:', module.paths);
+const possibleNextPaths = [
+  path.join(__dirname, 'node_modules', 'next'),
+  'next' // Fallback to global/standard resolution
+];
+
+for (const nextPath of possibleNextPaths) {
+  try {
+    next = require(nextPath);
+    console.log(`> Successfully loaded 'next' from: ${nextPath}`);
+    break;
+  } catch (e) {
+    // Continue to next path
+  }
+}
+
+if (!next) {
+  console.error('Fatal: "next" module not found. Searched paths:', possibleNextPaths);
+  console.error('Current __dirname:', __dirname);
   process.exit(1);
 }
 
