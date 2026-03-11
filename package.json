@@ -15,7 +15,7 @@
     "bootstrap": "lerna bootstrap",
     "dev": "lerna run dev --stream",
     "build": "NEXT_DISABLE_INTERACTIVE_INSTALL=1 cd application && npm run build",
-    "start": "cd application && next start -p ${PORT:-3000}"
+    "start": "next start -p ${PORT:-3000} application"
   },
   "dependencies": {
     "next": "^14.2.31",
