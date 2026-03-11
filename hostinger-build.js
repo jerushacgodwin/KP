@@ -23,51 +23,72 @@ function copyRecursiveSync(src, dest) {
 function run(cmd, cwd) {
     console.log(`\n> [BUILD] ${cmd}`);
     try {
-        execSync(cmd, { cwd, stdio: 'inherit', env: { ...process.env, NEXT_DISABLE_INTERACTIVE_INSTALL: '1' } });
+        execSync(cmd, { 
+            cwd, 
+            stdio: 'inherit', 
+            env: { ...process.env, NEXT_DISABLE_INTERACTIVE_INSTALL: '1' } 
+        });
     } catch (e) { 
-        console.warn(`Build command failed: ${cmd}`);
+        console.error(`> [ERROR] Command failed: ${cmd}`);
         process.exit(1);
     }
 }
 
 const root = __dirname;
+const distDir = path.join(root, 'dist');
 const standaloneDir = path.join(root, 'application', '.next', 'standalone');
 
-console.log(`\n--- [BUILD-V32] STANDALONE AUTO-PACKAGE ---`);
+console.log(`\n--- [BUILD-V33] FLAT ROOT-DIST PREP ---`);
+console.log(`Build Root: ${root}`);
+console.log(`Target Dist: ${distDir}`);
 
-// 1. Build Backend
+// 1. Clean Dist
+if (fs.existsSync(distDir)) {
+    console.log(`> Cleaning existing dist...`);
+    fs.rmSync(distDir, { recursive: true, force: true });
+}
+fs.mkdirSync(distDir, { recursive: true });
+
+// 2. Build Services (Standard)
 run('npm run build', path.join(root, 'packages/server'));
-
-// 2. Build Frontend (Standalone)
 run('npm run build', path.join(root, 'application'));
 
-// 3. Verify Standalone Folder
-if (!fs.existsSync(standaloneDir)) {
-    console.error(`> [FATAL] Standalone folder missing at ${standaloneDir}`);
+// 3. Assemble Dist
+console.log(`\n> Assembling Production Bundle in /dist...`);
+
+// Copy Standalone
+if (fs.existsSync(standaloneDir)) {
+    console.log(`> Copying Standalone Engine...`);
+    copyRecursiveSync(standaloneDir, distDir);
+} else {
+    console.error(`> [FATAL] Standalone not found at ${standaloneDir}`);
     process.exit(1);
 }
 
-// 4. Inject Our Custom Files into Standalone
-console.log(`\n> Injecting Orchestrator into Standalone...`);
-const filesToInject = ['server.js', 'package.json', '.npmrc', '.env', '.env.local'];
+// Inject Orchestrator & Configs
+const filesToInject = ['server.js', 'index.js', 'package.json', '.npmrc', '.env', '.env.local'];
 filesToInject.forEach(file => {
     const src = path.join(root, file);
     if (fs.existsSync(src)) {
-        fs.copyFileSync(src, path.join(standaloneDir, file));
+        fs.copyFileSync(src, path.join(distDir, file));
         console.log(`  [OK] Injected ${file}`);
     }
 });
 
-// 5. Inject Backend into Standalone
+// Inject Backend
 console.log(`> Injecting Backend services...`);
-const backendSrc = path.join(root, 'packages', 'server', 'dist');
-const backendDest = path.join(standaloneDir, 'packages', 'server', 'dist');
-copyRecursiveSync(backendSrc, backendDest);
+copyRecursiveSync(path.join(root, 'packages', 'server', 'dist'), path.join(distDir, 'packages', 'server', 'dist'));
 
-// 6. Sync Assets into Standalone (Next.js requires these inside the standalone folder)
+// Sync Assets (Required inside standalone structure)
 console.log(`> Syncing Static Assets...`);
-copyRecursiveSync(path.join(root, 'application', '.next', 'static'), path.join(standaloneDir, '.next', 'static'));
-copyRecursiveSync(path.join(root, 'application', 'public'), path.join(standaloneDir, 'public'));
+copyRecursiveSync(path.join(root, 'application', '.next', 'static'), path.join(distDir, '.next', 'static'));
+copyRecursiveSync(path.join(root, 'application', 'public'), path.join(distDir, 'public'));
 
-console.log(`\n--- [BUILD-V32] STANDALONE READY ---`);
-console.log(`NEXT STEP: Set Hostinger Output Directory to: application/.next/standalone`);
+// 4. Verification Check
+if (fs.existsSync(path.join(distDir, 'server.js')) && fs.existsSync(path.join(distDir, 'node_modules'))) {
+    console.log(`\n--- [BUILD-V33] SUCCESS: DIST IS READY ---`);
+    console.log(`MANDATORY: Set Hostinger Output Directory to: dist`);
+} else {
+    console.error(`\n--- [BUILD-V33] FAILURE: DIST IS INCOMPLETE ---`);
+    process.exit(1);
+}
