@@ -16,7 +16,7 @@ function copyRecursiveSync(src, dest) {
 }
 
 function run(cmd, cwd) {
-    console.log(`\n> [BUILD-V41] ${cmd}`);
+    console.log(`\n> [BUILD-V43] ${cmd}`);
     try {
         execSync(cmd, { cwd, stdio: 'inherit', env: { ...process.env, NEXT_DISABLE_INTERACTIVE_INSTALL: '1' } });
     } catch (e) {
@@ -25,49 +25,51 @@ function run(cmd, cwd) {
 }
 
 const root = __dirname;
-const targetDir = path.join(root, '.next'); // ROOT-LEVEL .NEXT
+const targetDir = path.join(root, '.next'); // TARGET FOLDER PER USER FEEDBACK
 
-console.log(`\n--- [BUILD-V41] ABSOLUTE-NEXT ASSEMBLY ---`);
-console.log(`Build Root: ${root}`);
-console.log(`Output Dir: ${targetDir}`);
+console.log(`\n--- [BUILD-V43] ABSOLUTE-NEXT + PURGE ASSEMBLY ---`);
 
-// 1. Clean and Prepare
-// We don't delete .next entirely because Next.js build might write to it first
-// But we want to ensure it's a CLEAN deployment target
-const applicationNext = path.join(root, 'application', '.next');
+// 1. Clean and Prepare Target (BUT DON'T DELETE .next entirely if it's the build output)
+// We instead just ensure we have a clean slate for the *standalone* parts inside it
+if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
 
 // 2. Build Services (Standard NPM)
 run('npm install', root);
 run('npm run build', path.join(root, 'application'));
 
-// 3. Assemble Core into root .next
-console.log(`\n> Consolidating everything into root .next folder...`);
-if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
-
-// Copy Standalone Engine
-const standaloneDir = path.join(applicationNext, 'standalone');
-if (fs.existsSync(standaloneDir)) {
-    console.log(`> Copying Standalone Engine...`);
-    copyRecursiveSync(standaloneDir, targetDir);
+// 3. Assemble Core
+console.log(`\n> Consolidating into root /.next...`);
+const standalone = path.join(root, 'application', '.next', 'standalone');
+if (fs.existsSync(standalone)) {
+    copyRecursiveSync(standalone, targetDir);
 }
 
-// Inject Orchestrators & Configs
+// Inject Required Files to the output root
 ['server.js', 'index.js', 'package.json', '.env', '.env.local'].forEach(f => {
     const src = path.join(root, f);
-    if (fs.existsSync(src)) {
-        fs.copyFileSync(src, path.join(targetDir, f));
-        console.log(`  [OK] Injected ${f}`);
-    }
+    if (fs.existsSync(src)) fs.copyFileSync(src, path.join(targetDir, f));
 });
 
-// Sync Assets
-console.log(`> Syncing Static Assets...`);
+// Sync Static Assets (Required inside standalone .next structure)
+const applicationNext = path.join(root, 'application', '.next');
 copyRecursiveSync(path.join(applicationNext, 'static'), path.join(targetDir, '.next', 'static'));
 copyRecursiveSync(path.join(root, 'application', 'public'), path.join(targetDir, 'public'));
 
-console.log(`\n--- [BUILD-V41] FOLDER CONTENT CHECK ---`);
-fs.readdirSync(targetDir).forEach(f => console.log(`  - ${f}`));
+// 4. CRITICAL: PURGE .HTACCESS
+// Prevents 403 Forbidden loops in LiteSpeed
+const conflictFiles = [
+    path.join(root, '.htaccess'),
+    path.join(targetDir, '.htaccess')
+];
+conflictFiles.forEach(f => {
+    if (fs.existsSync(f)) {
+        console.log(`> [CLEANUP] Purging ${f}`);
+        fs.unlinkSync(f);
+    }
+});
 
-console.log(`\n--- [BUILD-V41] DONE ---`);
-console.log(`RECOMMENDED: Set Hostinger "Output Directory" to the absolute path:`);
+// 5. Final Verification
+console.log(`\n--- [BUILD-V43] SUCCESS ---`);
+fs.readdirSync(targetDir).forEach(f => console.log(`  - ${f}`));
+console.log(`\nMANDATORY: Set Hostinger "Output Directory" to the ABSOLUTE path:`);
 console.log(`/home/u102032541/domains/lightgreen-wolverine-191417.hostingersite.com/.next`);

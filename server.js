@@ -3,25 +3,31 @@ const { parse } = require('url')
 const path = require('path')
 const fs = require('fs')
 
-// V40 DIRECT-HOME ORCHESTRATOR
-console.log('##############################################');
-console.log('# [KP-V40-DIRECT-HOME] SYSTEM BOOT          #');
-console.log('##############################################');
-console.log('DIR:', __dirname);
+// V43 HIGH-RESILIENCE ORCHESTRATOR
+const logFile = path.join(__dirname, 'server_log.txt');
+function log(msg) {
+    const entry = `[${new Date().toISOString()}] ${msg}\n`;
+    console.log(msg);
+    try { fs.appendFileSync(logFile, entry); } catch (e) {}
+}
+
+log('##############################################');
+log('# [KP-V43-RESILIENT] BOOTING...              #');
+log('##############################################');
+log(`DIR: ${__dirname}`);
 
 const port = process.env.PORT || 3000
 
 function getNext() {
-    const searchPoints = [
+    const points = [
         'next',
         path.join(__dirname, 'node_modules', 'next'),
-        path.join(__dirname, '..', 'node_modules', 'next'),
-        path.join('/home/u102032541/domains/lightgreen-wolverine-191417.hostingersite.com/nodejs', 'node_modules', 'next')
+        path.join(__dirname, '..', 'node_modules', 'next')
     ];
-    for (const p of searchPoints) {
+    for (const p of points) {
         try {
             const m = require(p);
-            console.log(`> [OK] Loaded "next" from: ${p}`);
+            log(`> [OK] Loaded "next" from: ${p}`);
             return m;
         } catch (e) {}
     }
@@ -31,22 +37,13 @@ function getNext() {
 const next = getNext();
 
 if (!next) {
-    console.error('> [FATAL] Next.js engine not found!');
+    log('> [FATAL] Next.js engine NOT FOUND.');
     createServer((req, res) => {
-        res.writeHead(503, { 'Content-Type': 'text/html' });
-        res.end(`
-            <html>
-                <body style="font-family: system-ui; padding: 2rem;">
-                    <h1>503 Service Unavailable</h1>
-                    <p>[V40] Engine Missing at: ${__dirname}</p>
-                    <pre>Files: ${fs.readdirSync(__dirname).join(', ')}</pre>
-                </body>
-            </html>
-        `);
+        res.writeHead(503, { 'Content-Type': 'text/plain' });
+        res.end('[V43] Engine Missing. Check server_log.txt for clues.');
     }).listen(port);
 } else {
-    const dev = false
-    const app = next({ dev, dir: '.' })
+    const app = next({ dev: false, dir: '.' })
     const handle = app.getRequestHandler()
 
     app.prepare().then(() => {
@@ -54,9 +51,9 @@ if (!next) {
             handle(req, res, parse(req.url, true))
         }).listen(port, (err) => {
             if (err) throw err
-            console.log(`> [V40-READY] Listening on ${port}`);
+            log(`> [READY] Listening on port ${port}`);
         })
     }).catch(err => {
-        console.error('> [PREPARE-ERROR]', err);
+        log(`> [PREPARE-ERROR] ${err.message}`);
     });
 }
