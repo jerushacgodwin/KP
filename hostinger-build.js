@@ -1,10 +1,6 @@
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
-
 /**
- * v70 Build: The Un-Ignored Output
- * Uses a folder explicitly un-ignored in .gitignore for validator visibility.
+ * v73 Build: Monolithic Merge
+ * Combines UI (Standalone) and Backend into a single high-reliability target.
  */
 function deployWithPermissions(src, dest) {
     try {
@@ -34,7 +30,7 @@ function run(cmd, cwd) {
     } catch (e) { process.exit(1); }
 }
 
-console.log(`--- [BUILD] v70 UN-IGNORED-FIX ---`);
+console.log(`--- [BUILD] v73 MONOLITHIC-MERGE ---`);
 
 // 1. Core Build Steps
 run('npm install', './packages/billing');
@@ -85,8 +81,12 @@ backendDeps.forEach(dep => {
     const srcDep = path.join('./node_modules', dep);
     const destDep = path.join(targetNodeModules, dep);
     if (fs.existsSync(srcDep)) {
-        console.log(`[DEP] Copying ${dep}...`);
-        deployWithPermissions(srcDep, destDep);
+        console.log(`[DEP] Injecting ${dep}...`);
+        if (fs.cpSync) {
+            fs.cpSync(srcDep, destDep, { recursive: true, dereference: true });
+        } else {
+            deployWithPermissions(srcDep, destDep);
+        }
     } else {
         console.log(`[WARN] Dependency ${dep} not found in root!`);
     }
