@@ -1,19 +1,27 @@
 /**
- * KP APPLICATION - HOSTINGER ENTRY POINT (v48)
+ * KP APPLICATION - NUCLEAR DIAGNOSTIC (v49)
+ * Goal: Proves the Node.js Proxy is working.
  */
-console.log('--- [NODE] index.js Booting... ---');
+const http = require('http');
+const port = process.env.PORT || 3000;
 
-try {
-    // We proxy to server.js which contains the Next.js logic
-    require('./server.js');
-} catch (err) {
-    console.error('--- [FATAL] Failed to load server.js ---');
-    console.error(err);
-    
-    // Fallback server to prevent 503/403
-    const http = require('http');
-    http.createServer((req, res) => {
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
-        res.end(`[V48-BOOT-ERROR] Proxy failed: ${err.message}`);
-    }).listen(process.env.PORT || 3000);
-}
+console.log('--- [V49-NUCLEAR] BOOTING ---');
+
+const server = http.createServer((req, res) => {
+    console.log(`> [REQ] ${req.url}`);
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(`
+        <div style="font-family: system-ui; padding: 2rem; border: 10px solid lime;">
+            <h1>✅ [V49-SUCCESS] Node.js Proxy is Working!</h1>
+            <p>If you see this, the "403 Forbidden" for the Node app is GONE.</p>
+            <p><b>Time:</b> ${new Date().toISOString()}</p>
+            <p><b>Version:</b> 49.Nuclear</p>
+            <hr>
+            <p>Next step: Re-enable Next.js once we confirm this works.</p>
+        </div>
+    `);
+});
+
+server.listen(port, () => {
+    console.log(`--- [V49-NUCLEAR] LISTENING ON ${port} ---`);
+});
