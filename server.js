@@ -1,76 +1,40 @@
-const { createServer } = require('http')
-const { parse } = require('url')
-const path = require('path')
-const fs = require('fs')
+const http = require('http');
 
-// DIAGNOSTIC HEADER (v29)
+// V30 ABSOLUTE MINIMUM - NO DEPENDENCIES
+const port = process.env.PORT || 3000;
+
 console.log('##############################################');
-console.log('# [KP-V29-DIAGNOSTIC] STARTING...            #');
+console.log('# [KP-V30-MINIMUM] BOOTING...                #');
 console.log('##############################################');
-console.log('TIME:', new Date().toISOString());
-console.log('DIR:', __dirname);
-console.log('CWD:', process.cwd());
+console.log('PORT:', port);
+console.log('DIRNAME:', __dirname);
+console.log('PROCESS CWD:', process.cwd());
 
-const port = process.env.PORT || 3000
+const server = http.createServer((req, res) => {
+    console.log(`> [V30-INFO] Incoming Request: ${req.method} ${req.url}`);
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(`
+        <html>
+            <body style="font-family: system-ui; padding: 3rem; line-height: 1.5; max-width: 800px; margin: auto; background: #f0f7ff;">
+                <h1 style="color: #0066cc; border-bottom: 2px solid #0066cc; padding-bottom: 0.5rem;">🎉 [V30] PROXY IS WORKING!</h1>
+                <p>If you can see this page, it means <b>Hostinger is correctly reaching your Node.js process</b>.</p>
+                <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid #cce0ff; margin-top: 2rem;">
+                    <h3>Environment Diagnostics:</h3>
+                    <ul>
+                        <li><b>Node Version:</b> ${process.version}</li>
+                        <li><b>App Directory:</b> <code>${__dirname}</code></li>
+                        <li><b>Working Directory:</b> <code>${process.cwd()}</code></li>
+                        <li><b>Assigned Port:</b> <code>${port}</code></li>
+                    </ul>
+                </div>
+                <p style="margin-top: 2rem; color: #666;">
+                    Next Step: If this works, we will re-enable the full <b>Next.js</b> application.
+                </p>
+            </body>
+        </html>
+    `);
+});
 
-// Helper to look for 'next'
-function getNext() {
-    const search = [
-        'next',
-        path.join(__dirname, 'node_modules', 'next'),
-        path.join(__dirname, '..', 'node_modules', 'next')
-    ];
-    for (const p of search) {
-        try {
-            const m = require(p);
-            console.log(`> [OK] Loaded "next" from: ${p}`);
-            return m;
-        } catch (e) {}
-    }
-    return null;
-}
-
-const next = getNext();
-
-if (!next) {
-    console.error('> [ERROR] "next" module NOT FOUND. Starting Fail-Safe Diagnostic Server.');
-    
-    // START FAIL-SAFE SERVER
-    createServer((req, res) => {
-        res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(`
-            <html>
-                <body style="font-family: sans-serif; padding: 2rem; background: #fff5f5; color: #c53030;">
-                    <h1>⚠️ [KP-V29] Dependency Missing</h1>
-                    <p>The Node.js server is <b>RUNNING</b>, but the <b>"next"</b> module is missing.</p>
-                    <p><b>This proves your Path/Proxy is working!</b> The issue is just the files.</p>
-                    <hr>
-                    <pre>
-__dirname: ${__dirname}
-cwd: ${process.cwd()}
-PORT: ${port}
-                    </pre>
-                </body>
-            </html>
-        `);
-    }).listen(port, () => {
-        console.log(`> [FAIL-SAFE] Listening on ${port}. Use this to verify your domain points here.`);
-    });
-} else {
-    // STANDARD STARTUP
-    const dev = false
-    const app = next({ dev, dir: '.' })
-    const handle = app.getRequestHandler()
-
-    app.prepare().then(() => {
-        createServer((req, res) => {
-            const parsedUrl = parse(req.url, true)
-            handle(req, res, parsedUrl)
-        }).listen(port, (err) => {
-            if (err) throw err
-            console.log(`> [READY] KP App active on port ${port}`);
-        })
-    }).catch(err => {
-        console.error('> [FATAL] Startup Error:', err);
-    });
-}
+server.listen(port, () => {
+    console.log(`> [V30-READY] Server is listening on port ${port}`);
+});
