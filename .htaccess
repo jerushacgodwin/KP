@@ -1,8 +1,16 @@
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteBase /
-  RewriteRule ^index\.js$ - [L]
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule . /index.js [L]
+# FORCE PASSENGER BRIDGE (v61)
+# ------------------------------
+# If Hostinger's Node Selector fails, this forces LiteSpeed to use Passenger.
+
+<IfModule mod_passenger.c>
+    PassengerEnabled on
+    PassengerAppType node
+    PassengerStartupFile server.js
+    PassengerAppRoot /home/u102032541/domains/lightgreen-wolverine-191417.hostingersite.com
 </IfModule>
+
+# Handle 403s explicitly
+ErrorDocument 403 default
+
+# Disable directory listing
+Options -Indexes
