@@ -1,40 +1,87 @@
-const http = require('http');
+const { createServer } = require('http')
+const { parse } = require('url')
+const path = require('path')
+const fs = require('fs')
 
-// V30 ABSOLUTE MINIMUM - NO DEPENDENCIES
-const port = process.env.PORT || 3000;
-
+// V32 STANDALONE ORCHESTRATOR
 console.log('##############################################');
-console.log('# [KP-V30-MINIMUM] BOOTING...                #');
+console.log('# [KP-V32-STANDALONE] STARTING...            #');
 console.log('##############################################');
-console.log('PORT:', port);
-console.log('DIRNAME:', __dirname);
-console.log('PROCESS CWD:', process.cwd());
+console.log('DIR:', __dirname);
 
-const server = http.createServer((req, res) => {
-    console.log(`> [V30-INFO] Incoming Request: ${req.method} ${req.url}`);
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end(`
-        <html>
-            <body style="font-family: system-ui; padding: 3rem; line-height: 1.5; max-width: 800px; margin: auto; background: #f0f7ff;">
-                <h1 style="color: #0066cc; border-bottom: 2px solid #0066cc; padding-bottom: 0.5rem;">🎉 [V30] PROXY IS WORKING!</h1>
-                <p>If you can see this page, it means <b>Hostinger is correctly reaching your Node.js process</b>.</p>
-                <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid #cce0ff; margin-top: 2rem;">
-                    <h3>Environment Diagnostics:</h3>
-                    <ul>
-                        <li><b>Node Version:</b> ${process.version}</li>
-                        <li><b>App Directory:</b> <code>${__dirname}</code></li>
-                        <li><b>Working Directory:</b> <code>${process.cwd()}</code></li>
-                        <li><b>Assigned Port:</b> <code>${port}</code></li>
-                    </ul>
-                </div>
-                <p style="margin-top: 2rem; color: #666;">
-                    Next Step: If this works, we will re-enable the full <b>Next.js</b> application.
-                </p>
-            </body>
-        </html>
-    `);
-});
+const port = process.env.PORT || 3000
 
-server.listen(port, () => {
-    console.log(`> [V30-READY] Server is listening on port ${port}`);
-});
+// Helper to look for 'next' (adjusted for standalone structure)
+function getNext() {
+    const search = [
+        'next',
+        path.join(__dirname, 'node_modules', 'next'), // Inside standalone
+        path.join(__dirname, '..', '..', 'node_modules', 'next') // Outside (parent of application)
+    ];
+    for (const p of search) {
+        try {
+            const m = require(p);
+            console.log(`> [OK] Loaded "next" from: ${p}`);
+            return m;
+        } catch (e) {}
+    }
+    return null;
+}
+
+const next = getNext();
+
+if (!next) {
+    console.error('> [ERROR] "next" module NOT FOUND. Starting Fail-Safe Diagnostic.');
+    
+    createServer((req, res) => {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(`
+            <html>
+                <body style="font-family: sans-serif; padding: 2rem; background: #fff5f5; color: #c53030;">
+                    <h1>⚠️ [KP-V32] Standalone Dependency Missing</h1>
+                    <p>The Node.js server is <b>RUNNING</b>, but the <b>"next"</b> module was not found in the standalone bundle.</p>
+                    <hr>
+                    <pre>__dirname: ${__dirname}</pre>
+                </body>
+            </html>
+        `);
+    }).listen(port, () => {
+        console.log(`> [FAIL-SAFE] Listening on ${port}`);
+    });
+} else {
+    // STANDARD STARTUP (Load our routes)
+    const dev = false
+    const app = next({ dev, dir: '.' })
+    const handle = app.getRequestHandler()
+
+    // Backend Loader
+    let expressApp;
+    try {
+        const backendPath = path.join(__dirname, 'packages', 'server', 'dist', 'app.js');
+        if (fs.existsSync(backendPath)) {
+            expressApp = require(backendPath).default;
+            console.log('> [BACKEND] Loaded.');
+        }
+    } catch (e) {
+        console.warn('> [BACKEND] Load failed:', e.message);
+    }
+
+    app.prepare().then(() => {
+        createServer((req, res) => {
+            const parsedUrl = parse(req.url, true)
+            const { pathname } = parsedUrl
+
+            // API Routing
+            if (expressApp && pathname.match(/^\/(user|student|teacher|finance|events|class|hr|library|transport|hostel|attendance|exams|chapters|uploads)/)) {
+                return expressApp(req, res);
+            }
+
+            handle(req, res, parsedUrl)
+        }).listen(port, (err) => {
+            if (err) throw err
+            console.log(`> [READY] KP App active on ${port}`);
+        })
+    }).catch(err => {
+        console.error('> [FATAL] Startup Error:', err);
+    });
+}

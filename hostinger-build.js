@@ -20,61 +20,54 @@ function copyRecursiveSync(src, dest) {
     }
 }
 
-const root = __dirname;
-const targetDir = path.join(root, 'deploy_ready');
-
-console.log(`\n--- [BUILD-V31] TARGETED DEPLOYMENT PREP ---`);
-console.log(`Working Directory: ${root}`);
-console.log(`Deployment Target: ${targetDir}`);
-
-// 1. Clean/Create target directory
-if (fs.existsSync(targetDir)) {
-    console.log(`> Cleaning existing target directory...`);
-    fs.rmSync(targetDir, { recursive: true, force: true });
-}
-fs.mkdirSync(targetDir, { recursive: true });
-
-// 2. Build Next.js (Minimalist for now to ensure speed/success)
-// We only do this to ensure we HAVE a build, but our v31 server is still a diagnostic "Hello World"
-console.log(`\n> Attempting Next.js build...`);
-try {
-    execSync('npm run build', { 
-        cwd: path.join(root, 'application'), 
-        stdio: 'inherit',
-        env: { ...process.env, NEXT_DISABLE_INTERACTIVE_INSTALL: '1' }
-    });
-} catch (e) {
-    console.warn(`> [WARN] Next.js build failed or skipped. Continuing with diagnostic server only.`);
-}
-
-// 3. Assemble the "deploy_ready" package
-console.log(`\n> Assembling deployment package in ${targetDir}...`);
-
-// Copy orchestrator and core files
-const coreFiles = ['server.js', 'package.json', '.npmrc'];
-coreFiles.forEach(file => {
-    const src = path.join(root, file);
-    if (fs.existsSync(src)) {
-        fs.copyFileSync(src, path.join(targetDir, file));
-        console.log(`  [OK] Copied ${file}`);
-    } else {
-        console.warn(`  [MISSING] ${file} not found at root!`);
+function run(cmd, cwd) {
+    console.log(`\n> [BUILD] ${cmd}`);
+    try {
+        execSync(cmd, { cwd, stdio: 'inherit', env: { ...process.env, NEXT_DISABLE_INTERACTIVE_INSTALL: '1' } });
+    } catch (e) { 
+        console.warn(`Build command failed: ${cmd}`);
+        process.exit(1);
     }
-});
+}
 
-// Copy dependencies (Mandatory for Hostinger)
-console.log(`> Copying node_modules (this may take a moment)...`);
-const modulesSrc = path.join(root, 'node_modules');
-if (fs.existsSync(modulesSrc)) {
-    copyRecursiveSync(modulesSrc, path.join(targetDir, 'node_modules'));
-    console.log(`  [OK] Copied node_modules`);
-} else {
-    console.error(`  [FATAL] node_modules not found at root! Run pnpm install first.`);
+const root = __dirname;
+const standaloneDir = path.join(root, 'application', '.next', 'standalone');
+
+console.log(`\n--- [BUILD-V32] STANDALONE AUTO-PACKAGE ---`);
+
+// 1. Build Backend
+run('npm run build', path.join(root, 'packages/server'));
+
+// 2. Build Frontend (Standalone)
+run('npm run build', path.join(root, 'application'));
+
+// 3. Verify Standalone Folder
+if (!fs.existsSync(standaloneDir)) {
+    console.error(`> [FATAL] Standalone folder missing at ${standaloneDir}`);
     process.exit(1);
 }
 
-// Create a validator marker
-fs.writeFileSync(path.join(targetDir, 'deployment_status.txt'), `V31 Ready - ${new Date().toISOString()}`);
+// 4. Inject Our Custom Files into Standalone
+console.log(`\n> Injecting Orchestrator into Standalone...`);
+const filesToInject = ['server.js', 'package.json', '.npmrc', '.env', '.env.local'];
+filesToInject.forEach(file => {
+    const src = path.join(root, file);
+    if (fs.existsSync(src)) {
+        fs.copyFileSync(src, path.join(standaloneDir, file));
+        console.log(`  [OK] Injected ${file}`);
+    }
+});
 
-console.log(`\n--- [BUILD-V31] PREP COMPLETE ---`);
-console.log(`PLEASE SET THE "OUTPUT DIRECTORY" IN HOSTINGER TO: deploy_ready`);
+// 5. Inject Backend into Standalone
+console.log(`> Injecting Backend services...`);
+const backendSrc = path.join(root, 'packages', 'server', 'dist');
+const backendDest = path.join(standaloneDir, 'packages', 'server', 'dist');
+copyRecursiveSync(backendSrc, backendDest);
+
+// 6. Sync Assets into Standalone (Next.js requires these inside the standalone folder)
+console.log(`> Syncing Static Assets...`);
+copyRecursiveSync(path.join(root, 'application', '.next', 'static'), path.join(standaloneDir, '.next', 'static'));
+copyRecursiveSync(path.join(root, 'application', 'public'), path.join(standaloneDir, 'public'));
+
+console.log(`\n--- [BUILD-V32] STANDALONE READY ---`);
+console.log(`NEXT STEP: Set Hostinger Output Directory to: application/.next/standalone`);
