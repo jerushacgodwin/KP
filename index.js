@@ -1,31 +1,21 @@
 /**
- * KP APPLICATION - ENTRYPOINT BRIDGE (v57)
+ * KP APPLICATION - DEFINITIVE BOOTLOADER (v59)
  */
 const fs = require('fs');
 const path = require('path');
 
-// Diagnostic: Log where we are booting from
-const logFile = path.join(__dirname, 'boot_diag.txt');
-function log(msg) {
-    const entry = `[${new Date().toISOString()}] ${msg}\n`;
-    try { fs.appendFileSync(logFile, entry); } catch (e) {}
-    console.log(msg);
-}
+// Diagnostic Marker
+const marker = path.join(__dirname, 'I_REALLY_STARTED.txt');
+try { fs.writeFileSync(marker, `BOOT-V59: ACTIVE\nTIME: ${new Date().toISOString()}\nDIR: ${__dirname}`); } catch (e) {}
 
-log(`--- [BOOT] v57 STARTING ---`);
-log(`__dirname: ${__dirname}`);
-log(`cwd: ${process.cwd()}`);
+console.log('--- [V59] DEFINITIVE BOOT ---');
 
 try {
-    const serverPath = path.join(__dirname, 'server.js');
-    if (fs.existsSync(serverPath)) {
-        log(`> Found server.js at ${serverPath}. Requiring...`);
-        require(serverPath);
-    } else {
-        log(`> [ERROR] server.js not found at ${serverPath}`);
-        // Fallback or handle error
-    }
+    require('./server.js');
 } catch (err) {
-    log(`> [FATAL] Boot execution failed: ${err.message}`);
-    log(err.stack);
+    const http = require('http');
+    http.createServer((req, res) => {
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end(`BOOT_ERROR_V59: ${err.message}\nCheck I_REALLY_STARTED.txt`);
+    }).listen(process.env.PORT || 3000);
 }
