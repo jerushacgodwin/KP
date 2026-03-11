@@ -1,5 +1,5 @@
 /**
- * v72 MASTER ORCHESTRATOR (Robust Standalone Bridge)
+ * v73 MASTER ORCHESTRATOR (Monolithic Merge)
  * High-reliability hand-off for Next.js + Backend API
  */
 const fs = require('fs');
@@ -15,7 +15,7 @@ function log(msg) {
     try { fs.appendFileSync(logPath, entry); } catch (e) {}
 }
 
-log(`--- [ORCHESTRATOR v72 STARTING] ---`);
+log(`--- [ORCHESTRATOR v73 STARTING] ---`);
 log(`CWD: ${process.cwd()}`);
 log(`DIRNAME: ${__dirname}`);
 
@@ -71,7 +71,7 @@ createServer(async (req, res) => {
         // Diagnostic Endpoints
         if (url === '/ping') {
             res.writeHead(200, { 'Content-Type': 'text/plain' });
-            return res.end(`PONG v72 (Backend: ${backendApp ? 'LOADED' : 'MISSING'})`);
+            return res.end(`PONG v73 (Backend: ${backendApp ? 'LOADED' : 'MISSING'})`);
         }
         
         if (url === '/debug-logs') {
