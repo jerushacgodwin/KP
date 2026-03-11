@@ -1,2 +1,2 @@
-// Entry point proxy for Node.js selector
+// Entry point proxy for Hostinger Node.js selector
 require('./server.js');
