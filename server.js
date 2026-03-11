@@ -1,17 +1,16 @@
-const { createServer } = require('http');
-const { parse } = require('url');
-const path = require('path');
-const fs = require('fs');
-
 /**
- * v58 INSTANT-LISTEN ORCHESTRATOR
- * Starts listening immediately to satisfy LiteSpeed/Passenger.
+ * v61 PASSENGER BRIDGE ORCHESTRATOR
+ * Instant boot marker to prove Node.js execution.
  */
+const fs = require('fs');
+const path = require('path');
+
+try { fs.writeFileSync(path.join(__dirname, 'BOOT_TIME.txt'), `NODE-BOOT: ${new Date().toISOString()}`); } catch (e) {}
+
 const port = process.env.PORT || 3000;
 
-// 1. Diagnostics
-const markerFile = path.join(__dirname, 'STARTUP_SUCCESS.txt');
-try { fs.writeFileSync(markerFile, `Booted at: ${new Date().toISOString()}\nDIR: ${__dirname}`); } catch (e) {}
+const { createServer } = require('http');
+const { parse } = require('url');
 
 // 2. Setup Engines
 const next = require('next');
