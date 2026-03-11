@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig = {
+  distDir: '../.next',
   images: {
     remotePatterns: [
       {
@@ -28,7 +29,6 @@ const nextConfig = {
    transpilePackages: ["@kp/billing", "@kp/server", "@kp/shop"],
   webpack: (config) => {
     config.resolve.alias["@src"] = path.resolve(__dirname, "src");
-    config.resolve.alias['@kp/billing'] = path.resolve(__dirname, '../packages/billing/lib');
     return config;
 
  
