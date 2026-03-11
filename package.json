@@ -14,7 +14,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "dev": "lerna run dev --stream",
-    "build": "lerna run build --scope kpapplication --stream",
+    "build": "cd application && npm run build",
     "start": "cd application && next start"
   },
   "dependencies": {
