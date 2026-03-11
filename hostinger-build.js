@@ -67,14 +67,32 @@ if (fs.existsSync(standaloneDir)) {
     });
 }
 
-// Ensure the application code is in the right place
-// Standalone usually puts the app in a subfolder with its name
-// In our case: deploy_final/application/
+// 4. Backend Consolidation & Dependencies
+console.log(`> Packing Backend API...`);
+deployWithPermissions('./packages/server/dist', path.join(targetDir, 'packages/server/dist'));
 
-// Backend API
-deployWithPermissions('./packages/server/dist', './deploy_final/packages/server/dist');
+// CRITICAL: Copy Backend Dependencies from Root
+// Next Standalone only copies UI dependencies. We need these for the bridge.
+const backendDeps = [
+    'express', 'sequelize', 'mysql2', 'cors', 'dotenv', 'zod', 
+    'bcrypt', 'bcryptjs', 'nodemailer', 'redis', 'validator', 'dompurify', 'multer'
+];
+console.log(`> Injecting Backend Dependencies...`);
+const targetNodeModules = path.join(targetDir, 'node_modules');
+if (!fs.existsSync(targetNodeModules)) fs.mkdirSync(targetNodeModules, { recursive: true });
 
-// 4. Extract Standalone Config (CRITICAL)
+backendDeps.forEach(dep => {
+    const srcDep = path.join('./node_modules', dep);
+    const destDep = path.join(targetNodeModules, dep);
+    if (fs.existsSync(srcDep)) {
+        console.log(`[DEP] Copying ${dep}...`);
+        deployWithPermissions(srcDep, destDep);
+    } else {
+        console.log(`[WARN] Dependency ${dep} not found in root!`);
+    }
+});
+
+// 5. Extract Standalone Config
 console.log(`> Extracting Standalone Config...`);
 const generatedServerPath = path.join(standaloneDir, 'application', 'server.js');
 if (fs.existsSync(generatedServerPath)) {
@@ -86,7 +104,7 @@ if (fs.existsSync(generatedServerPath)) {
     }
 }
 
-// 5. Inject Entry Point (index.js)
+// 6. Inject Entry Point (index.js)
 console.log(`> Injecting index.js...`);
 const srcServer = './server.js';
 if (fs.existsSync(srcServer)) {
@@ -105,7 +123,7 @@ if (fs.existsSync(srcServer)) {
 // Final cleanup: Kill any root .htaccess
 if (fs.existsSync('./.htaccess')) fs.unlinkSync('./.htaccess');
 
-console.log(`--- [SUCCESS] v70 ---`);
+console.log(`--- [SUCCESS] v72 ---`);
 console.log(`TARGET: ./deploy_final`);
 console.log(`ENTRY: index.js`);
 
@@ -116,7 +134,7 @@ function listTree(dir, indent = '') {
             const p = path.join(dir, file);
             const isDir = fs.lstatSync(p).isDirectory();
             console.log(`${indent}${isDir ? 'DIR' : 'FILE'}: ${file}`);
-            if (isDir && !file.includes('node_modules') && indent.length < 6) {
+            if (isDir && !file.includes('node_modules') && indent.length < 8) {
                 listTree(p, indent + '  ');
             }
         });
