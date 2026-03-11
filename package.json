@@ -14,7 +14,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "dev": "lerna run dev --stream",
-    "build": "NEXT_DISABLE_INTERACTIVE_INSTALL=1 cd application && npm run build && cd .. && cp -r application/.next/standalone/. . && mkdir -p .next && cp -r application/.next/static .next/static",
+    "build": "NEXT_DISABLE_INTERACTIVE_INSTALL=1 cd application && npm run build && cd ../packages/server && npm run build && cd ../.. && cp -r application/.next/standalone/. . && mkdir -p .next && cp -r application/.next/static .next/static",
     "start": "node server.js"
   },
   "dependencies": {
