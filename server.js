@@ -3,7 +3,7 @@ const { parse } = require('url')
 const path = require('path')
 const fs = require('fs')
 
-// V48 RESILIENT ORCHESTRATOR
+// V51 UNIFIED MONOREPO ORCHESTRATOR
 const logFile = path.join(__dirname, 'server_log.txt');
 function log(msg) {
     const entry = `[${new Date().toISOString()}] ${msg}\n`;
@@ -11,58 +11,69 @@ function log(msg) {
     try { fs.appendFileSync(logFile, entry); } catch (e) {}
 }
 
-log('##############################################');
-log('# [KP-V48-PROXY-FIX] SYSTEM ONLINE          #');
-log('##############################################');
-log(`DIR: ${__dirname}`);
-log(`NODE_VERSION: ${process.version}`);
+log('--- [KP-V51] UNIFIED MONOREPO STARTING ---');
 
-const port = process.env.PORT || 3000
+const port = process.env.PORT || 3000;
 
-function getNext() {
-    const points = [
-        'next',
-        path.join(__dirname, 'node_modules', 'next'),
-        path.join(__dirname, '..', 'node_modules', 'next'),
-        '/home/u102032541/domains/lightgreen-wolverine-191417.hostingersite.com/.next/node_modules/next'
-    ];
-    for (const p of points) {
-        try {
-            const m = require(p);
-            log(`> [OK] Loaded "next" from: ${p}`);
-            return m;
-        } catch (e) {}
+// 1. LOAD BACKEND (Express)
+let backendApp = null;
+try {
+    const backendPath = path.join(__dirname, 'packages', 'server', 'dist', 'app.js');
+    if (fs.existsSync(backendPath)) {
+        backendApp = require(backendPath);
+        if (backendApp.default) backendApp = backendApp.default; // Handle ES modules
+        log(`> [OK] Backend (Express) loaded from: ${backendPath}`);
+    } else {
+        log(`> [WARN] Backend dist not found at: ${backendPath}`);
     }
-    return null;
+} catch (err) {
+    log(`> [ERROR] Failed to load backend: ${err.message}`);
 }
 
-const next = getNext();
+// 2. LOAD FRONTEND (Next.js)
+let nextHandler = null;
+let nextApp = null;
+try {
+    const next = require('next');
+    nextApp = next({ dev: false, dir: '.' });
+    nextHandler = nextApp.getRequestHandler();
+    log(`> [OK] Next.js engine loaded.`);
+} catch (err) {
+    log(`> [FATAL] Next.js engine not found: ${err.message}`);
+}
 
-if (!next) {
-    log('> [FATAL] Next.js engine not found! Diagnostic screen active.');
-    createServer((req, res) => {
-        res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(`
-            <div style="font-family: system-ui; padding: 2rem; border-top: 10px solid gold;">
-                <h1>⚠️ [V48] Diagnostic Mode</h1>
-                <p>The Proxy is <b>Alive</b>, but Next.js is missing.</p>
-                <p><b>Check:</b> <code>server_log.txt</code> in File Manager.</p>
-                <pre>Path: ${__dirname}</pre>
-            </div>
-        `);
-    }).listen(port);
-} else {
-    const app = next({ dev: false, dir: '.' })
-    const handle = app.getRequestHandler()
-
-    app.prepare().then(() => {
+// 3. START UNIFIED SERVER
+if (nextApp) {
+    nextApp.prepare().then(() => {
         createServer((req, res) => {
-            handle(req, res, parse(req.url, true))
+            const parsedUrl = parse(req.url, true);
+            const { pathname } = parsedUrl;
+
+            // Route to Backend API
+            // Check if backendApp exists and if the route starts with its base routes
+            // Note: Express apps are also (req, res) => handlers
+            if (backendApp && (pathname.startsWith('/api') || pathname === '/' && req.headers['x-requested-with'])) {
+                backendApp(req, res);
+            } else {
+                nextHandler(req, res, parsedUrl);
+            }
         }).listen(port, (err) => {
-            if (err) throw err
-            log(`> [SUCCESS] App listening on port ${port}`);
-        })
+            if (err) throw err;
+            log(`> [READY] Unified Monorepo active on port ${port}`);
+        });
     }).catch(err => {
-        log(`> [ERROR] Prepare failed: ${err.message}`);
+        log(`> [FATAL-PREPARE] ${err.message}`);
     });
+} else {
+    // Fallback: Just run Backend if Next.js fails
+    if (backendApp) {
+        log(`> [FALLBACK] Running Backend only.`);
+        createServer(backendApp).listen(port);
+    } else {
+        log(`> [FATAL] No apps to run.`);
+        createServer((req, res) => {
+            res.writeHead(200, { 'Content-Type': 'text/plain' });
+            res.end('[V51] No app engines found. Check server_log.txt');
+        }).listen(port);
+    }
 }
