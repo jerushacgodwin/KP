@@ -1,7 +1,19 @@
+const { execSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
 /**
- * v73 Build: Monolithic Merge
+ * v73.2 Build: Monolithic Merge (Safe Mode)
  * Combines UI (Standalone) and Backend into a single high-reliability target.
  */
+console.log(`--- [BUILD] v73.2 STARTING ---`);
+
+// Diagnostic Check
+if (typeof path === 'undefined' || typeof fs === 'undefined') {
+    console.error('[FATAL] Core modules (path/fs) failed to load!');
+    process.exit(1);
+}
+
 function deployWithPermissions(src, dest) {
     try {
         if (!fs.existsSync(src)) return;
@@ -44,8 +56,6 @@ function run(cmd, cwd) {
     }
 }
 
-console.log(`--- [BUILD] v73 MONOLITHIC-MERGE ---`);
-
 // 1. Core Build Steps
 run('npm install', './packages/billing');
 run('npm run build', './packages/billing');
@@ -82,7 +92,6 @@ console.log(`> Packing Backend API...`);
 deployWithPermissions('./packages/server/dist', path.join(targetDir, 'packages/server/dist'));
 
 // CRITICAL: Copy Backend Dependencies from Root
-// Next Standalone only copies UI dependencies. We need these for the bridge.
 const backendDeps = [
     'express', 'sequelize', 'mysql2', 'cors', 'dotenv', 'zod', 
     'bcrypt', 'bcryptjs', 'nodemailer', 'redis', 'validator', 'dompurify', 'multer'
@@ -137,7 +146,7 @@ if (fs.existsSync(srcServer)) {
 // Final cleanup: Kill any root .htaccess
 if (fs.existsSync('./.htaccess')) fs.unlinkSync('./.htaccess');
 
-console.log(`--- [SUCCESS] v73 ---`);
+console.log(`--- [SUCCESS] v73.2 ---`);
 console.log(`TARGET: ./deploy_final`);
 console.log(`ENTRY: index.js`);
 
