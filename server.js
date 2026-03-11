@@ -15,7 +15,7 @@ try {
 }
 
 const dev = false
-const app = next({ dev, dir: './application' })
+const app = next({ dev, dir: '.' })
 const handle = app.getRequestHandler()
 
 // Initialize Backend if present
