@@ -21,7 +21,7 @@ function copyRecursiveSync(src, dest) {
 }
 
 function run(cmd, cwd) {
-    console.log(`\n> [BUILD-V34] ${cmd}`);
+    console.log(`\n> [BUILD-V35] ${cmd}`);
     try {
         execSync(cmd, { 
             cwd, 
@@ -35,48 +35,67 @@ function run(cmd, cwd) {
 }
 
 const root = __dirname;
+const targetDir = path.join(root, 'hostinger_ready'); // NOT IN .GITIGNORE
 const standaloneDir = path.join(root, 'application', '.next', 'standalone');
 
-console.log(`\n--- [BUILD-V34] NPM-FLAT-ROOT PREP ---`);
+console.log(`\n--- [BUILD-V35] UNIGNORED DEPLOYMENT PREP ---`);
 console.log(`Working Directory: ${root}`);
+console.log(`Target Directory: ${targetDir}`);
 
-// 1. Build Services
-// Using strictly 'npm' to avoid pnpm symlink issues
-run('npm install', root); // Ensure root dependencies are flat
+// 1. Clean/Create target directory
+if (fs.existsSync(targetDir)) {
+    console.log(`> Cleaning existing target...`);
+    fs.rmSync(targetDir, { recursive: true, force: true });
+}
+fs.mkdirSync(targetDir, { recursive: true });
+
+// 2. Build Services
+run('npm install', root); 
 run('npm run build', path.join(root, 'packages/server'));
 run('npm run build', path.join(root, 'application'));
 
-// 2. Flatten Standalone to Root
-// Next.js standalone contains its own node_modules and server.js
+// 3. Assemble Everything into hostinger_ready
+console.log(`\n> Assembling Production Bundle in /hostinger_ready...`);
+
+// Copy Standalone Engine (which includes node_modules)
 if (fs.existsSync(standaloneDir)) {
-    console.log(`\n> Moving Standalone Engine to Root...`);
-    copyRecursiveSync(standaloneDir, root);
+    console.log(`> Copying Standalone Engine...`);
+    copyRecursiveSync(standaloneDir, targetDir);
 } else {
     console.error(`> [FATAL] Standalone not found at ${standaloneDir}`);
     process.exit(1);
 }
 
-// 3. Inject Assets and Manual Overrides
-console.log(`> Syncing Static Assets & Backend dist...`);
-copyRecursiveSync(path.join(root, 'application', '.next', 'static'), path.join(root, '.next', 'static'));
-copyRecursiveSync(path.join(root, 'application', 'public'), path.join(root, 'public'));
-copyRecursiveSync(path.join(root, 'packages', 'server', 'dist'), path.join(root, 'packages', 'server', 'dist'));
-
-// 4. Force Cleanup of Conflict Files
-const filesToCleanup = ['.htaccess', '.pnpm-debug.log', 'pnpm-lock.yaml'];
-filesToCleanup.forEach(f => {
-    const p = path.join(root, f);
-    if (fs.existsSync(p)) {
-        console.log(`> Cleaning up ${f}...`);
-        fs.unlinkSync(p);
+// Inject Orchestrator & Configs
+const filesToInject = ['server.js', 'index.js', 'package.json', '.env', '.env.local'];
+filesToInject.forEach(file => {
+    const src = path.join(root, file);
+    if (fs.existsSync(src)) {
+        fs.copyFileSync(src, path.join(targetDir, file));
+        console.log(`  [OK] Injected ${file}`);
     }
 });
 
+// Inject Backend
+console.log(`> Injecting Backend services...`);
+copyRecursiveSync(path.join(root, 'packages', 'server', 'dist'), path.join(targetDir, 'packages', 'server', 'dist'));
+
+// Sync Assets (Required inside standalone structure)
+console.log(`> Syncing Static Assets...`);
+copyRecursiveSync(path.join(root, 'application', '.next', 'static'), path.join(targetDir, '.next', 'static'));
+copyRecursiveSync(path.join(root, 'application', 'public'), path.join(targetDir, 'public'));
+
+// 4. Force Cleanup of Conflict Files in target
+const htaccess = path.join(targetDir, '.htaccess');
+if (fs.existsSync(htaccess)) {
+    fs.unlinkSync(htaccess);
+}
+
 // 5. Final Verification
-if (fs.existsSync(path.join(root, 'server.js')) && fs.existsSync(path.join(root, 'node_modules'))) {
-    console.log(`\n--- [BUILD-V34] SUCCESS: ROOT IS PRODUCTION-READY ---`);
-    console.log(`MANDATORY: Set Hostinger "Output Directory" to EMPTY (leave it blank).`);
+if (fs.existsSync(path.join(targetDir, 'server.js')) && fs.existsSync(path.join(targetDir, 'node_modules'))) {
+    console.log(`\n--- [BUILD-V35] SUCCESS: HOSTINGER_READY IS PRODUCTION-READY ---`);
+    console.log(`MANDATORY: Set Hostinger Output Directory to: hostinger_ready`);
 } else {
-    console.error(`\n--- [BUILD-V34] FAILURE: ROOT MISSING CORE FILES ---`);
+    console.error(`\n--- [BUILD-V35] FAILURE: BUNDLE IS INCOMPLETE ---`);
     process.exit(1);
 }
