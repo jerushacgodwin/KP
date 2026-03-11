@@ -1,41 +1,66 @@
-const http = require('http');
-const fs = require('fs');
-const path = require('path');
+const { createServer } = require('http')
+const { parse } = require('url')
+const path = require('path')
+const fs = require('fs')
 
-// V37 BREADCRUMB - ZERO DEPENDENCIES
-const port = process.env.PORT || 3000;
-
+// V38 DIAGNOSTIC ORCHESTRATOR
 console.log('##############################################');
-console.log('# [KP-V37-BREADCRUMB] STARTUP...             #');
+console.log('# [KP-V38-FORCED] STARTING...              #');
 console.log('##############################################');
-console.log('PORT:', port);
 console.log('DIR:', __dirname);
-console.log('FILES:', fs.readdirSync(__dirname));
+console.log('ENV:', process.env.NODE_ENV);
 
-const server = http.createServer((req, res) => {
-    console.log(`> [REQ] ${req.url}`);
-    
-    // Simple diagnostic routing
-    if (req.url === '/test-node') {
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
-        return res.end('[V37] Node.js is ALIVE and reachable!');
+const port = process.env.PORT || 3000
+
+// Helper to find 'next'
+function getNext() {
+    const searchPoints = [
+        'next',
+        path.join(__dirname, 'node_modules', 'next'),
+        path.join(__dirname, '..', 'node_modules', 'next'),
+        path.join(__dirname, 'application', 'node_modules', 'next')
+    ];
+    for (const p of searchPoints) {
+        try {
+            const m = require(p);
+            console.log(`> [OK] Loaded "next" from: ${p}`);
+            return m;
+        } catch (e) {}
     }
+    return null;
+}
 
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end(`
-        <div style="font-family: sans-serif; padding: 20px; border: 5px solid #3b82f6; border-radius: 10px;">
-            <h1 style="color: #3b82f6;">🚀 [V37] BREADCRUMB READY</h1>
-            <p>If you see this, the <b>Node.js Proxy is SUCCESSFUL!</b></p>
-            <hr>
-            <p><b>Diagnostic Links:</b></p>
-            <ul>
-                <li><a href="/test-node">Test Node.js directly</a></li>
-                <li><a href="/hostinger_test.html">Test Static File access</a> (Check public folder)</li>
-            </ul>
-        </div>
-    `);
-});
+const next = getNext();
 
-server.listen(port, () => {
-    console.log(`> [V37-READY] Listening on ${port}`);
-});
+if (!next) {
+    console.error('> [ERROR] "next" module NOT FOUND. Entering Fail-Safe Mode.');
+    createServer((req, res) => {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(`
+            <html>
+                <body style="font-family: system-ui; padding: 2rem; background: #fff5f5;">
+                    <h1 style="color: #c53030;">⚠️ [KP-V38] Dependency Missing</h1>
+                    <p>The Proxy is <b>Working</b>! But the files are not correctly structured.</p>
+                    <pre>__dirname: ${__dirname}</pre>
+                </body>
+            </html>
+        `);
+    }).listen(port, () => console.log(`> [FAIL-SAFE] Port ${port} active.`));
+} else {
+    // Normal startup
+    const dev = false
+    const app = next({ dev, dir: '.' })
+    const handle = app.getRequestHandler()
+
+    app.prepare().then(() => {
+        createServer((req, res) => {
+            const parsedUrl = parse(req.url, true)
+            handle(req, res, parsedUrl)
+        }).listen(port, (err) => {
+            if (err) throw err
+            console.log(`> [READY] KP App is active on port ${port}`);
+        })
+    }).catch(err => {
+        console.error('> [FATAL] App Prepare Error:', err);
+    });
+}

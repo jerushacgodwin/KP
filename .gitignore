@@ -1,3 +1,7 @@
+# Hostinger Deployment Un-ignore (v38)
+!deploy/
+!deploy/**
+
 # Dependencies
 node_modules/
 .pnp
