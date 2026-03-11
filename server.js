@@ -2,29 +2,33 @@ const { createServer } = require('http')
 const { parse } = require('url')
 const path = require('path')
 
-// Add current directory to module search path to help Hostinger find 'next'
+console.log('--- STARTING KP UNIFIED ORCHESTRATOR (v25) ---');
+console.log('Running from:', __dirname);
+
+// ADD ROOT node_modules TO RESOLUTION PATH
 module.paths.push(path.join(__dirname, 'node_modules'));
 
 // Robust require strategy for Next.js
 let next;
 const possibleNextPaths = [
+  'next', 
   path.join(__dirname, 'node_modules', 'next'),
-  'next' // Fallback to global/standard resolution
+  path.join(__dirname, 'application', 'node_modules', 'next'),
+  path.join(__dirname, '..', 'node_modules', 'next') // Hostinger nodejs/public_html cross-path
 ];
 
-for (const nextPath of possibleNextPaths) {
+for (const p of possibleNextPaths) {
   try {
-    next = require(nextPath);
-    console.log(`> Successfully loaded 'next' from: ${nextPath}`);
+    next = require(p);
+    console.log(`> [OK] Loaded 'next' from: ${p}`);
     break;
   } catch (e) {
-    // Continue to next path
+    // try next
   }
 }
 
 if (!next) {
-  console.error('Fatal: "next" module not found. Searched paths:', possibleNextPaths);
-  console.error('Current __dirname:', __dirname);
+  console.error('FATAL: Module "next" not found. Searched:', possibleNextPaths);
   process.exit(1);
 }
 
@@ -32,13 +36,13 @@ const dev = false
 const app = next({ dev, dir: '.' })
 const handle = app.getRequestHandler()
 
-// Initialize Backend if present
+// Initialize Backend
 let expressApp;
 try {
-  // We use the transpiled version of the server
   expressApp = require('./packages/server/dist/app').default;
+  console.log(`> [OK] Loaded Backend services.`);
 } catch (e) {
-  console.warn('Backend server not loaded. Check packages/server/dist/app.js existence.');
+  console.warn('> [WARN] Backend services not loaded.');
 }
 
 const port = process.env.PORT || 3000
@@ -48,20 +52,17 @@ app.prepare().then(() => {
     const parsedUrl = parse(req.url, true)
     const { pathname } = parsedUrl
 
-    // Route API paths to Express
     const apiPrefixes = ['/user', '/student', '/teacher', '/finance', '/events', '/class', '/hr', '/library', '/transport', '/hostel', '/attendance', '/exams', '/chapters', '/uploads'];
     
     if (expressApp && apiPrefixes.some(prefix => pathname.startsWith(prefix))) {
       return expressApp(req, res);
     }
 
-    // Default to Next.js Frontend
     handle(req, res, parsedUrl)
   }).listen(port, (err) => {
     if (err) throw err
-    console.log(`> Ready on Port ${port}`)
+    console.log(`> [SUCCESS] active on port: ${port}`)
   })
 }).catch((err) => {
-  console.error('Server failed to start:', err);
   process.exit(1);
 });
