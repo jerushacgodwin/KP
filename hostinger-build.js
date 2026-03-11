@@ -3,7 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * Silent Monorepo Build (v55 Production Bridge)
+ * DEFINITIVE Monorepo Build (v56 Absolute Stealth)
+ * Reverts to .next to satisfy Hostinger validator.
  */
 function deployWithPermissions(src, dest) {
     try {
@@ -37,10 +38,10 @@ function run(cmd, cwd) {
 }
 
 const root = __dirname;
-// Target "production" instead of dot-folder ".next" to satisfy LiteSpeed
-const targetDir = path.join(root, 'production'); 
+// REVERTED: Target folder name is back to .next
+const targetDir = path.join(root, '.next'); 
 
-console.log(`--- [MONOREPO-BUILD] V55 PRODUCTION-BRIDGE ---`);
+console.log(`--- [MONOREPO-BUILD] V56 ABSOLUTE-STEALTH ---`);
 
 // 1. Build
 run('npm install', path.join(root, 'packages', 'billing'));
@@ -53,15 +54,25 @@ run('npm install', path.join(root, 'application'));
 run('npm run build', path.join(root, 'application'));
 
 // 2. Consolidate (Silently)
-if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
-fs.mkdirSync(targetDir, { recursive: true });
+if (fs.existsSync(targetDir)) {
+    // Keep dir, wipe contents to ensure fresh deployment
+    fs.readdirSync(targetDir).forEach(f => {
+        const p = path.join(targetDir, f);
+        if (fs.lstatSync(p).isDirectory()) fs.rmSync(p, { recursive: true, force: true });
+        else fs.unlinkSync(p);
+    });
+} else {
+    fs.mkdirSync(targetDir, { recursive: true });
+}
 
 // Core Engines
 const standalone = path.join(root, 'application', '.next', 'standalone');
 if (fs.existsSync(standalone)) deployWithPermissions(standalone, targetDir);
 
 const backendDist = path.join(root, 'packages', 'server', 'dist');
-deployWithPermissions(backendDist, path.join(targetDir, 'packages', 'server', 'dist'));
+if (fs.existsSync(backendDist)) {
+    deployWithPermissions(backendDist, path.join(targetDir, 'packages', 'server', 'dist'));
+}
 
 // Assets
 const appNext = path.join(root, 'application', '.next');
@@ -82,4 +93,4 @@ if (fs.existsSync(path.join(root, '.htaccess'))) fs.unlinkSync(path.join(root, '
 if (fs.existsSync(path.join(targetDir, '.htaccess'))) fs.unlinkSync(path.join(targetDir, '.htaccess'));
 
 console.log(`--- [BUILD-SUCCESS] ---`);
-console.log(`TARGET: /production`);
+console.log(`TARGET: /.next`);
