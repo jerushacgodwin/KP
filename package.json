@@ -1,6 +1,7 @@
 {
   "name": "kp",
   "private": true,
+  "main": "index.js",
   "workspaces": [
     "application",
     "packages/*"
