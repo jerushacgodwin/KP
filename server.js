@@ -3,87 +3,74 @@ const { parse } = require('url')
 const path = require('path')
 const fs = require('fs')
 
-// NUCLEAR DIAGNOSTIC STARTUP (v28)
+// DIAGNOSTIC HEADER (v29)
 console.log('##############################################');
-console.log('# [KP-V28-MASTER] STARTING SERVER...         #');
+console.log('# [KP-V29-DIAGNOSTIC] STARTING...            #');
 console.log('##############################################');
-console.log('TIMESTAMP:', new Date().toISOString());
-console.log('__dirname:', __dirname);
+console.log('TIME:', new Date().toISOString());
+console.log('DIR:', __dirname);
 console.log('CWD:', process.cwd());
 
-// Helper to find 'next' in any adjacent directory
-function getNextModule() {
-    const homeDir = path.resolve(__dirname, '..');
-    const searchPoints = [
+const port = process.env.PORT || 3000
+
+// Helper to look for 'next'
+function getNext() {
+    const search = [
+        'next',
         path.join(__dirname, 'node_modules', 'next'),
-        path.join(homeDir, 'public_html', 'node_modules', 'next'),
-        path.join(homeDir, 'nodejs', 'node_modules', 'next'),
-        'next' // Global
+        path.join(__dirname, '..', 'node_modules', 'next')
     ];
-
-    console.log('> Searching for "next" module in:', searchPoints);
-
-    for (const p of searchPoints) {
+    for (const p of search) {
         try {
             const m = require(p);
-            console.log(`> [FOUND] Loaded "next" from: ${p}`);
+            console.log(`> [OK] Loaded "next" from: ${p}`);
             return m;
-        } catch (e) {
-            // try next point
-        }
+        } catch (e) {}
     }
     return null;
 }
 
-const next = getNextModule();
+const next = getNext();
 
 if (!next) {
-    console.error('##############################################');
-    console.error('# [FATAL] module "next" NOT FOUND!           #');
-    console.error('##############################################');
-    try {
-        console.log('> Directory contents of current folder:', fs.readdirSync(__dirname));
-        console.log('> Directory contents of parent folder:', fs.readdirSync(path.resolve(__dirname, '..')));
-    } catch (e) {}
-    process.exit(1);
-}
-
-const dev = false
-const app = next({ dev, dir: '.' })
-const handle = app.getRequestHandler()
-
-// Backend Loader
-let expressApp;
-try {
-    const backendPath = path.join(__dirname, 'packages', 'server', 'dist', 'app.js');
-    if (fs.existsSync(backendPath)) {
-        expressApp = require(backendPath).default;
-        console.log('> [BACKEND] Loaded successfully.');
-    } else {
-        console.log(`> [BACKEND] Missing dist at: ${backendPath}`);
-    }
-} catch (e) {
-    console.warn('> [BACKEND] Failed to load:', e.message);
-}
-
-const port = process.env.PORT || 3000
-
-app.prepare().then(() => {
+    console.error('> [ERROR] "next" module NOT FOUND. Starting Fail-Safe Diagnostic Server.');
+    
+    // START FAIL-SAFE SERVER
     createServer((req, res) => {
-        const parsedUrl = parse(req.url, true)
-        const { pathname } = parsedUrl
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(`
+            <html>
+                <body style="font-family: sans-serif; padding: 2rem; background: #fff5f5; color: #c53030;">
+                    <h1>⚠️ [KP-V29] Dependency Missing</h1>
+                    <p>The Node.js server is <b>RUNNING</b>, but the <b>"next"</b> module is missing.</p>
+                    <p><b>This proves your Path/Proxy is working!</b> The issue is just the files.</p>
+                    <hr>
+                    <pre>
+__dirname: ${__dirname}
+cwd: ${process.cwd()}
+PORT: ${port}
+                    </pre>
+                </body>
+            </html>
+        `);
+    }).listen(port, () => {
+        console.log(`> [FAIL-SAFE] Listening on ${port}. Use this to verify your domain points here.`);
+    });
+} else {
+    // STANDARD STARTUP
+    const dev = false
+    const app = next({ dev, dir: '.' })
+    const handle = app.getRequestHandler()
 
-        // API routing
-        if (expressApp && pathname.match(/^\/(user|student|teacher|finance|events|class|hr|library|transport|hostel|attendance|exams|chapters|uploads)/)) {
-            return expressApp(req, res);
-        }
-
-        handle(req, res, parsedUrl)
-    }).listen(port, (err) => {
-        if (err) throw err
-        console.log(`> [STARTUP] Success! Listening on port ${port}`);
-    })
-}).catch((err) => {
-    console.error('> [STARTUP] Preparation error:', err);
-    process.exit(1);
-});
+    app.prepare().then(() => {
+        createServer((req, res) => {
+            const parsedUrl = parse(req.url, true)
+            handle(req, res, parsedUrl)
+        }).listen(port, (err) => {
+            if (err) throw err
+            console.log(`> [READY] KP App active on port ${port}`);
+        })
+    }).catch(err => {
+        console.error('> [FATAL] Startup Error:', err);
+    });
+}
