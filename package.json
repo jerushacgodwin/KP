@@ -14,7 +14,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "dev": "lerna run dev --stream",
-    "build": "NEXT_DISABLE_INTERACTIVE_INSTALL=1 cd application && npm run build && cd ../packages/server && npm run build && cd ../.. && mkdir -p .hostinger_output",
+    "build": "NEXT_DISABLE_INTERACTIVE_INSTALL=1 cd application && npm run build && cd ../packages/server && npm run build && cd ../.. && rm -rf hostinger_dist && mkdir -p hostinger_dist && cp -r application/.next hostinger_dist/.next && cp -r application/public hostinger_dist/public && mkdir -p hostinger_dist/packages/server && cp -r packages/server/dist hostinger_dist/packages/server/dist && cp package.json server.js index.js .npmrc hostinger_dist/ && (mv node_modules hostinger_dist/node_modules || cp -r node_modules hostinger_dist/node_modules)",
     "start": "node server.js"
   },
   "dependencies": {
