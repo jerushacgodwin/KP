@@ -14,7 +14,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "dev": "lerna run dev --stream",
-    "build": "NEXT_DISABLE_INTERACTIVE_INSTALL=1 cd application && npm run build && cd ../packages/server && npm run build && cd ../..",
+    "build": "NEXT_DISABLE_INTERACTIVE_INSTALL=1 cd application && npm run build && cd ../packages/server && npm run build && cd ../.. && mkdir -p .hostinger_output",
     "start": "node server.js"
   },
   "dependencies": {
