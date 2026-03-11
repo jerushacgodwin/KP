@@ -69,10 +69,14 @@ if (fs.existsSync(standalone)) {
     });
 }
 
+// Ensure the application code is in the right place
+// Standalone usually puts the app in a subfolder with its name
+// In our case: deploy_final/application/
+
 // Backend API
 deployWithPermissions('./packages/server/dist', './deploy_final/packages/server/dist');
 
-// 4. Inject Entry Point (index.js)
+// 5. Inject Entry Point (index.js)
 console.log(`> Injecting index.js...`);
 const srcServer = './server.js';
 if (fs.existsSync(srcServer)) {
