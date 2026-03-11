@@ -56,32 +56,60 @@ fs.mkdirSync(targetDir, { recursive: true });
 // 3. Verbose Consolidation
 console.log(`> Packing into UN-IGNORED ./deploy_final...`);
 
-// Preserving .next folder (Nested)
-deployWithPermissions('./application/.next', './deploy_final/.next');
-
-// UI Standalone contents
-const standalone = './application/.next/standalone';
-if (fs.existsSync(standalone)) {
-    fs.readdirSync(standalone).forEach(f => {
-        if (f !== '.next') {
-            deployWithPermissions(path.join(standalone, f), path.join(targetDir, f));
-        }
+// Move STANDALONE contents to root of deploy_final
+const standaloneDir = './application/.next/standalone';
+if (fs.existsSync(standaloneDir)) {
+    console.log(`> Processing Standalone...`);
+    fs.readdirSync(standaloneDir).forEach(item => {
+        const src = path.join(standaloneDir, item);
+        const dest = path.join(targetDir, item);
+        deployWithPermissions(src, dest);
     });
 }
 
-// Ensure the application code is in the right place
-// Standalone usually puts the app in a subfolder with its name
-// In our case: deploy_final/application/
+// 4. Backend Consolidation & Dependencies
+console.log(`> Packing Backend API...`);
+deployWithPermissions('./packages/server/dist', path.join(targetDir, 'packages/server/dist'));
 
-// Backend API
-deployWithPermissions('./packages/server/dist', './deploy_final/packages/server/dist');
+// CRITICAL: Copy Backend Dependencies from Root
+// Next Standalone only copies UI dependencies. We need these for the bridge.
+const backendDeps = [
+    'express', 'sequelize', 'mysql2', 'cors', 'dotenv', 'zod', 
+    'bcrypt', 'bcryptjs', 'nodemailer', 'redis', 'validator', 'dompurify', 'multer'
+];
+console.log(`> Injecting Backend Dependencies...`);
+const targetNodeModules = path.join(targetDir, 'node_modules');
+if (!fs.existsSync(targetNodeModules)) fs.mkdirSync(targetNodeModules, { recursive: true });
 
-// 5. Inject Entry Point (index.js)
+backendDeps.forEach(dep => {
+    const srcDep = path.join('./node_modules', dep);
+    const destDep = path.join(targetNodeModules, dep);
+    if (fs.existsSync(srcDep)) {
+        console.log(`[DEP] Copying ${dep}...`);
+        deployWithPermissions(srcDep, destDep);
+    } else {
+        console.log(`[WARN] Dependency ${dep} not found in root!`);
+    }
+});
+
+// 5. Extract Standalone Config
+console.log(`> Extracting Standalone Config...`);
+const generatedServerPath = path.join(standaloneDir, 'application', 'server.js');
+if (fs.existsSync(generatedServerPath)) {
+    const content = fs.readFileSync(generatedServerPath, 'utf8');
+    const match = content.match(/const nextConfig = (\{[\s\S]*?\})\n/);
+    if (match) {
+        fs.writeFileSync(path.join(targetDir, 'next-config-standalone.json'), match[1]);
+        console.log(`[OK] next-config-standalone.json extracted.`);
+    }
+}
+
+// 6. Inject Entry Point (index.js)
 console.log(`> Injecting index.js...`);
 const srcServer = './server.js';
 if (fs.existsSync(srcServer)) {
-    fs.copyFileSync(srcServer, './deploy_final/index.js');
-    fs.chmodSync('./deploy_final/index.js', 0o644);
+    fs.copyFileSync(srcServer, path.join(targetDir, 'index.js'));
+    fs.chmodSync(path.join(targetDir, 'index.js'), 0o644);
 }
 
 // Required Files
@@ -95,7 +123,7 @@ if (fs.existsSync(srcServer)) {
 // Final cleanup: Kill any root .htaccess
 if (fs.existsSync('./.htaccess')) fs.unlinkSync('./.htaccess');
 
-console.log(`--- [SUCCESS] v70 ---`);
+console.log(`--- [SUCCESS] v72 ---`);
 console.log(`TARGET: ./deploy_final`);
 console.log(`ENTRY: index.js`);
 
@@ -106,7 +134,7 @@ function listTree(dir, indent = '') {
             const p = path.join(dir, file);
             const isDir = fs.lstatSync(p).isDirectory();
             console.log(`${indent}${isDir ? 'DIR' : 'FILE'}: ${file}`);
-            if (isDir && !file.includes('node_modules') && indent.length < 6) {
+            if (isDir && !file.includes('node_modules') && indent.length < 8) {
                 listTree(p, indent + '  ');
             }
         });
