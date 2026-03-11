@@ -16,7 +16,7 @@ function copyRecursiveSync(src, dest) {
 }
 
 function run(cmd, cwd) {
-    console.log(`\n> [BUILD-V40] ${cmd}`);
+    console.log(`\n> [BUILD-V41] ${cmd}`);
     try {
         execSync(cmd, { cwd, stdio: 'inherit', env: { ...process.env, NEXT_DISABLE_INTERACTIVE_INSTALL: '1' } });
     } catch (e) {
@@ -25,61 +25,49 @@ function run(cmd, cwd) {
 }
 
 const root = __dirname;
-// Detect Domain Root (/home/u102032541/domains/lightgreen-wolverine-191417.hostingersite.com)
-const domainRoot = path.resolve(root, '../../../../');
-const liveNodeJS = path.join(domainRoot, 'nodejs');
-const livePublicHTML = path.join(domainRoot, 'public_html');
-const standaloneDir = path.join(root, 'application', '.next', 'standalone');
+const targetDir = path.join(root, '.next'); // ROOT-LEVEL .NEXT
 
-console.log(`\n--- [BUILD-V40] DIRECT-TO-HOME DEPLOYMENT ---`);
+console.log(`\n--- [BUILD-V41] ABSOLUTE-NEXT ASSEMBLY ---`);
 console.log(`Build Root: ${root}`);
-console.log(`Live NodeJS Target: ${liveNodeJS}`);
-console.log(`Live Public Target: ${livePublicHTML}`);
+console.log(`Output Dir: ${targetDir}`);
 
-// 1. Build
+// 1. Clean and Prepare
+// We don't delete .next entirely because Next.js build might write to it first
+// But we want to ensure it's a CLEAN deployment target
+const applicationNext = path.join(root, 'application', '.next');
+
+// 2. Build Services (Standard NPM)
 run('npm install', root);
 run('npm run build', path.join(root, 'application'));
 
-// 2. Clear Live NodeJS (Critical cleanup of old symlinks/files)
-console.log(`\n> Cleaning Live NodeJS Directory...`);
-if (fs.existsSync(liveNodeJS)) {
-    fs.readdirSync(liveNodeJS).forEach(f => {
-        // Only delete file/folders that we manage
-        const p = path.join(liveNodeJS, f);
-        fs.rmSync(p, { recursive: true, force: true });
-    });
-} else {
-    fs.mkdirSync(liveNodeJS, { recursive: true });
-}
+// 3. Assemble Core into root .next
+console.log(`\n> Consolidating everything into root .next folder...`);
+if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
 
-// 3. Deploy to Live NodeJS
-console.log(`\n> Deploying Engine to Live NodeJS...`);
+// Copy Standalone Engine
+const standaloneDir = path.join(applicationNext, 'standalone');
 if (fs.existsSync(standaloneDir)) {
-    // Copy the engine + node_modules
-    copyRecursiveSync(standaloneDir, liveNodeJS);
+    console.log(`> Copying Standalone Engine...`);
+    copyRecursiveSync(standaloneDir, targetDir);
 }
 
-// Inject Entry Points & Configs
+// Inject Orchestrators & Configs
 ['server.js', 'index.js', 'package.json', '.env', '.env.local'].forEach(f => {
     const src = path.join(root, f);
     if (fs.existsSync(src)) {
-        fs.copyFileSync(src, path.join(liveNodeJS, f));
-        console.log(`  [OK] Injected ${f} to /nodejs`);
+        fs.copyFileSync(src, path.join(targetDir, f));
+        console.log(`  [OK] Injected ${f}`);
     }
 });
 
-// 4. Deploy Assets to Live PublicHTML
-console.log(`\n> Deploying Assets to Live PublicHTML...`);
-if (!fs.existsSync(livePublicHTML)) fs.mkdirSync(livePublicHTML, { recursive: true });
+// Sync Assets
+console.log(`> Syncing Static Assets...`);
+copyRecursiveSync(path.join(applicationNext, 'static'), path.join(targetDir, '.next', 'static'));
+copyRecursiveSync(path.join(root, 'application', 'public'), path.join(targetDir, 'public'));
 
-copyRecursiveSync(path.join(root, 'application', '.next', 'static'), path.join(livePublicHTML, '.next', 'static'));
-copyRecursiveSync(path.join(root, 'application', 'public'), path.join(livePublicHTML, 'public'));
+console.log(`\n--- [BUILD-V41] FOLDER CONTENT CHECK ---`);
+fs.readdirSync(targetDir).forEach(f => console.log(`  - ${f}`));
 
-// 5. Delete Conflict .htaccess in live public
-const htaccess = path.join(livePublicHTML, '.htaccess');
-if (fs.existsSync(htaccess)) fs.unlinkSync(htaccess);
-
-console.log(`\n--- [BUILD-V40] DIRECT-TO-HOME DEPLOY COMPLETE ---`);
-console.log(`MANDATORY: Set Hostinger "Output Directory" to: EMPTY (Clear the field)`);
-console.log(`MANDATORY: Set Hostinger "Application Root" to: /nodejs`);
-console.log(`MANDATORY: Set Hostinger "Entry File" to: server.js`);
+console.log(`\n--- [BUILD-V41] DONE ---`);
+console.log(`RECOMMENDED: Set Hostinger "Output Directory" to the absolute path:`);
+console.log(`/home/u102032541/domains/lightgreen-wolverine-191417.hostingersite.com/.next`);
