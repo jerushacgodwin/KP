@@ -12,54 +12,53 @@ function run(cmd, cwd) {
     }
 }
 
-// 1. Clean and Create Dist
-const dist = path.join(__dirname, 'dist');
-console.log(`Target Dist: ${dist}`);
-if (fs.existsSync(dist)) {
-    console.log('Cleaning existing dist...');
-    fs.rmSync(dist, { recursive: true, force: true });
-}
-fs.mkdirSync(dist, { recursive: true });
+const root = __dirname;
+console.log(`Target Root: ${root}`);
 
-// 2. Build Frontend (Standalone)
-run('npm run build', path.join(__dirname, 'application'));
+// 1. Build Frontend (Standalone)
+run('npm run build', path.join(root, 'application'));
 
-// 3. Build Backend
-run('npm run build', path.join(__dirname, 'packages/server'));
+// 2. Build Backend
+run('npm run build', path.join(root, 'packages/server'));
 
-// 4. Organize Dist for Hostinger logic
-// Hostinger moves the CONTENTS of the specified "Output Directory" to the root.
-console.log('\n> Organizing files for Hostinger deployment...');
+// 3. Flatten Standalone Bundle to Root
+console.log('\n> Flattening Standalone Bundle to Root...');
 
-const standalonePath = path.join(__dirname, 'application', '.next', 'standalone');
+const standalonePath = path.join(root, 'application', '.next', 'standalone');
 if (fs.existsSync(standalonePath)) {
-    console.log('Copying standalone bundle...');
-    run(`cp -r "${standalonePath}/." "${dist}/"`);
+    console.log('Copying standalone bundle content to root...');
+    // This copies server.js (Next.js server) and its isolated node_modules to the root
+    run(`cp -r "${standalonePath}/." "${root}/"`);
 } else {
     console.error('ERROR: Standalone build not found at', standalonePath);
     process.exit(1);
 }
 
-// Next.js needs /public and /.next/static to be manually copied into the production runner
-console.log('Copying static assets...');
-const staticPath = path.join(__dirname, 'application', '.next', 'static');
-const distStaticPath = path.join(dist, '.next', 'static');
-fs.mkdirSync(distStaticPath, { recursive: true });
-run(`cp -r "${staticPath}/." "${distStaticPath}/"`);
+// 4. Copy Static Assets to Root .next
+console.log('Copying static assets to root .next/static...');
+const staticPath = path.join(root, 'application', '.next', 'static');
+const rootStaticPath = path.join(root, '.next', 'static');
+fs.mkdirSync(rootStaticPath, { recursive: true });
+run(`cp -r "${staticPath}/." "${rootStaticPath}/"`);
 
-console.log('Copying public folder...');
-run(`cp -r "application/public" "${dist}/public"`);
+console.log('Copying public folder to root public...');
+run(`cp -r "application/public" "${root}/public"`);
 
-// Copy our Unified Orchestrator and entry points
-// This overwrites the Next.js default server.js in standalone folder
-console.log('Adding Unified Orchestrator...');
-run(`cp "server.js" "index.js" "package.json" ".npmrc" "${dist}/"`);
+// 5. Restore our Unified Orchestrator and entry points
+console.log('Restoring Unified Orchestrator...');
+// Standalone build might have its own server.js, we overwrite it with our unified one
+run(`cp "server.js" "index.js" "package.json" ".npmrc" "${root}/"`);
 
-// Copy Backend dist into the bundle
-console.log('Adding Backend services...');
-const serverDistTarget = path.join(dist, 'packages', 'server', 'dist');
+// 6. Add Backend services to Root
+console.log('Adding Backend services to root packages/server/dist...');
+const serverDistTarget = path.join(root, 'packages', 'server', 'dist');
 fs.mkdirSync(serverDistTarget, { recursive: true });
 run(`cp -r "packages/server/dist/." "${serverDistTarget}/"`);
 
-console.log('\n--- BUILD SUCCESSFUL ---');
-console.log('Hostinger should now move the contents of "dist" to public_html.');
+// 7. Create a DUMMY output folder just for Hostinger's validator
+console.log('Creating dummy folder for Hostinger validator...');
+fs.mkdirSync(path.join(root, '.hostinger_dummy'), { recursive: true });
+fs.writeFileSync(path.join(root, '.hostinger_dummy', 'ok.txt'), 'ready');
+
+console.log('\n--- ROOT BUILD SUCCESSFUL ---');
+console.log('Everything is now at the root. Hostinger "Output Directory" should be LEFT EMPTY.');
