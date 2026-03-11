@@ -3,9 +3,40 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * Robustly copies content, skipping if src and dest are identical.
- * Uses lstatSync to handle symbolic links and catches errors for missing paths.
+ * Iteratively creates a directory path and logs any issues.
+ * This is more robust than { recursive: true } on some environments.
  */
+function ensureDirIterative(dirPath) {
+    const parts = dirPath.split(path.sep);
+    let currentPath = '';
+
+    // Handle absolute paths on Linux/Windows
+    if (dirPath.startsWith(path.sep)) currentPath = path.sep;
+    else if (dirPath.includes(':')) { // Windows absolute
+        currentPath = parts.shift() + path.sep;
+    }
+
+    for (const part of parts) {
+        if (!part) continue;
+        currentPath = path.join(currentPath, part);
+        
+        try {
+            if (!fs.existsSync(currentPath)) {
+                console.log(`> [MKDIR] Creating: ${currentPath}`);
+                fs.mkdirSync(currentPath);
+            } else {
+                const stats = fs.lstatSync(currentPath);
+                if (!stats.isDirectory()) {
+                    throw new Error(`Path component is a FILE, not a directory: ${currentPath}`);
+                }
+            }
+        } catch (err) {
+            console.error(`> [MKDIR-FAIL] Error at ${currentPath}: ${err.message}`);
+            throw err; // Re-throw to be caught by the "Soft Fail" block
+        }
+    }
+}
+
 function copyRecursiveSync(src, dest) {
     try {
         if (!fs.existsSync(src)) return;
@@ -18,16 +49,15 @@ function copyRecursiveSync(src, dest) {
                 copyRecursiveSync(path.join(src, child), path.join(dest, child));
             });
         } else {
-            // If it's a file, copy it (overwriting by default)
             fs.copyFileSync(src, dest);
         }
     } catch (err) {
-        console.warn(`> [COPY-WARN] Skipping ${src} due to: ${err.message}`);
+        console.warn(`> [COPY-WARN] Skipping ${src}: ${err.message}`);
     }
 }
 
 function run(cmd, cwd) {
-    console.log(`\n> [BUILD-V46] ${cmd}`);
+    console.log(`\n> [BUILD-V47] ${cmd}`);
     try {
         execSync(cmd, { 
             cwd, 
@@ -42,16 +72,17 @@ function run(cmd, cwd) {
 const root = __dirname;
 const targetDir = path.join(root, '.next'); 
 
-console.log(`\n--- [BUILD-V46] ENOENT RESILIENCE ---`);
+console.log(`\n--- [BUILD-V47] ITERATIVE RESILIENCE ---`);
 console.log(`Build Root: ${root}`);
-console.log(`Target Dir: ${targetDir}`);
 
-// 1. PRE-BUILD FIXES (The "Missing Uploads" Rescue)
+// 1. SAFE DIRECTORY CREATION (Soft-Fail)
 const uploadsDir = path.join(root, 'application', 'public', 'uploads');
-console.log(`\n> Ensuring required directories exist...`);
-if (!fs.existsSync(uploadsDir)) {
-    console.log(`> [FIX] Creating missing directory: ${uploadsDir}`);
-    fs.mkdirSync(uploadsDir, { recursive: true });
+console.log(`\n> Attempting to ensure uploads directory exists...`);
+try {
+    ensureDirIterative(uploadsDir);
+    console.log(`> [OK] Uploads directory verified/created.`);
+} catch (e) {
+    console.warn(`> [SOFT-FAIL] Directory creation failed, but continuing build: ${e.message}`);
 }
 
 // 2. Build Services
@@ -59,7 +90,7 @@ run('npm install', root);
 run('npm run build', path.join(root, 'application'));
 
 // 3. Consolidate into root .next
-console.log(`\n> Consolidating everything into /.next...`);
+console.log(`\n> Consolidating into /.next...`);
 if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
 
 const standaloneDir = path.join(root, 'application', '.next', 'standalone');
@@ -68,7 +99,7 @@ if (fs.existsSync(standaloneDir)) {
     copyRecursiveSync(standaloneDir, targetDir);
 }
 
-// Inject Entry Points & Configs
+// Inject Entry Points
 ['server.js', 'index.js', 'package.json', '.env', '.env.local'].forEach(f => {
     const src = path.join(root, f);
     if (fs.existsSync(src)) {
@@ -77,33 +108,28 @@ if (fs.existsSync(standaloneDir)) {
     }
 });
 
-// Sync Static Assets
+// Sync Assets
 const applicationNext = path.join(root, 'application', '.next');
 copyRecursiveSync(path.join(applicationNext, 'static'), path.join(targetDir, '.next', 'static'));
 copyRecursiveSync(path.join(root, 'application', 'public'), path.join(targetDir, 'public'));
 
-// 4. CRITICAL: GLOBAL HTACCESS PURGE (With Error Resilience)
+// 4. GLOBAL HTACCESS PURGE
 const purgeHtaccess = (dir) => {
     try {
         if (!fs.existsSync(dir)) return;
         const files = fs.readdirSync(dir);
         files.forEach(file => {
-            const fullPath = path.join(dir, file);
+            const p = path.join(dir, file);
             try {
-                const stats = fs.lstatSync(fullPath);
                 if (file === '.htaccess') {
-                    console.log(`> [PURGE] Deleting ${fullPath}...`);
-                    fs.unlinkSync(fullPath);
-                } else if (stats.isDirectory() && !fullPath.includes('node_modules')) {
-                    purgeHtaccess(fullPath);
+                    console.log(`> [PURGE] Deleting ${p}...`);
+                    fs.unlinkSync(p);
+                } else if (fs.lstatSync(p).isDirectory() && !p.includes('node_modules')) {
+                    purgeHtaccess(p);
                 }
-            } catch (innerErr) {
-                // Skip files we can't stat/read
-            }
+            } catch (e) {}
         });
-    } catch (dirErr) {
-        // Skip directories we can't read
-    }
+    } catch (e) {}
 };
 
 console.log(`> Running Global .htaccess Purge...`);
@@ -111,7 +137,6 @@ purgeHtaccess(root);
 purgeHtaccess(targetDir);
 
 // 5. Final verification
-console.log(`\n--- [BUILD-V46] SUCCESS ---`);
-fs.readdirSync(targetDir).forEach(f => console.log(`  - ${f}`));
-console.log(`\nMANDATORY: Set Hostinger "Output Directory" to the ABSOLUTE path:`);
+console.log(`\n--- [BUILD-V47] SUCCESS ---`);
+console.log(`MANDATORY Output Directory (ABSOLUTE):`);
 console.log(`/home/u102032541/domains/lightgreen-wolverine-191417.hostingersite.com/.next`);
