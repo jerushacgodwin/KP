@@ -56,28 +56,42 @@ fs.mkdirSync(targetDir, { recursive: true });
 // 3. Verbose Consolidation
 console.log(`> Packing into UN-IGNORED ./deploy_final...`);
 
-// Preserving .next folder (Nested)
-deployWithPermissions('./application/.next', './deploy_final/.next');
-
-// UI Standalone contents
-const standalone = './application/.next/standalone';
-if (fs.existsSync(standalone)) {
-    fs.readdirSync(standalone).forEach(f => {
-        if (f !== '.next') {
-            deployWithPermissions(path.join(standalone, f), path.join(targetDir, f));
-        }
+// Move STANDALONE contents to root of deploy_final
+const standaloneDir = './application/.next/standalone';
+if (fs.existsSync(standaloneDir)) {
+    console.log(`> Processing Standalone...`);
+    fs.readdirSync(standaloneDir).forEach(item => {
+        const src = path.join(standaloneDir, item);
+        const dest = path.join(targetDir, item);
+        deployWithPermissions(src, dest);
     });
 }
+
+// Ensure the application code is in the right place
+// Standalone usually puts the app in a subfolder with its name
+// In our case: deploy_final/application/
 
 // Backend API
 deployWithPermissions('./packages/server/dist', './deploy_final/packages/server/dist');
 
-// 4. Inject Entry Point (index.js)
+// 4. Extract Standalone Config (CRITICAL)
+console.log(`> Extracting Standalone Config...`);
+const generatedServerPath = path.join(standaloneDir, 'application', 'server.js');
+if (fs.existsSync(generatedServerPath)) {
+    const content = fs.readFileSync(generatedServerPath, 'utf8');
+    const match = content.match(/const nextConfig = (\{[\s\S]*?\})\n/);
+    if (match) {
+        fs.writeFileSync(path.join(targetDir, 'next-config-standalone.json'), match[1]);
+        console.log(`[OK] next-config-standalone.json extracted.`);
+    }
+}
+
+// 5. Inject Entry Point (index.js)
 console.log(`> Injecting index.js...`);
 const srcServer = './server.js';
 if (fs.existsSync(srcServer)) {
-    fs.copyFileSync(srcServer, './deploy_final/index.js');
-    fs.chmodSync('./deploy_final/index.js', 0o644);
+    fs.copyFileSync(srcServer, path.join(targetDir, 'index.js'));
+    fs.chmodSync(path.join(targetDir, 'index.js'), 0o644);
 }
 
 // Required Files
