@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * v59 Build: Dot-Free Absolute Master
- * Renames .next to app_bundle to satisfy LiteSpeed.
+ * v60 Build: The Gold Standard "out"
+ * Uses standard "out" name to satisfy Hostinger validator.
  */
 function deployWithPermissions(src, dest) {
     try {
@@ -32,10 +32,10 @@ function run(cmd, cwd) {
 }
 
 const root = __dirname;
-// CRITICAL: Non-dot folder to avoid LiteSpeed blocking
-const targetDir = path.join(root, 'app_bundle'); 
+// CRITICAL: Standard "out" name for Hostinger validator
+const targetDir = path.join(root, 'out'); 
 
-console.log(`--- [BUILD] v59 DOT-FREE-MASTER ---`);
+console.log(`--- [BUILD] v60 GOLD-STANDARD-OUT ---`);
 
 // 1. Build
 run('npm install', path.join(root, 'packages', 'billing'));
@@ -51,21 +51,21 @@ run('npm run build', path.join(root, 'application'));
 if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
 fs.mkdirSync(targetDir, { recursive: true });
 
-// 3. Deploy
+// 3. Deploy Artifacts
 const standalone = path.join(root, 'application', '.next', 'standalone');
 if (fs.existsSync(standalone)) deployWithPermissions(standalone, targetDir);
 
 const backendDist = path.join(root, 'packages', 'server', 'dist');
 deployWithPermissions(backendDist, path.join(targetDir, 'packages', 'server', 'dist'));
 
-// Assets
+// Assets (Next.js requires .next/static even in standalone sometimes)
 const appNext = path.join(root, 'application', '.next');
 deployWithPermissions(path.join(appNext, 'static'), path.join(targetDir, '.next', 'static'));
 deployWithPermissions(path.join(root, 'application', 'public'), path.join(targetDir, 'public'));
 
 // 4. Inject Entry Points
-console.log(`> Injecting Dot-Free Entry Points...`);
-['server.js', 'index.js', 'package.json', '.env', '.env.local'].forEach(f => {
+console.log(`> Injecting Entry Points into /out...`);
+['server.js', 'package.json', '.env', '.env.local'].forEach(f => {
     const src = path.join(root, f);
     if (fs.existsSync(src)) {
         fs.copyFileSync(src, path.join(targetDir, f));
@@ -73,18 +73,8 @@ console.log(`> Injecting Dot-Free Entry Points...`);
     }
 });
 
-// Final cleanup: Kill any .htaccess that might block us
-const purgeHtaccess = (dir) => {
-    if (!fs.existsSync(dir)) return;
-    try {
-        fs.readdirSync(dir).forEach(file => {
-            const p = path.join(dir, file);
-            if (file === '.htaccess') fs.unlinkSync(p);
-            else if (fs.lstatSync(p).isDirectory() && !p.includes('node_modules')) purgeHtaccess(p);
-        });
-    } catch (e) {}
-};
-purgeHtaccess(root);
+// Final cleanup: Remove any .htaccess that might cause 403 in the root
+if (fs.existsSync(path.join(root, '.htaccess'))) fs.unlinkSync(path.join(root, '.htaccess'));
 
-console.log(`--- [SUCCESS] v59 ---`);
-console.log(`TARGET: /app_bundle`);
+console.log(`--- [SUCCESS] v60 ---`);
+console.log(`TARGET: /out`);
