@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * v69 Build: The "build" Standardization
- * Uses standard "build" folder name with verbose logging for validator visibility.
+ * v70 Build: The Un-Ignored Output
+ * Uses a folder explicitly un-ignored in .gitignore for validator visibility.
  */
 function deployWithPermissions(src, dest) {
     try {
@@ -34,7 +34,7 @@ function run(cmd, cwd) {
     } catch (e) { process.exit(1); }
 }
 
-console.log(`--- [BUILD] v69 BUILD-STANDARD ---`);
+console.log(`--- [BUILD] v70 UN-IGNORED-FIX ---`);
 
 // 1. Core Build Steps
 run('npm install', './packages/billing');
@@ -46,37 +46,38 @@ run('npm run build', './packages/server');
 run('npm install', './application');
 run('npm run build', './application');
 
-// CRITICAL: Standard "build" folder name
-const targetDir = './build'; 
+// CRITICAL: New un-ignored folder name
+const targetDir = './deploy_final'; 
 
 // 2. Prep Target
 if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
 fs.mkdirSync(targetDir, { recursive: true });
 
 // 3. Verbose Consolidation
-console.log(`> Packing into RELATIVE ./build...`);
+console.log(`> Packing into UN-IGNORED ./deploy_final...`);
 
 // Preserving .next folder (Nested)
-deployWithPermissions('./application/.next', './build/.next');
+deployWithPermissions('./application/.next', './deploy_final/.next');
 
 // UI Standalone contents
 const standalone = './application/.next/standalone';
 if (fs.existsSync(standalone)) {
     fs.readdirSync(standalone).forEach(f => {
-        if (f !== '.next') { // Avoid duplicating nested .next
+        if (f !== '.next') {
             deployWithPermissions(path.join(standalone, f), path.join(targetDir, f));
         }
     });
 }
 
 // Backend API
-deployWithPermissions('./packages/server/dist', './build/packages/server/dist');
+deployWithPermissions('./packages/server/dist', './deploy_final/packages/server/dist');
 
 // 4. Inject Entry Point (index.js)
 console.log(`> Injecting index.js...`);
-if (fs.existsSync('./server.js')) {
-    fs.copyFileSync('./server.js', './build/index.js');
-    fs.chmodSync('./build/index.js', 0o644);
+const srcServer = './server.js';
+if (fs.existsSync(srcServer)) {
+    fs.copyFileSync(srcServer, './deploy_final/index.js');
+    fs.chmodSync('./deploy_final/index.js', 0o644);
 }
 
 // Required Files
@@ -87,14 +88,14 @@ if (fs.existsSync('./server.js')) {
     }
 });
 
-// Final cleanup
+// Final cleanup: Kill any root .htaccess
 if (fs.existsSync('./.htaccess')) fs.unlinkSync('./.htaccess');
 
-console.log(`--- [SUCCESS] v69 ---`);
-console.log(`TARGET: ./build`);
+console.log(`--- [SUCCESS] v70 ---`);
+console.log(`TARGET: ./deploy_final`);
 console.log(`ENTRY: index.js`);
 
-// Exhaustive Tree Log for Validator proof
+// Full Validator Map
 function listTree(dir, indent = '') {
     try {
         fs.readdirSync(dir).forEach(file => {

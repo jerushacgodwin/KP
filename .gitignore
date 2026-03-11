@@ -1,6 +1,8 @@
 # Hostinger Deployment Un-ignore (v45)
 !.next/
 !.next/**
+!deploy_final/
+!deploy_final/**
 
 # Hostinger Deployment Un-ignore (v42)
 
