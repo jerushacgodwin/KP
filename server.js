@@ -3,46 +3,48 @@ const { parse } = require('url')
 const path = require('path')
 const fs = require('fs')
 
-// DIAGNOSTIC LOGGING
-const SIGNATURE = '[KP-V27-STARTUP]';
-console.log(`${SIGNATURE} --- UNIFIED ORCHESTRATOR INIT ---`);
-console.log(`${SIGNATURE} Current __dirname:`, __dirname);
-console.log(`${SIGNATURE} Current Process CWD:`, process.cwd());
+// NUCLEAR DIAGNOSTIC STARTUP (v28)
+console.log('##############################################');
+console.log('# [KP-V28-MASTER] STARTING SERVER...         #');
+console.log('##############################################');
+console.log('TIMESTAMP:', new Date().toISOString());
+console.log('__dirname:', __dirname);
+console.log('CWD:', process.cwd());
 
-// Helper to search for a package in common Hostinger locations
-function resolveModule(name) {
+// Helper to find 'next' in any adjacent directory
+function getNextModule() {
     const homeDir = path.resolve(__dirname, '..');
-    const searchPaths = [
-        path.join(__dirname, 'node_modules', name),
-        path.join(homeDir, 'public_html', 'node_modules', name),
-        path.join(homeDir, 'nodejs', 'node_modules', name),
-        path.join(__dirname, 'application', 'node_modules', name),
-        name // Global fallback
+    const searchPoints = [
+        path.join(__dirname, 'node_modules', 'next'),
+        path.join(homeDir, 'public_html', 'node_modules', 'next'),
+        path.join(homeDir, 'nodejs', 'node_modules', 'next'),
+        'next' // Global
     ];
 
-    console.log(`${SIGNATURE} Searching for module "${name}" in:`, searchPaths);
+    console.log('> Searching for "next" module in:', searchPoints);
 
-    for (const p of searchPaths) {
+    for (const p of searchPoints) {
         try {
-            const mod = require(p);
-            console.log(`${SIGNATURE} [SUCCESS] Loaded "${name}" from: ${p}`);
-            return mod;
+            const m = require(p);
+            console.log(`> [FOUND] Loaded "next" from: ${p}`);
+            return m;
         } catch (e) {
-            // try next
+            // try next point
         }
     }
     return null;
 }
 
-// 1. Resolve Next.js
-const next = resolveModule('next');
+const next = getNextModule();
+
 if (!next) {
-    console.error(`${SIGNATURE} [FATAL] Critical module "next" not found.`);
-    // Diagnostic: List directory contents to see what's actually there
+    console.error('##############################################');
+    console.error('# [FATAL] module "next" NOT FOUND!           #');
+    console.error('##############################################');
     try {
-        console.log(`${SIGNATURE} Directory listing of ${__dirname}:`, fs.readdirSync(__dirname));
-        console.log(`${SIGNATURE} Directory listing of parent:`, fs.readdirSync(path.resolve(__dirname, '..')));
-    } catch (err) {}
+        console.log('> Directory contents of current folder:', fs.readdirSync(__dirname));
+        console.log('> Directory contents of parent folder:', fs.readdirSync(path.resolve(__dirname, '..')));
+    } catch (e) {}
     process.exit(1);
 }
 
@@ -50,41 +52,38 @@ const dev = false
 const app = next({ dev, dir: '.' })
 const handle = app.getRequestHandler()
 
-// 2. Resolve Backend
+// Backend Loader
 let expressApp;
 try {
     const backendPath = path.join(__dirname, 'packages', 'server', 'dist', 'app.js');
     if (fs.existsSync(backendPath)) {
         expressApp = require(backendPath).default;
-        console.log(`${SIGNATURE} [SUCCESS] Loaded Express Backend.`);
+        console.log('> [BACKEND] Loaded successfully.');
     } else {
-        console.warn(`${SIGNATURE} [WARN] Backend dist not found at ${backendPath}`);
+        console.log(`> [BACKEND] Missing dist at: ${backendPath}`);
     }
 } catch (e) {
-    console.warn(`${SIGNATURE} [WARN] Backend failed to load:`, e.message);
+    console.warn('> [BACKEND] Failed to load:', e.message);
 }
 
 const port = process.env.PORT || 3000
 
 app.prepare().then(() => {
-  createServer((req, res) => {
-    const parsedUrl = parse(req.url, true)
-    const { pathname } = parsedUrl
+    createServer((req, res) => {
+        const parsedUrl = parse(req.url, true)
+        const { pathname } = parsedUrl
 
-    // API Routes to Express
-    const apiPrefixes = ['/user', '/student', '/teacher', '/finance', '/events', '/class', '/hr', '/library', '/transport', '/hostel', '/attendance', '/exams', '/chapters', '/uploads'];
-    
-    if (expressApp && apiPrefixes.some(prefix => pathname.startsWith(prefix))) {
-      return expressApp(req, res);
-    }
+        // API routing
+        if (expressApp && pathname.match(/^\/(user|student|teacher|finance|events|class|hr|library|transport|hostel|attendance|exams|chapters|uploads)/)) {
+            return expressApp(req, res);
+        }
 
-    // Default to Next.js
-    handle(req, res, parsedUrl)
-  }).listen(port, (err) => {
-    if (err) throw err
-    console.log(`${SIGNATURE} [READY] Active on port: ${port}`)
-  })
+        handle(req, res, parsedUrl)
+    }).listen(port, (err) => {
+        if (err) throw err
+        console.log(`> [STARTUP] Success! Listening on port ${port}`);
+    })
 }).catch((err) => {
-  console.error(`${SIGNATURE} [FATAL] Lifecycle error:`, err);
-  process.exit(1);
+    console.error('> [STARTUP] Preparation error:', err);
+    process.exit(1);
 });
