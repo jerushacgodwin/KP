@@ -21,7 +21,7 @@ function copyRecursiveSync(src, dest) {
 }
 
 function run(cmd, cwd) {
-    console.log(`\n> [BUILD] ${cmd}`);
+    console.log(`\n> [BUILD-V34] ${cmd}`);
     try {
         execSync(cmd, { 
             cwd, 
@@ -35,60 +35,48 @@ function run(cmd, cwd) {
 }
 
 const root = __dirname;
-const distDir = path.join(root, 'dist');
 const standaloneDir = path.join(root, 'application', '.next', 'standalone');
 
-console.log(`\n--- [BUILD-V33] FLAT ROOT-DIST PREP ---`);
-console.log(`Build Root: ${root}`);
-console.log(`Target Dist: ${distDir}`);
+console.log(`\n--- [BUILD-V34] NPM-FLAT-ROOT PREP ---`);
+console.log(`Working Directory: ${root}`);
 
-// 1. Clean Dist
-if (fs.existsSync(distDir)) {
-    console.log(`> Cleaning existing dist...`);
-    fs.rmSync(distDir, { recursive: true, force: true });
-}
-fs.mkdirSync(distDir, { recursive: true });
-
-// 2. Build Services (Standard)
+// 1. Build Services
+// Using strictly 'npm' to avoid pnpm symlink issues
+run('npm install', root); // Ensure root dependencies are flat
 run('npm run build', path.join(root, 'packages/server'));
 run('npm run build', path.join(root, 'application'));
 
-// 3. Assemble Dist
-console.log(`\n> Assembling Production Bundle in /dist...`);
-
-// Copy Standalone
+// 2. Flatten Standalone to Root
+// Next.js standalone contains its own node_modules and server.js
 if (fs.existsSync(standaloneDir)) {
-    console.log(`> Copying Standalone Engine...`);
-    copyRecursiveSync(standaloneDir, distDir);
+    console.log(`\n> Moving Standalone Engine to Root...`);
+    copyRecursiveSync(standaloneDir, root);
 } else {
     console.error(`> [FATAL] Standalone not found at ${standaloneDir}`);
     process.exit(1);
 }
 
-// Inject Orchestrator & Configs
-const filesToInject = ['server.js', 'index.js', 'package.json', '.npmrc', '.env', '.env.local'];
-filesToInject.forEach(file => {
-    const src = path.join(root, file);
-    if (fs.existsSync(src)) {
-        fs.copyFileSync(src, path.join(distDir, file));
-        console.log(`  [OK] Injected ${file}`);
+// 3. Inject Assets and Manual Overrides
+console.log(`> Syncing Static Assets & Backend dist...`);
+copyRecursiveSync(path.join(root, 'application', '.next', 'static'), path.join(root, '.next', 'static'));
+copyRecursiveSync(path.join(root, 'application', 'public'), path.join(root, 'public'));
+copyRecursiveSync(path.join(root, 'packages', 'server', 'dist'), path.join(root, 'packages', 'server', 'dist'));
+
+// 4. Force Cleanup of Conflict Files
+const filesToCleanup = ['.htaccess', '.pnpm-debug.log', 'pnpm-lock.yaml'];
+filesToCleanup.forEach(f => {
+    const p = path.join(root, f);
+    if (fs.existsSync(p)) {
+        console.log(`> Cleaning up ${f}...`);
+        fs.unlinkSync(p);
     }
 });
 
-// Inject Backend
-console.log(`> Injecting Backend services...`);
-copyRecursiveSync(path.join(root, 'packages', 'server', 'dist'), path.join(distDir, 'packages', 'server', 'dist'));
-
-// Sync Assets (Required inside standalone structure)
-console.log(`> Syncing Static Assets...`);
-copyRecursiveSync(path.join(root, 'application', '.next', 'static'), path.join(distDir, '.next', 'static'));
-copyRecursiveSync(path.join(root, 'application', 'public'), path.join(distDir, 'public'));
-
-// 4. Verification Check
-if (fs.existsSync(path.join(distDir, 'server.js')) && fs.existsSync(path.join(distDir, 'node_modules'))) {
-    console.log(`\n--- [BUILD-V33] SUCCESS: DIST IS READY ---`);
-    console.log(`MANDATORY: Set Hostinger Output Directory to: dist`);
+// 5. Final Verification
+if (fs.existsSync(path.join(root, 'server.js')) && fs.existsSync(path.join(root, 'node_modules'))) {
+    console.log(`\n--- [BUILD-V34] SUCCESS: ROOT IS PRODUCTION-READY ---`);
+    console.log(`MANDATORY: Set Hostinger "Output Directory" to EMPTY (leave it blank).`);
 } else {
-    console.error(`\n--- [BUILD-V33] FAILURE: DIST IS INCOMPLETE ---`);
+    console.error(`\n--- [BUILD-V34] FAILURE: ROOT MISSING CORE FILES ---`);
     process.exit(1);
 }
