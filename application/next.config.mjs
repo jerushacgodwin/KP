@@ -12,6 +12,11 @@ const nextConfig = {
         port: "4000",
         pathname: "/uploads/**",
       },
+      {
+        protocol: "https",
+        hostname: "**",
+        pathname: "/uploads/**",
+      },
     ],
   },
   eslint: {
