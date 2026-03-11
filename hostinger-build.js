@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * v68 Build: The Relative Dist Fix
- * Uses relative paths to satisfy Hostinger's validator environment.
+ * v69 Build: The "build" Standardization
+ * Uses standard "build" folder name with verbose logging for validator visibility.
  */
 function deployWithPermissions(src, dest) {
     try {
@@ -21,8 +21,11 @@ function deployWithPermissions(src, dest) {
         } else {
             fs.copyFileSync(src, dest);
             fs.chmodSync(dest, 0o644);
+            console.log(`[OK] ${dest}`);
         }
-    } catch (err) {}
+    } catch (err) {
+        console.error(`[ERR] ${src} -> ${dest}: ${err.message}`);
+    }
 }
 
 function run(cmd, cwd) {
@@ -31,17 +34,9 @@ function run(cmd, cwd) {
     } catch (e) { process.exit(1); }
 }
 
-// DIAGNOSTICS
-console.log(`--- [ENV] ---`);
-console.log(`CWD: ${process.cwd()}`);
-console.log(`__DIRNAME: ${__dirname}`);
+console.log(`--- [BUILD] v69 BUILD-STANDARD ---`);
 
-// CRITICAL: Strictly relative target path
-const targetDir = './dist'; 
-
-console.log(`--- [BUILD] v68 RELATIVE-DIST ---`);
-
-// 1. Monorepo Build
+// 1. Core Build Steps
 run('npm install', './packages/billing');
 run('npm run build', './packages/billing');
 run('npm install', './packages/shop');
@@ -51,37 +46,40 @@ run('npm run build', './packages/server');
 run('npm install', './application');
 run('npm run build', './application');
 
+// CRITICAL: Standard "build" folder name
+const targetDir = './build'; 
+
 // 2. Prep Target
 if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
 fs.mkdirSync(targetDir, { recursive: true });
 
-// 3. Nested Consolidation (Crucial for Next.js folder preservation)
-console.log(`> Packing monorepo into RELATIVE ./dist...`);
+// 3. Verbose Consolidation
+console.log(`> Packing into RELATIVE ./build...`);
 
-// Preserving .next folder
-deployWithPermissions('./application/.next', './dist/.next');
+// Preserving .next folder (Nested)
+deployWithPermissions('./application/.next', './build/.next');
 
-// UI Standalone contents (node_modules etc)
+// UI Standalone contents
 const standalone = './application/.next/standalone';
 if (fs.existsSync(standalone)) {
     fs.readdirSync(standalone).forEach(f => {
-        if (f !== '.next') {
+        if (f !== '.next') { // Avoid duplicating nested .next
             deployWithPermissions(path.join(standalone, f), path.join(targetDir, f));
         }
     });
 }
 
 // Backend API
-deployWithPermissions('./packages/server/dist', './dist/packages/server/dist');
+deployWithPermissions('./packages/server/dist', './build/packages/server/dist');
 
 // 4. Inject Entry Point (index.js)
 console.log(`> Injecting index.js...`);
 if (fs.existsSync('./server.js')) {
-    fs.copyFileSync('./server.js', './dist/index.js');
-    fs.chmodSync('./dist/index.js', 0o644);
+    fs.copyFileSync('./server.js', './build/index.js');
+    fs.chmodSync('./build/index.js', 0o644);
 }
 
-// Shared Files
+// Required Files
 ['package.json', '.env', '.env.local'].forEach(f => {
     if (fs.existsSync(f)) {
         fs.copyFileSync(f, path.join(targetDir, f));
@@ -92,6 +90,22 @@ if (fs.existsSync('./server.js')) {
 // Final cleanup
 if (fs.existsSync('./.htaccess')) fs.unlinkSync('./.htaccess');
 
-console.log(`--- [SUCCESS] v68 ---`);
-console.log(`TARGET: ./dist`);
+console.log(`--- [SUCCESS] v69 ---`);
+console.log(`TARGET: ./build`);
 console.log(`ENTRY: index.js`);
+
+// Exhaustive Tree Log for Validator proof
+function listTree(dir, indent = '') {
+    try {
+        fs.readdirSync(dir).forEach(file => {
+            const p = path.join(dir, file);
+            const isDir = fs.lstatSync(p).isDirectory();
+            console.log(`${indent}${isDir ? 'DIR' : 'FILE'}: ${file}`);
+            if (isDir && !file.includes('node_modules') && indent.length < 6) {
+                listTree(p, indent + '  ');
+            }
+        });
+    } catch (e) {}
+}
+console.log(`> VALIDATOR MAP:`);
+listTree(targetDir);
