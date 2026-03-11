@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * v60 Build: The Gold Standard "out"
- * Uses standard "out" name to satisfy Hostinger validator.
+ * v62 Build: In-Place Monorepo Master
+ * Consolidates everything into the root to satisfy Output Directory: null.
  */
 function deployWithPermissions(src, dest) {
     try {
@@ -32,12 +32,10 @@ function run(cmd, cwd) {
 }
 
 const root = __dirname;
-// CRITICAL: Standard "out" name for Hostinger validator
-const targetDir = path.join(root, 'out'); 
 
-console.log(`--- [BUILD] v60 GOLD-STANDARD-OUT ---`);
+console.log(`--- [BUILD] v62 IN-PLACE-MASTER ---`);
 
-// 1. Build
+// 1. Build Layer
 run('npm install', path.join(root, 'packages', 'billing'));
 run('npm run build', path.join(root, 'packages', 'billing'));
 run('npm install', path.join(root, 'packages', 'shop'));
@@ -47,34 +45,39 @@ run('npm run build', path.join(root, 'packages', 'server'));
 run('npm install', path.join(root, 'application'));
 run('npm run build', path.join(root, 'application'));
 
-// 2. Prep Target
-if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
-fs.mkdirSync(targetDir, { recursive: true });
+// 2. Consolidate into Root (In-Place)
+console.log(`> Consolidating into Root...`);
 
-// 3. Deploy Artifacts
+// Standalone UI Contents
 const standalone = path.join(root, 'application', '.next', 'standalone');
-if (fs.existsSync(standalone)) deployWithPermissions(standalone, targetDir);
+if (fs.existsSync(standalone)) {
+    // Copy contents of standalone into root
+    fs.readdirSync(standalone).forEach(f => {
+        const src = path.join(standalone, f);
+        const dest = path.join(root, f);
+        deployWithPermissions(src, dest);
+    });
+}
 
+// Backend Dist
 const backendDist = path.join(root, 'packages', 'server', 'dist');
-deployWithPermissions(backendDist, path.join(targetDir, 'packages', 'server', 'dist'));
+if (fs.existsSync(backendDist)) {
+    deployWithPermissions(backendDist, path.join(root, 'packages', 'server', 'dist'));
+}
 
-// Assets (Next.js requires .next/static even in standalone sometimes)
+// NextJS Static Assets
 const appNext = path.join(root, 'application', '.next');
-deployWithPermissions(path.join(appNext, 'static'), path.join(targetDir, '.next', 'static'));
-deployWithPermissions(path.join(root, 'application', 'public'), path.join(targetDir, 'public'));
+deployWithPermissions(path.join(appNext, 'static'), path.join(root, '.next', 'static'));
+deployWithPermissions(path.join(root, 'application', 'public'), path.join(root, 'public'));
 
-// 4. Inject Entry Points
-console.log(`> Injecting Entry Points into /out...`);
-['server.js', 'package.json', '.env', '.env.local'].forEach(f => {
-    const src = path.join(root, f);
-    if (fs.existsSync(src)) {
-        fs.copyFileSync(src, path.join(targetDir, f));
-        fs.chmodSync(path.join(targetDir, f), 0o644);
-    }
+// Force Permissions on Core Entry Points
+['server.js', 'package.json', 'index.js'].forEach(f => {
+    const p = path.join(root, f);
+    if (fs.existsSync(p)) fs.chmodSync(p, 0o644);
 });
 
-// Final cleanup: Remove any .htaccess that might cause 403 in the root
+// Final cleanup: Kill .htaccess to prevent LiteSpeed proxy blocks
 if (fs.existsSync(path.join(root, '.htaccess'))) fs.unlinkSync(path.join(root, '.htaccess'));
 
-console.log(`--- [SUCCESS] v60 ---`);
-console.log(`TARGET: /out`);
+console.log(`--- [SUCCESS] v62 ---`);
+console.log(`MODE: IN-PLACE (ROOT)`);
