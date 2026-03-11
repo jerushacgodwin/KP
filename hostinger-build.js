@@ -123,7 +123,7 @@ if (fs.existsSync(srcServer)) {
 // Final cleanup: Kill any root .htaccess
 if (fs.existsSync('./.htaccess')) fs.unlinkSync('./.htaccess');
 
-console.log(`--- [SUCCESS] v72 ---`);
+console.log(`--- [SUCCESS] v73 ---`);
 console.log(`TARGET: ./deploy_final`);
 console.log(`ENTRY: index.js`);
 
