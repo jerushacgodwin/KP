@@ -16,7 +16,7 @@ function copyRecursiveSync(src, dest) {
 }
 
 function run(cmd, cwd) {
-    console.log(`\n> [BUILD-V42] ${cmd}`);
+    console.log(`\n> [BUILD-V44] ${cmd}`);
     try {
         execSync(cmd, { cwd, stdio: 'inherit', env: { ...process.env, NEXT_DISABLE_INTERACTIVE_INSTALL: '1' } });
     } catch (e) {
@@ -25,20 +25,29 @@ function run(cmd, cwd) {
 }
 
 const root = __dirname;
-const targetDir = path.join(root, 'out');
+const targetDir = path.join(root, 'out'); // THE PERSISTENT TARGET FOLDER
 
-console.log(`\n--- [BUILD-V42] LITESPEED-SAFE ASSEMBLY ---`);
+console.log(`\n--- [BUILD-V44] GOLD-STANDARD "out" ASSEMBLY ---`);
 
-// 1. Clean and Prepare
-if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
-fs.mkdirSync(targetDir, { recursive: true });
+// 1. Clean Contents (Keep the folder for the validator)
+if (fs.existsSync(targetDir)) {
+    console.log(`> Cleaning contents of pre-existing /out...`);
+    fs.readdirSync(targetDir).forEach(file => {
+        if (file !== '.gitkeep') {
+            const p = path.join(targetDir, file);
+            fs.rmSync(p, { recursive: true, force: true });
+        }
+    });
+} else {
+    fs.mkdirSync(targetDir, { recursive: true });
+}
 
 // 2. Build Services (Standard NPM)
 run('npm install', root);
 run('npm run build', path.join(root, 'application'));
 
-// 3. Assemble Core
-console.log(`\n> Consolidating into /out...`);
+// 3. Assemble Core into root /out
+console.log(`\n> Consolidating everything into /out...`);
 const standalone = path.join(root, 'application', '.next', 'standalone');
 if (fs.existsSync(standalone)) {
     copyRecursiveSync(standalone, targetDir);
@@ -47,23 +56,31 @@ if (fs.existsSync(standalone)) {
 // Inject Required Files
 ['server.js', 'index.js', 'package.json', '.env', '.env.local'].forEach(f => {
     const src = path.join(root, f);
-    if (fs.existsSync(src)) fs.copyFileSync(src, path.join(targetDir, f));
+    if (fs.existsSync(src)) {
+        fs.copyFileSync(src, path.join(targetDir, f));
+        console.log(`  [OK] Injected ${f}`);
+    }
 });
 
-// Sync Assets
+// Sync Static Assets
 const applicationNext = path.join(root, 'application', '.next');
 copyRecursiveSync(path.join(applicationNext, 'static'), path.join(targetDir, '.next', 'static'));
 copyRecursiveSync(path.join(root, 'application', 'public'), path.join(targetDir, 'public'));
 
 // 4. CRITICAL: PURGE .HTACCESS
-// LiteSpeed rules in .htaccess often cause 403 Forbidden with Node.js
-const htaccessPath = path.join(targetDir, '.htaccess');
-if (fs.existsSync(htaccessPath)) {
-    console.log(`> [CLEANUP] Removing conflicting .htaccess...`);
-    fs.unlinkSync(htaccessPath);
-}
+// Resolves 403 Forbidden loops in LiteSpeed
+const htaccessPaths = [
+    path.join(root, '.htaccess'),
+    path.join(targetDir, '.htaccess')
+];
+htaccessPaths.forEach(p => {
+    if (fs.existsSync(p)) {
+        console.log(`> [CLEANUP] Removing conflicting ${p}`);
+        fs.unlinkSync(p);
+    }
+});
 
 // 5. Final Verification
-console.log(`\n--- [BUILD-V42] SUCCESS ---`);
+console.log(`\n--- [BUILD-V44] SUCCESS ---`);
 fs.readdirSync(targetDir).forEach(f => console.log(`  - ${f}`));
 console.log(`\nMANDATORY: Set Hostinger "Output Directory" to: out`);
