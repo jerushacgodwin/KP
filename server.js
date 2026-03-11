@@ -3,7 +3,7 @@ const { parse } = require('url')
 const next = require('next')
 
 const dev = false
-const app = next({ dev, dir: './application' })
+const app = next({ dev, dir: './application', conf: { distDir: '../.next' } })
 const handle = app.getRequestHandler()
 
 const port = process.env.PORT || 3000
