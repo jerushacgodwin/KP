@@ -37,12 +37,13 @@ console.log(`Build Root: ${root}`);
 
 // 1. Backup critical orchestrator files
 if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
-['server.js', 'index.js', 'package.json', '.npmrc', '.htaccess'].forEach(file => {
+const configFiles = ['server.js', 'index.js', 'package.json', '.npmrc', '.htaccess', '.env', '.env.local'];
+configFiles.forEach(file => {
     const src = path.join(root, file);
     if (fs.existsSync(src)) fs.copyFileSync(src, path.join(backupDir, file));
 });
 
-// 2. Build Services
+// 2. Build Services (Standard)
 run('npm run build', path.join(root, 'application'));
 run('npm run build', path.join(root, 'packages/server'));
 
@@ -63,13 +64,17 @@ console.log(`> Syncing Static Assets...`);
 copyRecursiveSync(path.join(root, 'application', '.next', 'static'), path.join(tempDist, '.next', 'static'));
 copyRecursiveSync(path.join(root, 'application', 'public'), path.join(tempDist, 'public'));
 
-// Sync Backend
-console.log(`> Syncing Backend Services...`);
+// Sync Backend & Package-specific ENVs
+console.log(`> Syncing Backend Services & Configs...`);
 copyRecursiveSync(path.join(root, 'packages', 'server', 'dist'), path.join(tempDist, 'packages', 'server', 'dist'));
+const serverEnv = path.join(root, 'packages', 'server', '.env');
+if (fs.existsSync(serverEnv)) {
+    copyRecursiveSync(serverEnv, path.join(tempDist, 'packages', 'server', '.env'));
+}
 
-// Inject Our Orchestrator (overwrite Next.js default server.js)
-console.log(`> Injecting Unified Orchestrator...`);
-['server.js', 'index.js', 'package.json', '.npmrc', '.htaccess'].forEach(file => {
+// Inject Absolute Root Configs
+console.log(`> Injecting Absolute Root Configs...`);
+configFiles.forEach(file => {
     const src = path.join(backupDir, file);
     if (fs.existsSync(src)) fs.copyFileSync(src, path.join(tempDist, file));
 });
