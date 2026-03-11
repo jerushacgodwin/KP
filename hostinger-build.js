@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * v66 Build: Validator-Safe Master
- * Reverts to .next for validator satisfaction but uses a UNIQUE orchestrator name.
+ * v67 Build: Nested Production Fix
+ * Ensures .next remains a folder after Hostinger's mover step.
  */
 function deployWithPermissions(src, dest) {
     try {
@@ -32,10 +32,11 @@ function run(cmd, cwd) {
 }
 
 const root = __dirname;
-// CRITICAL: Standard ".next" name for Hostinger validator
-const targetDir = path.join(root, '.next'); 
+// CRITICAL: We build into "production", and tell Hostinger to look for "production".
+// Hostinger then moves "production/*" into the root.
+const targetDir = path.join(root, 'production'); 
 
-console.log(`--- [BUILD] v66 VALIDATOR-SAFE-MASTER ---`);
+console.log(`--- [BUILD] v67 NESTED-PRODUCTION ---`);
 
 // 1. Build Layer
 run('npm install', path.join(root, 'packages', 'billing'));
@@ -48,42 +49,43 @@ run('npm install', path.join(root, 'application'));
 run('npm run build', path.join(root, 'application'));
 
 // 2. Prep Target
-if (fs.existsSync(targetDir)) {
-    fs.readdirSync(targetDir).forEach(f => {
-        const p = path.join(targetDir, f);
-        if (fs.lstatSync(p).isDirectory()) fs.rmSync(p, { recursive: true, force: true });
-        else fs.unlinkSync(p);
-    });
-} else {
-    fs.mkdirSync(targetDir, { recursive: true });
-}
+if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
+fs.mkdirSync(targetDir, { recursive: true });
 
-// 3. Deploy Artifacts into .next
-console.log(`> Consolidating monorepo into /.next...`);
+// 3. NESTED CONSOLIDATION
+console.log(`> Consolidating into /production with NESTED .next...`);
 
-// Standalone UI
+// THE KEY: Copy the ENTIRE .next folder into production/.next
+// This ensures that after Hostinger moves "production/*" to "/", the root still has a ".next" folder.
+const appNext = path.join(root, 'application', '.next');
+deployWithPermissions(appNext, path.join(targetDir, '.next'));
+
+// Also copy standby files (node_modules, package.json etc) into production root
 const standalone = path.join(root, 'application', '.next', 'standalone');
-if (fs.existsSync(standalone)) deployWithPermissions(standalone, targetDir);
+if (fs.existsSync(standalone)) {
+    fs.readdirSync(standalone).forEach(f => {
+        const src = path.join(standalone, f);
+        const dest = path.join(targetDir, f);
+        if (f !== '.next') { // Avoid duplicating .next if it's in standalone
+            deployWithPermissions(src, dest);
+        }
+    });
+}
 
 // Backend API
 const backendDist = path.join(root, 'packages', 'server', 'dist');
 deployWithPermissions(backendDist, path.join(targetDir, 'packages', 'server', 'dist'));
 
-// Assets
-const appNext = path.join(root, 'application', '.next');
-deployWithPermissions(path.join(appNext, 'static'), path.join(targetDir, '.next', 'static'));
-deployWithPermissions(path.join(root, 'application', 'public'), path.join(targetDir, 'public'));
-
-// 4. Inject Unique Orchestrator
-console.log(`> Injecting UNIQUE master-entry.js...`);
+// 4. Inject Entry Point (Renamed to index.js for maximum compatibility)
+console.log(`> Injecting index.js...`);
 const srcServer = path.join(root, 'server.js');
-const destEntry = path.join(targetDir, 'master-entry.js'); // RENAMED to avoid collision
+const destIndex = path.join(targetDir, 'index.js');
 if (fs.existsSync(srcServer)) {
-    fs.copyFileSync(srcServer, destEntry);
-    fs.chmodSync(destEntry, 0o644);
+    fs.copyFileSync(srcServer, destIndex);
+    fs.chmodSync(destIndex, 0o644);
 }
 
-// Shared Files
+// Required Files
 ['package.json', '.env', '.env.local'].forEach(f => {
     const src = path.join(root, f);
     if (fs.existsSync(src)) {
@@ -92,9 +94,9 @@ if (fs.existsSync(srcServer)) {
     }
 });
 
-// Final cleanup: Kill any root .htaccess that might cause 403
+// Final cleanup
 if (fs.existsSync(path.join(root, '.htaccess'))) fs.unlinkSync(path.join(root, '.htaccess'));
 
-console.log(`--- [SUCCESS] v66 ---`);
-console.log(`TARGET: /.next`);
-console.log(`ENTRY: master-entry.js`);
+console.log(`--- [SUCCESS] v67 ---`);
+console.log(`TARGET FOLDER: /production`);
+console.log(`ENTRY FILE: index.js`);
