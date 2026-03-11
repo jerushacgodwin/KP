@@ -14,7 +14,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "dev": "lerna run dev --stream",
-    "build": "cd application && npm run build",
+    "build": "NEXT_DISABLE_INTERACTIVE_INSTALL=1 cd application && npm run build",
     "start": "cd application && next start"
   },
   "dependencies": {
