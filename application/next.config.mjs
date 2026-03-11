@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig = {
+  output: 'standalone',
   images: {
     remotePatterns: [
       {
