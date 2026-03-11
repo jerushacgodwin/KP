@@ -3,16 +3,16 @@ const { parse } = require('url')
 const path = require('path')
 const fs = require('fs')
 
-// V43 HIGH-RESILIENCE ORCHESTRATOR
-const logFile = path.join(__dirname, 'server_log.txt');
+// V42 LITESPEED-SAFE ORCHESTRATOR
+const logStream = fs.createWriteStream(path.join(__dirname, 'server_log.txt'), { flags: 'a' });
 function log(msg) {
-    const entry = `[${new Date().toISOString()}] ${msg}\n`;
-    console.log(msg);
-    try { fs.appendFileSync(logFile, entry); } catch (e) {}
+    const t = new Date().toISOString();
+    console.log(`[${t}] ${msg}`);
+    logStream.write(`[${t}] ${msg}\n`);
 }
 
 log('##############################################');
-log('# [KP-V43-RESILIENT] BOOTING...              #');
+log('# [KP-V42-LITESPEED] BOOTING...              #');
 log('##############################################');
 log(`DIR: ${__dirname}`);
 
@@ -22,7 +22,8 @@ function getNext() {
     const points = [
         'next',
         path.join(__dirname, 'node_modules', 'next'),
-        path.join(__dirname, '..', 'node_modules', 'next')
+        path.join(__dirname, '..', 'node_modules', 'next'),
+        path.join(__dirname, 'application', 'node_modules', 'next')
     ];
     for (const p of points) {
         try {
@@ -40,7 +41,7 @@ if (!next) {
     log('> [FATAL] Next.js engine NOT FOUND.');
     createServer((req, res) => {
         res.writeHead(503, { 'Content-Type': 'text/plain' });
-        res.end('[V43] Engine Missing. Check server_log.txt for clues.');
+        res.end('[V42] Engine Missing. Check server_log.txt');
     }).listen(port);
 } else {
     const app = next({ dev: false, dir: '.' })

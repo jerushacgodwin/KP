@@ -16,7 +16,7 @@ function copyRecursiveSync(src, dest) {
 }
 
 function run(cmd, cwd) {
-    console.log(`\n> [BUILD-V43] ${cmd}`);
+    console.log(`\n> [BUILD-V42] ${cmd}`);
     try {
         execSync(cmd, { cwd, stdio: 'inherit', env: { ...process.env, NEXT_DISABLE_INTERACTIVE_INSTALL: '1' } });
     } catch (e) {
@@ -25,51 +25,45 @@ function run(cmd, cwd) {
 }
 
 const root = __dirname;
-const targetDir = path.join(root, '.next'); // TARGET FOLDER PER USER FEEDBACK
+const targetDir = path.join(root, 'out');
 
-console.log(`\n--- [BUILD-V43] ABSOLUTE-NEXT + PURGE ASSEMBLY ---`);
+console.log(`\n--- [BUILD-V42] LITESPEED-SAFE ASSEMBLY ---`);
 
-// 1. Clean and Prepare Target (BUT DON'T DELETE .next entirely if it's the build output)
-// We instead just ensure we have a clean slate for the *standalone* parts inside it
-if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+// 1. Clean and Prepare
+if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
+fs.mkdirSync(targetDir, { recursive: true });
 
 // 2. Build Services (Standard NPM)
 run('npm install', root);
 run('npm run build', path.join(root, 'application'));
 
 // 3. Assemble Core
-console.log(`\n> Consolidating into root /.next...`);
+console.log(`\n> Consolidating into /out...`);
 const standalone = path.join(root, 'application', '.next', 'standalone');
 if (fs.existsSync(standalone)) {
     copyRecursiveSync(standalone, targetDir);
 }
 
-// Inject Required Files to the output root
+// Inject Required Files
 ['server.js', 'index.js', 'package.json', '.env', '.env.local'].forEach(f => {
     const src = path.join(root, f);
     if (fs.existsSync(src)) fs.copyFileSync(src, path.join(targetDir, f));
 });
 
-// Sync Static Assets (Required inside standalone .next structure)
+// Sync Assets
 const applicationNext = path.join(root, 'application', '.next');
 copyRecursiveSync(path.join(applicationNext, 'static'), path.join(targetDir, '.next', 'static'));
 copyRecursiveSync(path.join(root, 'application', 'public'), path.join(targetDir, 'public'));
 
 // 4. CRITICAL: PURGE .HTACCESS
-// Prevents 403 Forbidden loops in LiteSpeed
-const conflictFiles = [
-    path.join(root, '.htaccess'),
-    path.join(targetDir, '.htaccess')
-];
-conflictFiles.forEach(f => {
-    if (fs.existsSync(f)) {
-        console.log(`> [CLEANUP] Purging ${f}`);
-        fs.unlinkSync(f);
-    }
-});
+// LiteSpeed rules in .htaccess often cause 403 Forbidden with Node.js
+const htaccessPath = path.join(targetDir, '.htaccess');
+if (fs.existsSync(htaccessPath)) {
+    console.log(`> [CLEANUP] Removing conflicting .htaccess...`);
+    fs.unlinkSync(htaccessPath);
+}
 
 // 5. Final Verification
-console.log(`\n--- [BUILD-V43] SUCCESS ---`);
+console.log(`\n--- [BUILD-V42] SUCCESS ---`);
 fs.readdirSync(targetDir).forEach(f => console.log(`  - ${f}`));
-console.log(`\nMANDATORY: Set Hostinger "Output Directory" to the ABSOLUTE path:`);
-console.log(`/home/u102032541/domains/lightgreen-wolverine-191417.hostingersite.com/.next`);
+console.log(`\nMANDATORY: Set Hostinger "Output Directory" to: out`);
