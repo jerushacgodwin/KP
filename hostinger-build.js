@@ -29,9 +29,23 @@ function deployWithPermissions(src, dest) {
 }
 
 function run(cmd, cwd) {
+    const fullPath = path.resolve(process.cwd(), cwd);
+    console.log(`> [RUN] "${cmd}" in ${fullPath}`);
+    if (!fs.existsSync(fullPath)) {
+        console.error(`[ERR] Directory does not exist: ${fullPath}`);
+        process.exit(1);
+    }
     try {
-        execSync(cmd, { cwd, stdio: 'inherit', env: { ...process.env, NEXT_DISABLE_INTERACTIVE_INSTALL: '1' } });
-    } catch (e) { process.exit(1); }
+        execSync(cmd, { 
+            cwd: fullPath, 
+            stdio: 'inherit', 
+            env: { ...process.env, NEXT_DISABLE_INTERACTIVE_INSTALL: '1' } 
+        });
+    } catch (e) { 
+        console.error(`[FATAL] Command failed: ${cmd}`);
+        console.error(`[TRACE] ${e.message}`);
+        process.exit(1); 
+    }
 }
 
 console.log(`--- [BUILD] v73 MONOLITHIC-MERGE ---`);
