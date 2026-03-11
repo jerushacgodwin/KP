@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * v67 Build: Nested Production Fix
- * Ensures .next remains a folder after Hostinger's mover step.
+ * v68 Build: The Relative Dist Fix
+ * Uses relative paths to satisfy Hostinger's validator environment.
  */
 function deployWithPermissions(src, dest) {
     try {
@@ -31,72 +31,67 @@ function run(cmd, cwd) {
     } catch (e) { process.exit(1); }
 }
 
-const root = __dirname;
-// CRITICAL: We build into "production", and tell Hostinger to look for "production".
-// Hostinger then moves "production/*" into the root.
-const targetDir = path.join(root, 'production'); 
+// DIAGNOSTICS
+console.log(`--- [ENV] ---`);
+console.log(`CWD: ${process.cwd()}`);
+console.log(`__DIRNAME: ${__dirname}`);
 
-console.log(`--- [BUILD] v67 NESTED-PRODUCTION ---`);
+// CRITICAL: Strictly relative target path
+const targetDir = './dist'; 
 
-// 1. Build Layer
-run('npm install', path.join(root, 'packages', 'billing'));
-run('npm run build', path.join(root, 'packages', 'billing'));
-run('npm install', path.join(root, 'packages', 'shop'));
-run('npm run build', path.join(root, 'packages', 'shop'));
-run('npm install', path.join(root, 'packages', 'server'));
-run('npm run build', path.join(root, 'packages', 'server'));
-run('npm install', path.join(root, 'application'));
-run('npm run build', path.join(root, 'application'));
+console.log(`--- [BUILD] v68 RELATIVE-DIST ---`);
+
+// 1. Monorepo Build
+run('npm install', './packages/billing');
+run('npm run build', './packages/billing');
+run('npm install', './packages/shop');
+run('npm run build', './packages/shop');
+run('npm install', './packages/server');
+run('npm run build', './packages/server');
+run('npm install', './application');
+run('npm run build', './application');
 
 // 2. Prep Target
 if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
 fs.mkdirSync(targetDir, { recursive: true });
 
-// 3. NESTED CONSOLIDATION
-console.log(`> Consolidating into /production with NESTED .next...`);
+// 3. Nested Consolidation (Crucial for Next.js folder preservation)
+console.log(`> Packing monorepo into RELATIVE ./dist...`);
 
-// THE KEY: Copy the ENTIRE .next folder into production/.next
-// This ensures that after Hostinger moves "production/*" to "/", the root still has a ".next" folder.
-const appNext = path.join(root, 'application', '.next');
-deployWithPermissions(appNext, path.join(targetDir, '.next'));
+// Preserving .next folder
+deployWithPermissions('./application/.next', './dist/.next');
 
-// Also copy standby files (node_modules, package.json etc) into production root
-const standalone = path.join(root, 'application', '.next', 'standalone');
+// UI Standalone contents (node_modules etc)
+const standalone = './application/.next/standalone';
 if (fs.existsSync(standalone)) {
     fs.readdirSync(standalone).forEach(f => {
-        const src = path.join(standalone, f);
-        const dest = path.join(targetDir, f);
-        if (f !== '.next') { // Avoid duplicating .next if it's in standalone
-            deployWithPermissions(src, dest);
+        if (f !== '.next') {
+            deployWithPermissions(path.join(standalone, f), path.join(targetDir, f));
         }
     });
 }
 
 // Backend API
-const backendDist = path.join(root, 'packages', 'server', 'dist');
-deployWithPermissions(backendDist, path.join(targetDir, 'packages', 'server', 'dist'));
+deployWithPermissions('./packages/server/dist', './dist/packages/server/dist');
 
-// 4. Inject Entry Point (Renamed to index.js for maximum compatibility)
+// 4. Inject Entry Point (index.js)
 console.log(`> Injecting index.js...`);
-const srcServer = path.join(root, 'server.js');
-const destIndex = path.join(targetDir, 'index.js');
-if (fs.existsSync(srcServer)) {
-    fs.copyFileSync(srcServer, destIndex);
-    fs.chmodSync(destIndex, 0o644);
+if (fs.existsSync('./server.js')) {
+    fs.copyFileSync('./server.js', './dist/index.js');
+    fs.chmodSync('./dist/index.js', 0o644);
 }
 
-// Required Files
+// Shared Files
 ['package.json', '.env', '.env.local'].forEach(f => {
-    const src = path.join(root, f);
-    if (fs.existsSync(src)) {
-        fs.copyFileSync(src, path.join(targetDir, f));
+    if (fs.existsSync(f)) {
+        fs.copyFileSync(f, path.join(targetDir, f));
         fs.chmodSync(path.join(targetDir, f), 0o644);
     }
 });
 
 // Final cleanup
-if (fs.existsSync(path.join(root, '.htaccess'))) fs.unlinkSync(path.join(root, '.htaccess'));
+if (fs.existsSync('./.htaccess')) fs.unlinkSync('./.htaccess');
 
-console.log(`--- [SUCCESS] v67 ---`);
-console.log(`TARGET FOLDER: /production`);
-console.log(`ENTRY FILE: index.js`);
+console.log(`--- [SUCCESS] v68 ---`);
+console.log(`TARGET: ./dist`);
+console.log(`ENTRY: index.js`);
