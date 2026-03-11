@@ -15,7 +15,7 @@
     "bootstrap": "lerna bootstrap",
     "dev": "lerna run dev --stream",
     "build": "NEXT_DISABLE_INTERACTIVE_INSTALL=1 cd application && npm run build",
-    "start": "cd application && next start"
+    "start": "next start -p ${PORT:-3000}"
   },
   "dependencies": {
     "next": "^14.2.31",
@@ -23,6 +23,10 @@
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
     "primereact": "^10.9.7",
-    "sequelize": "^6.37.7"
+    "sequelize": "^6.37.7",
+    "tailwindcss": "^3.4.1",
+    "postcss": "^8.5.6",
+    "autoprefixer": "^10.4.21",
+    "js-cookie": "^3.0.5"
   }
 }
