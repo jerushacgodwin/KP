@@ -1,87 +1,41 @@
-const { createServer } = require('http')
-const { parse } = require('url')
-const path = require('path')
-const fs = require('fs')
+const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
-// V32 STANDALONE ORCHESTRATOR
+// V37 BREADCRUMB - ZERO DEPENDENCIES
+const port = process.env.PORT || 3000;
+
 console.log('##############################################');
-console.log('# [KP-V32-STANDALONE] STARTING...            #');
+console.log('# [KP-V37-BREADCRUMB] STARTUP...             #');
 console.log('##############################################');
+console.log('PORT:', port);
 console.log('DIR:', __dirname);
+console.log('FILES:', fs.readdirSync(__dirname));
 
-const port = process.env.PORT || 3000
-
-// Helper to look for 'next' (adjusted for standalone structure)
-function getNext() {
-    const search = [
-        'next',
-        path.join(__dirname, 'node_modules', 'next'), // Inside standalone
-        path.join(__dirname, '..', '..', 'node_modules', 'next') // Outside (parent of application)
-    ];
-    for (const p of search) {
-        try {
-            const m = require(p);
-            console.log(`> [OK] Loaded "next" from: ${p}`);
-            return m;
-        } catch (e) {}
-    }
-    return null;
-}
-
-const next = getNext();
-
-if (!next) {
-    console.error('> [ERROR] "next" module NOT FOUND. Starting Fail-Safe Diagnostic.');
+const server = http.createServer((req, res) => {
+    console.log(`> [REQ] ${req.url}`);
     
-    createServer((req, res) => {
-        res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.end(`
-            <html>
-                <body style="font-family: sans-serif; padding: 2rem; background: #fff5f5; color: #c53030;">
-                    <h1>⚠️ [KP-V32] Standalone Dependency Missing</h1>
-                    <p>The Node.js server is <b>RUNNING</b>, but the <b>"next"</b> module was not found in the standalone bundle.</p>
-                    <hr>
-                    <pre>__dirname: ${__dirname}</pre>
-                </body>
-            </html>
-        `);
-    }).listen(port, () => {
-        console.log(`> [FAIL-SAFE] Listening on ${port}`);
-    });
-} else {
-    // STANDARD STARTUP (Load our routes)
-    const dev = false
-    const app = next({ dev, dir: '.' })
-    const handle = app.getRequestHandler()
-
-    // Backend Loader
-    let expressApp;
-    try {
-        const backendPath = path.join(__dirname, 'packages', 'server', 'dist', 'app.js');
-        if (fs.existsSync(backendPath)) {
-            expressApp = require(backendPath).default;
-            console.log('> [BACKEND] Loaded.');
-        }
-    } catch (e) {
-        console.warn('> [BACKEND] Load failed:', e.message);
+    // Simple diagnostic routing
+    if (req.url === '/test-node') {
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        return res.end('[V37] Node.js is ALIVE and reachable!');
     }
 
-    app.prepare().then(() => {
-        createServer((req, res) => {
-            const parsedUrl = parse(req.url, true)
-            const { pathname } = parsedUrl
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(`
+        <div style="font-family: sans-serif; padding: 20px; border: 5px solid #3b82f6; border-radius: 10px;">
+            <h1 style="color: #3b82f6;">🚀 [V37] BREADCRUMB READY</h1>
+            <p>If you see this, the <b>Node.js Proxy is SUCCESSFUL!</b></p>
+            <hr>
+            <p><b>Diagnostic Links:</b></p>
+            <ul>
+                <li><a href="/test-node">Test Node.js directly</a></li>
+                <li><a href="/hostinger_test.html">Test Static File access</a> (Check public folder)</li>
+            </ul>
+        </div>
+    `);
+});
 
-            // API Routing
-            if (expressApp && pathname.match(/^\/(user|student|teacher|finance|events|class|hr|library|transport|hostel|attendance|exams|chapters|uploads)/)) {
-                return expressApp(req, res);
-            }
-
-            handle(req, res, parsedUrl)
-        }).listen(port, (err) => {
-            if (err) throw err
-            console.log(`> [READY] KP App active on ${port}`);
-        })
-    }).catch(err => {
-        console.error('> [FATAL] Startup Error:', err);
-    });
-}
+server.listen(port, () => {
+    console.log(`> [V37-READY] Listening on ${port}`);
+});

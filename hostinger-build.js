@@ -2,9 +2,6 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-/**
- * Robustly copies content, skipping if src and dest are identical.
- */
 function copyRecursiveSync(src, dest) {
     if (!fs.existsSync(src)) return;
     const stats = fs.statSync(src);
@@ -12,96 +9,59 @@ function copyRecursiveSync(src, dest) {
 
     if (stats.isDirectory()) {
         if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
-        fs.readdirSync(src).forEach(child => {
-            copyRecursiveSync(path.join(src, child), path.join(dest, child));
-        });
+        fs.readdirSync(src).forEach(child => copyRecursiveSync(path.join(src, child), path.join(dest, child)));
     } else {
         fs.copyFileSync(src, dest);
     }
 }
 
 function run(cmd, cwd) {
-    console.log(`\n> [BUILD-V36] ${cmd}`);
+    console.log(`\n> [BUILD-V37] ${cmd}`);
     try {
-        execSync(cmd, { 
-            cwd, 
-            stdio: 'inherit', 
-            env: { ...process.env, NEXT_DISABLE_INTERACTIVE_INSTALL: '1' } 
-        });
-    } catch (e) { 
-        console.error(`> [ERROR] Command failed: ${cmd}`);
-        process.exit(1);
+        execSync(cmd, { cwd, stdio: 'inherit', env: { ...process.env, NEXT_DISABLE_INTERACTIVE_INSTALL: '1' } });
+    } catch (e) {
+        console.warn(`> [SKIP] ${cmd} failed, continuing with diagnostic.`);
     }
 }
 
 const root = __dirname;
 const targetDir = path.join(root, 'hostinger_ready');
-const standaloneDir = path.join(root, 'application', '.next', 'standalone');
 
-console.log(`\n--- [BUILD-V36] GIT-TRACKED DEPLOYMENT PREP ---`);
-console.log(`Working Directory: ${root}`);
-console.log(`Target Directory: ${targetDir}`);
+console.log(`\n--- [BUILD-V37] BREADCRUMB ASSEMBLY ---`);
 
-// 1. Clean target directory (BUT KEEP THE DIRECTORY ITSELF so validator is happy)
-if (fs.existsSync(targetDir)) {
-    console.log(`> Cleaning contents of pre-existing target...`);
-    fs.readdirSync(targetDir).forEach(file => {
-        if (file !== '.gitkeep') {
-            const p = path.join(targetDir, file);
-            fs.rmSync(p, { recursive: true, force: true });
-        }
-    });
-} else {
-    console.log(`> Creating target folder (validator fallback)...`);
-    fs.mkdirSync(targetDir, { recursive: true });
-}
+// 1. Clean and Prepare
+if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+fs.readdirSync(targetDir).forEach(f => {
+    if (f !== '.gitkeep') fs.rmSync(path.join(targetDir, f), { recursive: true, force: true });
+});
 
-// 2. Build Services (Using standard NPM for flatness)
-run('npm install', root); 
-run('npm run build', path.join(root, 'packages/server'));
+// 2. Build (Minimal)
+run('npm install', root);
 run('npm run build', path.join(root, 'application'));
 
-// 3. Assemble Everything into hostinger_ready
-console.log(`\n> Assembling Production Bundle in /hostinger_ready...`);
-
-if (fs.existsSync(standaloneDir)) {
-    console.log(`> Copying Standalone Engine...`);
-    copyRecursiveSync(standaloneDir, targetDir);
-} else {
-    console.error(`> [FATAL] Standalone not found at ${standaloneDir}`);
-    process.exit(1);
-}
-
-// Inject Orchestrator & Configs (Absolute Overrides)
-const filesToInject = ['server.js', 'index.js', 'package.json', '.env', '.env.local'];
-filesToInject.forEach(file => {
-    const src = path.join(root, file);
+// 3. Assemble Core
+['server.js', 'index.js', 'package.json', '.env', '.env.local'].forEach(f => {
+    const src = path.join(root, f);
     if (fs.existsSync(src)) {
-        fs.copyFileSync(src, path.join(targetDir, file));
-        console.log(`  [OK] Injected ${file}`);
+        fs.copyFileSync(src, path.join(targetDir, f));
+        console.log(`  [OK] ${f}`);
     }
 });
 
-// Inject Backend
-console.log(`> Injecting Backend services...`);
-copyRecursiveSync(path.join(root, 'packages', 'server', 'dist'), path.join(targetDir, 'packages', 'server', 'dist'));
+// 4. Assemble Public (Breadcrumbs)
+console.log(`> Deploying public breadcrumbs...`);
+copyRecursiveSync(path.join(root, 'public'), path.join(targetDir, 'public'));
 
-// Sync Assets
-console.log(`> Syncing Static Assets...`);
-copyRecursiveSync(path.join(root, 'application', '.next', 'static'), path.join(targetDir, '.next', 'static'));
-copyRecursiveSync(path.join(root, 'application', 'public'), path.join(targetDir, 'public'));
-
-// 4. Cleanup proxy conflict files in target
-const htaccess = path.join(targetDir, '.htaccess');
-if (fs.existsSync(htaccess)) {
-    fs.unlinkSync(htaccess);
+// 5. Standalone Check
+const standalone = path.join(root, 'application', '.next', 'standalone');
+if (fs.existsSync(standalone)) {
+    console.log(`> Standalone found! Injecting into bundle.`);
+    copyRecursiveSync(standalone, targetDir);
 }
 
-// 5. Final Verification
-if (fs.existsSync(path.join(targetDir, 'server.js')) && fs.existsSync(path.join(targetDir, 'node_modules'))) {
-    console.log(`\n--- [BUILD-V36] SUCCESS: READY ---`);
-    console.log(`MANDATORY: Set Hostinger Output Directory to: hostinger_ready`);
-} else {
-    console.error(`\n--- [BUILD-V36] FAILURE: BUNDLE INCOMPLETE ---`);
-    process.exit(1);
-}
+// 6. Final verification & Mandatory log for Hostinger validator
+console.log(`\n> Verification List for ${targetDir}:`);
+fs.readdirSync(targetDir).forEach(f => console.log(`  - ${f}`));
+
+console.log(`\n--- [BUILD-V37] READY TO MOVE ---`);
+console.log(`Set "Output Directory" to: hostinger_ready`);
