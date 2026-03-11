@@ -1,3 +1,7 @@
+const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+
 /**
  * v73 Build: Monolithic Merge
  * Combines UI (Standalone) and Backend into a single high-reliability target.
