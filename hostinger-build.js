@@ -72,14 +72,20 @@ if (fs.existsSync(backendDist)) {
 }
 
 // 6. MODULE RECOVERY (The "Next.js" Fix)
-console.log(`\n> Verifying Critical Modules...`);
+console.log(`\n> Step 6: Verifying Critical Modules...`);
 const nextModRoot = path.join(root, 'node_modules', 'next');
 if (!fs.existsSync(nextModRoot)) {
-    console.log(`> [CRITICAL] 'next' module missing at root. Attempting recursive recovery...`);
-    const appNextMod = path.join(root, 'application', 'node_modules', 'next');
-    if (fs.existsSync(appNextMod)) {
-        copyRecursiveSync(appNextMod, nextModRoot);
-        console.log(`> Recovery successful.`);
+    console.log(`> [CRITICAL] 'next' module missing at root. Searching sub-packages...`);
+    const searchPaths = [
+        path.join(root, 'application', 'node_modules', 'next'),
+        path.join(root, 'packages', 'server', 'node_modules', 'next')
+    ];
+    for (const p of searchPaths) {
+        if (fs.existsSync(p)) {
+            console.log(`> Found 'next' at ${p}. Recovering to root...`);
+            copyRecursiveSync(p, nextModRoot);
+            break;
+        }
     }
 }
 
