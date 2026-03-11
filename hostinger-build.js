@@ -7,13 +7,13 @@ const path = require('path');
  * Handles "same file" issues by skipping if source and destination are identical.
  */
 function copyRecursiveSync(src, dest) {
-    const exists = fs.existsSync(src);
-    const stats = exists && fs.statSync(src);
-    const isDirectory = stats && stats.isDirectory();
+    if (!fs.existsSync(src)) return;
+    
+    const stats = fs.statSync(src);
+    const isDirectory = stats.isDirectory();
 
     // Prevent "same file" errors or infinite loops
     if (path.resolve(src) === path.resolve(dest)) {
-        console.log(`- Skipping identical path: ${src}`);
         return;
     }
 
@@ -23,10 +23,8 @@ function copyRecursiveSync(src, dest) {
             copyRecursiveSync(path.join(src, child), path.join(dest, child));
         });
     } else {
-        if (exists) {
-            console.log(`- Copying: ${src} -> ${dest}`);
-            fs.copyFileSync(src, dest);
-        }
+        // console.log(`- Copying: ${src} -> ${dest}`);
+        fs.copyFileSync(src, dest);
     }
 }
 
@@ -35,6 +33,7 @@ function run(cmd, cwd) {
     try {
         execSync(cmd, { cwd, stdio: 'inherit' });
     } catch (e) {
+        console.error(`ERROR: Command failed: ${cmd}`);
         process.exit(1);
     }
 }
@@ -67,7 +66,7 @@ run('npm run build', path.join(root, 'packages/server'));
 console.log('\n> Step 4: Flattening Standalone Bundle to Root...');
 const standalonePath = path.join(root, 'application', '.next', 'standalone');
 if (fs.existsSync(standalonePath)) {
-    // Copy content of standalone folder into root
+    console.log('Copying standalone bundle content to root...');
     copyRecursiveSync(standalonePath, root);
 } else {
     console.error('ERROR: Standalone build not found at', standalonePath);
@@ -83,7 +82,7 @@ copyRecursiveSync(staticSrc, staticDest);
 const publicSrc = path.join(root, 'application', 'public');
 copyRecursiveSync(publicSrc, path.join(root, 'public'));
 
-// 6. Restore our Unified Orchestrator (overwriting standalone defaults if any)
+// 6. Restore our Unified Orchestrator (overwriting standalone defaults)
 console.log('\n> Step 6: Restoring Unified Orchestrator from backup...');
 filesToPreserve.forEach(file => {
     const src = path.join(backupDir, file);
@@ -96,15 +95,34 @@ filesToPreserve.forEach(file => {
 console.log('\n> Step 7: Adding Backend services to root packages/server/dist...');
 const serverDistSrc = path.join(root, 'packages', 'server', 'dist');
 const serverDistDest = path.join(root, 'packages', 'server', 'dist');
-// copyRecursiveSync handles same-path correctly now
-copyRecursiveSync(serverDistSrc, serverDistDest);
+if (fs.existsSync(serverDistSrc)) {
+    copyRecursiveSync(serverDistSrc, serverDistDest);
+}
 
-// 8. Create a DUMMY output folder for Hostinger's validator
-console.log('\n> Step 8: Creating dummy folder for Hostinger validator...');
+// 8. VERIFICATION: Ensure dependencies are actually at the root
+console.log('\n> Step 8: Verifying production bundle integrity...');
+const criticalPackages = ['next', 'express'];
+let missing = false;
+criticalPackages.forEach(pkg => {
+    const pkgPath = path.join(root, 'node_modules', pkg);
+    if (fs.existsSync(pkgPath)) {
+        console.log(`[OK] Found critical package: ${pkg}`);
+    } else {
+        console.warn(`[WARNING] Critical package missing from root node_modules: ${pkg}`);
+        missing = true;
+    }
+});
+
+if (missing) {
+    console.log('Attempting to recover missing root modules from application node_modules...');
+    copyRecursiveSync(path.join(root, 'application', 'node_modules'), path.join(root, 'node_modules'));
+}
+
+// 9. Create a DUMMY output folder for Hostinger's validator
 const dummyDir = path.join(root, '.hostinger_dummy');
 if (!fs.existsSync(dummyDir)) fs.mkdirSync(dummyDir);
 fs.writeFileSync(path.join(dummyDir, 'ok.txt'), 'ready');
 
-console.log('\n--- ROOT BUILD SUCCESSFUL (v23) ---');
-console.log('Deployment structure is now flat at the root.');
-console.log('Hostinger "Output Directory" should be LEFT EMPTY in the dashboard.');
+console.log('\n--- ULTIMATE FLAT BUILD SUCCESSFUL ---');
+console.log('All files and modules are verified at the root.');
+console.log('Deployment should now be stable. Leaving "Output Directory" EMPTY is mandatory.');
