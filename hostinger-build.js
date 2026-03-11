@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * v65 Build: The "dist" Monolithic Bridge
- * Uses standard "dist" folder to satisfy Hostinger validator.
+ * v66 Build: Validator-Safe Master
+ * Reverts to .next for validator satisfaction but uses a UNIQUE orchestrator name.
  */
 function deployWithPermissions(src, dest) {
     try {
@@ -32,10 +32,10 @@ function run(cmd, cwd) {
 }
 
 const root = __dirname;
-// CRITICAL: Standard "dist" name for Hostinger validator
-const targetDir = path.join(root, 'dist'); 
+// CRITICAL: Standard ".next" name for Hostinger validator
+const targetDir = path.join(root, '.next'); 
 
-console.log(`--- [BUILD] v65 DIST-BRIDGE-MONOLITH ---`);
+console.log(`--- [BUILD] v66 VALIDATOR-SAFE-MASTER ---`);
 
 // 1. Build Layer
 run('npm install', path.join(root, 'packages', 'billing'));
@@ -58,24 +58,33 @@ if (fs.existsSync(targetDir)) {
     fs.mkdirSync(targetDir, { recursive: true });
 }
 
-// 3. Monolithic Consolidation
-console.log(`> Packing monorepo into /dist...`);
+// 3. Deploy Artifacts into .next
+console.log(`> Consolidating monorepo into /.next...`);
 
-// Standalone UI Contents
+// Standalone UI
 const standalone = path.join(root, 'application', '.next', 'standalone');
 if (fs.existsSync(standalone)) deployWithPermissions(standalone, targetDir);
 
-// Backend Server Dist
+// Backend API
 const backendDist = path.join(root, 'packages', 'server', 'dist');
 deployWithPermissions(backendDist, path.join(targetDir, 'packages', 'server', 'dist'));
 
-// Static Assets
+// Assets
 const appNext = path.join(root, 'application', '.next');
 deployWithPermissions(path.join(appNext, 'static'), path.join(targetDir, '.next', 'static'));
 deployWithPermissions(path.join(root, 'application', 'public'), path.join(targetDir, 'public'));
 
-// 4. Inject Unified Entry Points
-['server.js', 'package.json', 'index.js', '.env', '.env.local'].forEach(f => {
+// 4. Inject Unique Orchestrator
+console.log(`> Injecting UNIQUE master-entry.js...`);
+const srcServer = path.join(root, 'server.js');
+const destEntry = path.join(targetDir, 'master-entry.js'); // RENAMED to avoid collision
+if (fs.existsSync(srcServer)) {
+    fs.copyFileSync(srcServer, destEntry);
+    fs.chmodSync(destEntry, 0o644);
+}
+
+// Shared Files
+['package.json', '.env', '.env.local'].forEach(f => {
     const src = path.join(root, f);
     if (fs.existsSync(src)) {
         fs.copyFileSync(src, path.join(targetDir, f));
@@ -86,19 +95,6 @@ deployWithPermissions(path.join(root, 'application', 'public'), path.join(target
 // Final cleanup: Kill any root .htaccess that might cause 403
 if (fs.existsSync(path.join(root, '.htaccess'))) fs.unlinkSync(path.join(root, '.htaccess'));
 
-// 5. Diagnostic Tree Log (For Validator Visibility)
-console.log(`--- [SUCCESS] v65 ---`);
-console.log(`TARGET: /dist`);
-function listTree(dir, indent = '') {
-    try {
-        fs.readdirSync(dir).forEach(file => {
-            const p = path.join(dir, file);
-            console.log(`${indent}${fs.lstatSync(p).isDirectory() ? 'DIR' : 'FILE'}: ${file}`);
-            if (fs.lstatSync(p).isDirectory() && !file.includes('node_modules') && indent.length < 5) {
-                listTree(p, indent + '  ');
-            }
-        });
-    } catch (e) {}
-}
-console.log(`> VALIDATOR MAP:`);
-listTree(targetDir);
+console.log(`--- [SUCCESS] v66 ---`);
+console.log(`TARGET: /.next`);
+console.log(`ENTRY: master-entry.js`);
