@@ -14,9 +14,11 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "dev": "lerna run dev --stream",
-    "build": "lerna run build --stream"
+    "build": "lerna run build --scope kpapplication --stream",
+    "start": "cd application && next start"
   },
   "dependencies": {
+    "next": "^14.2.31",
     "mysql2": "^3.16.2",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
