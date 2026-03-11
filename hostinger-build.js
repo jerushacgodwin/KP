@@ -3,41 +3,9 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * Iteratively creates a directory path and logs any issues.
- * This is more robust than { recursive: true } on some environments.
+ * Robustly copies content and sets permissions (644 for files, 755 for dirs).
  */
-function ensureDirIterative(dirPath) {
-    const parts = dirPath.split(path.sep);
-    let currentPath = '';
-
-    // Handle absolute paths on Linux/Windows
-    if (dirPath.startsWith(path.sep)) currentPath = path.sep;
-    else if (dirPath.includes(':')) { // Windows absolute
-        currentPath = parts.shift() + path.sep;
-    }
-
-    for (const part of parts) {
-        if (!part) continue;
-        currentPath = path.join(currentPath, part);
-        
-        try {
-            if (!fs.existsSync(currentPath)) {
-                console.log(`> [MKDIR] Creating: ${currentPath}`);
-                fs.mkdirSync(currentPath);
-            } else {
-                const stats = fs.lstatSync(currentPath);
-                if (!stats.isDirectory()) {
-                    throw new Error(`Path component is a FILE, not a directory: ${currentPath}`);
-                }
-            }
-        } catch (err) {
-            console.error(`> [MKDIR-FAIL] Error at ${currentPath}: ${err.message}`);
-            throw err; // Re-throw to be caught by the "Soft Fail" block
-        }
-    }
-}
-
-function copyRecursiveSync(src, dest) {
+function deployRecursiveSync(src, dest) {
     try {
         if (!fs.existsSync(src)) return;
         const stats = fs.lstatSync(src);
@@ -45,26 +13,22 @@ function copyRecursiveSync(src, dest) {
 
         if (stats.isDirectory()) {
             if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+            fs.chmodSync(dest, 0o755); // Directory permissions
             fs.readdirSync(src).forEach(child => {
-                copyRecursiveSync(path.join(src, child), path.join(dest, child));
+                deployRecursiveSync(path.join(src, child), path.join(dest, child));
             });
         } else {
             fs.copyFileSync(src, dest);
+            fs.chmodSync(dest, 0o644); // File permissions
         }
-    } catch (err) {
-        console.warn(`> [COPY-WARN] Skipping ${src}: ${err.message}`);
-    }
+    } catch (err) {}
 }
 
 function run(cmd, cwd) {
-    console.log(`\n> [BUILD-V47] ${cmd}`);
+    console.log(`\n> [BUILD-V48] ${cmd}`);
     try {
-        execSync(cmd, { 
-            cwd, 
-            stdio: 'inherit', 
-            env: { ...process.env, NEXT_DISABLE_INTERACTIVE_INSTALL: '1' } 
-        });
-    } catch (e) { 
+        execSync(cmd, { cwd, stdio: 'inherit' });
+    } catch (e) {
         console.warn(`> [SKIP] Command failed: ${cmd}`);
     }
 }
@@ -72,71 +36,59 @@ function run(cmd, cwd) {
 const root = __dirname;
 const targetDir = path.join(root, '.next'); 
 
-console.log(`\n--- [BUILD-V47] ITERATIVE RESILIENCE ---`);
-console.log(`Build Root: ${root}`);
+console.log(`\n--- [BUILD-V48] PERMISSION-SAFE PROXY FIX ---`);
 
-// 1. SAFE DIRECTORY CREATION (Soft-Fail)
-const uploadsDir = path.join(root, 'application', 'public', 'uploads');
-console.log(`\n> Attempting to ensure uploads directory exists...`);
-try {
-    ensureDirIterative(uploadsDir);
-    console.log(`> [OK] Uploads directory verified/created.`);
-} catch (e) {
-    console.warn(`> [SOFT-FAIL] Directory creation failed, but continuing build: ${e.message}`);
-}
-
-// 2. Build Services
+// 1. Build
 run('npm install', root);
 run('npm run build', path.join(root, 'application'));
 
-// 3. Consolidate into root .next
-console.log(`\n> Consolidating into /.next...`);
+// 2. Consolidate into root .next
+console.log(`\n> Consolidating into /.next with permission enforcement...`);
 if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
 
-const standaloneDir = path.join(root, 'application', '.next', 'standalone');
-if (fs.existsSync(standaloneDir)) {
-    console.log(`> Copying Standalone Engine...`);
-    copyRecursiveSync(standaloneDir, targetDir);
+const standalone = path.join(root, 'application', '.next', 'standalone');
+if (fs.existsSync(standalone)) {
+    deployRecursiveSync(standalone, targetDir);
 }
 
-// Inject Entry Points
+// Inject Required Files
 ['server.js', 'index.js', 'package.json', '.env', '.env.local'].forEach(f => {
     const src = path.join(root, f);
     if (fs.existsSync(src)) {
         fs.copyFileSync(src, path.join(targetDir, f));
+        fs.chmodSync(path.join(targetDir, f), 0o644);
         console.log(`  [OK] Injected ${f}`);
     }
 });
 
 // Sync Assets
-const applicationNext = path.join(root, 'application', '.next');
-copyRecursiveSync(path.join(applicationNext, 'static'), path.join(targetDir, '.next', 'static'));
-copyRecursiveSync(path.join(root, 'application', 'public'), path.join(targetDir, 'public'));
+const appNext = path.join(root, 'application', '.next');
+deployRecursiveSync(path.join(appNext, 'static'), path.join(targetDir, '.next', 'static'));
+deployRecursiveSync(path.join(root, 'application', 'public'), path.join(targetDir, 'public'));
 
-// 4. GLOBAL HTACCESS PURGE
-const purgeHtaccess = (dir) => {
-    try {
-        if (!fs.existsSync(dir)) return;
-        const files = fs.readdirSync(dir);
-        files.forEach(file => {
-            const p = path.join(dir, file);
-            try {
-                if (file === '.htaccess') {
-                    console.log(`> [PURGE] Deleting ${p}...`);
-                    fs.unlinkSync(p);
-                } else if (fs.lstatSync(p).isDirectory() && !p.includes('node_modules')) {
-                    purgeHtaccess(p);
-                }
-            } catch (e) {}
-        });
-    } catch (e) {}
-};
+// 3. INJECT LITESPEED BRIDGE .HTACCESS
+// This forces LiteSpeed to pass requests to the Node.js process instead of 403-ing
+const bridgeHtaccess = `
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\\.js$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.js [L]
+</IfModule>
+`;
+fs.writeFileSync(path.join(targetDir, '.htaccess'), bridgeHtaccess.trim());
+fs.chmodSync(path.join(targetDir, '.htaccess'), 0o644);
+console.log(`> [BRIDGE] Injected Node-Bridge .htaccess`);
 
-console.log(`> Running Global .htaccess Purge...`);
-purgeHtaccess(root);
-purgeHtaccess(targetDir);
+// 4. CLEANUP OLD CONFLICTS
+if (fs.existsSync(path.join(root, '.htaccess'))) {
+    fs.unlinkSync(path.join(root, '.htaccess'));
+}
 
-// 5. Final verification
-console.log(`\n--- [BUILD-V47] SUCCESS ---`);
+console.log(`\n--- [BUILD-V48] SUCCESS ---`);
+fs.readdirSync(targetDir).forEach(f => console.log(`  - ${f}`));
+console.log(`\nMANDATORY: Set Hostinger "Entry File" to: index.js`);
 console.log(`MANDATORY Output Directory (ABSOLUTE):`);
 console.log(`/home/u102032541/domains/lightgreen-wolverine-191417.hostingersite.com/.next`);

@@ -3,7 +3,7 @@ const { parse } = require('url')
 const path = require('path')
 const fs = require('fs')
 
-// V45 RESCUE ORCHESTRATOR
+// V48 RESILIENT ORCHESTRATOR
 const logFile = path.join(__dirname, 'server_log.txt');
 function log(msg) {
     const entry = `[${new Date().toISOString()}] ${msg}\n`;
@@ -12,10 +12,10 @@ function log(msg) {
 }
 
 log('##############################################');
-log('# [KP-V45-RESCUE] STARTUP...                #');
+log('# [KP-V48-PROXY-FIX] SYSTEM ONLINE          #');
 log('##############################################');
 log(`DIR: ${__dirname}`);
-log(`ENV: ${JSON.stringify(process.env, null, 2)}`);
+log(`NODE_VERSION: ${process.version}`);
 
 const port = process.env.PORT || 3000
 
@@ -39,35 +39,30 @@ function getNext() {
 const next = getNext();
 
 if (!next) {
-    log('> [FATAL] Next.js engine not found! Falling back to Diagnostic Server.');
+    log('> [FATAL] Next.js engine not found! Diagnostic screen active.');
     createServer((req, res) => {
-        log(`> [DIAGNOSTIC-REQ] ${req.url}`);
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(`
-            <div style="font-family: sans-serif; padding: 2rem; border: 10px solid red;">
-                <h1>⚠️ [V45] Diagnostic Mode</h1>
-                <p>The Proxy is <b>Working</b>, but Next.js dependencies are missing.</p>
-                <hr>
-                <p><b>Working Directory:</b> ${__dirname}</p>
-                <p><b>Files:</b> ${fs.readdirSync(__dirname).join(', ')}</p>
-                <p>Check <code>server_log.txt</code> in the root for details.</p>
+            <div style="font-family: system-ui; padding: 2rem; border-top: 10px solid gold;">
+                <h1>⚠️ [V48] Diagnostic Mode</h1>
+                <p>The Proxy is <b>Alive</b>, but Next.js is missing.</p>
+                <p><b>Check:</b> <code>server_log.txt</code> in File Manager.</p>
+                <pre>Path: ${__dirname}</pre>
             </div>
         `);
-    }).listen(port, () => log(`> [DIAGNOSTIC] Listening on ${port}`));
+    }).listen(port);
 } else {
     const app = next({ dev: false, dir: '.' })
     const handle = app.getRequestHandler()
 
     app.prepare().then(() => {
         createServer((req, res) => {
-            const parsedUrl = parse(req.url, true)
-            handle(req, res, parsedUrl)
+            handle(req, res, parse(req.url, true))
         }).listen(port, (err) => {
             if (err) throw err
-            log(`> [READY] KP App is active on port ${port}`);
+            log(`> [SUCCESS] App listening on port ${port}`);
         })
     }).catch(err => {
-        log(`> [FATAL-PREPARE] ${err.message}`);
-        log(err.stack);
+        log(`> [ERROR] Prepare failed: ${err.message}`);
     });
 }
