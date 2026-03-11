@@ -1,3 +1,13 @@
+# Hostinger Deployment Un-ignore (v45)
+!.next/
+!.next/**
+
+# Hostinger Deployment Un-ignore (v42)
+
+# Hostinger Deployment Un-ignore (v41)
+!deploy/
+!deploy/**
+
 # Dependencies
 node_modules/
 .pnp
