@@ -3,8 +3,8 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * v62 Build: In-Place Monorepo Master
- * Consolidates everything into the root to satisfy Output Directory: null.
+ * v63 Build: Managed Bundle Strategy
+ * Consolidates into prod_bundle to avoid root collisions and cleaner deployment.
  */
 function deployWithPermissions(src, dest) {
     try {
@@ -32,8 +32,10 @@ function run(cmd, cwd) {
 }
 
 const root = __dirname;
+// CRITICAL: Dedicated bundle folder for "clean" mover deployment
+const targetDir = path.join(root, 'prod_bundle'); 
 
-console.log(`--- [BUILD] v62 IN-PLACE-MASTER ---`);
+console.log(`--- [BUILD] v63 MANAGED-BUNDLE ---`);
 
 // 1. Build Layer
 run('npm install', path.join(root, 'packages', 'billing'));
@@ -45,39 +47,47 @@ run('npm run build', path.join(root, 'packages', 'server'));
 run('npm install', path.join(root, 'application'));
 run('npm run build', path.join(root, 'application'));
 
-// 2. Consolidate into Root (In-Place)
-console.log(`> Consolidating into Root...`);
+// 2. Prep Target
+if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
+fs.mkdirSync(targetDir, { recursive: true });
 
-// Standalone UI Contents
+// 3. Deploy Artifacts into Bundle
+console.log(`> Bundling artifacts into /prod_bundle...`);
+
+// Standalone UI
 const standalone = path.join(root, 'application', '.next', 'standalone');
-if (fs.existsSync(standalone)) {
-    // Copy contents of standalone into root
-    fs.readdirSync(standalone).forEach(f => {
-        const src = path.join(standalone, f);
-        const dest = path.join(root, f);
-        deployWithPermissions(src, dest);
-    });
-}
+if (fs.existsSync(standalone)) deployWithPermissions(standalone, targetDir);
 
-// Backend Dist
+// Backend API
 const backendDist = path.join(root, 'packages', 'server', 'dist');
-if (fs.existsSync(backendDist)) {
-    deployWithPermissions(backendDist, path.join(root, 'packages', 'server', 'dist'));
-}
+if (fs.existsSync(backendDist)) deployWithPermissions(backendDist, path.join(targetDir, 'packages', 'server', 'dist'));
 
 // NextJS Static Assets
 const appNext = path.join(root, 'application', '.next');
-deployWithPermissions(path.join(appNext, 'static'), path.join(root, '.next', 'static'));
-deployWithPermissions(path.join(root, 'application', 'public'), path.join(root, 'public'));
+deployWithPermissions(path.join(appNext, 'static'), path.join(targetDir, '.next', 'static'));
+deployWithPermissions(path.join(root, 'application', 'public'), path.join(targetDir, 'public'));
 
-// Force Permissions on Core Entry Points
-['server.js', 'package.json', 'index.js'].forEach(f => {
-    const p = path.join(root, f);
-    if (fs.existsSync(p)) fs.chmodSync(p, 0o644);
+// 4. Inject Unified Entry (RENAMED to avoid collision)
+console.log(`> Injecting bundle-server.js...`);
+const orchestratorSrc = path.join(root, 'server.js');
+const orchestratorDest = path.join(targetDir, 'bundle-server.js');
+if (fs.existsSync(orchestratorSrc)) {
+    fs.copyFileSync(orchestratorSrc, orchestratorDest);
+    fs.chmodSync(orchestratorDest, 0o644);
+}
+
+// Inject Required Files
+['package.json', '.env', '.env.local'].forEach(f => {
+    const src = path.join(root, f);
+    if (fs.existsSync(src)) {
+        fs.copyFileSync(src, path.join(targetDir, f));
+        fs.chmodSync(path.join(targetDir, f), 0o644);
+    }
 });
 
-// Final cleanup: Kill .htaccess to prevent LiteSpeed proxy blocks
+// Final cleanup: Remove any root .htaccess that might cause 403
 if (fs.existsSync(path.join(root, '.htaccess'))) fs.unlinkSync(path.join(root, '.htaccess'));
 
-console.log(`--- [SUCCESS] v62 ---`);
-console.log(`MODE: IN-PLACE (ROOT)`);
+console.log(`--- [SUCCESS] v63 ---`);
+console.log(`TARGET: /prod_bundle`);
+console.log(`ENTRY: bundle-server.js`);
