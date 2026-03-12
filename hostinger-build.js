@@ -135,8 +135,29 @@ if (fs.existsSync(srcServer)) {
     fs.chmodSync(path.join(targetDir, 'index.js'), 0o644);
 }
 
-// Required Files
-['package.json', '.env', '.env.local'].forEach(f => {
+// Write a CLEAN package.json for deploy_final (NOT the root one)
+// The root package.json has workspaces/wrong start script which breaks Hostinger
+const deployPackageJson = {
+    "name": "kp-deploy",
+    "version": "1.0.0",
+    "private": true,
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+};
+fs.writeFileSync(
+    path.join(targetDir, 'package.json'),
+    JSON.stringify(deployPackageJson, null, 2)
+);
+fs.chmodSync(path.join(targetDir, 'package.json'), 0o644);
+console.log(`[OK] Clean package.json written for deploy_final`);
+
+// Copy .env files if they exist
+['.env', '.env.local'].forEach(f => {
     if (fs.existsSync(f)) {
         fs.copyFileSync(f, path.join(targetDir, f));
         fs.chmodSync(path.join(targetDir, f), 0o644);
