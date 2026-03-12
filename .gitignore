@@ -1,10 +1,8 @@
-# Hostinger Deployment Un-ignore (v45)
+# Hostinger Deployment Un-ignore (v73.3)
 !.next/
 !.next/**
-!deploy_final/
-!deploy_final/**
-
-# Hostinger Deployment Un-ignore (v42)
+!dist/
+!dist/**
 
 # Hostinger Deployment Un-ignore (v41)
 !deploy/
