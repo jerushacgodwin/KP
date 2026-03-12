@@ -1,37 +1,49 @@
 /**
- * v71 MASTER ORCHESTRATOR (Standalone Bridge)
- * Hand-off for Next.js Standalone + Backend API
+ * v73 MASTER ORCHESTRATOR (Monolithic Merge)
+ * High-reliability hand-off for Next.js + Backend API
  */
 const fs = require('fs');
 const path = require('path');
 const { createServer } = require('http');
 
 const port = process.env.PORT || 3000;
-console.log(`--- [ORCHESTRATOR v71 STARTING] ---`);
+const logPath = path.join(__dirname, '.deployment_debug.log');
+
+function log(msg) {
+    const entry = `[${new Date().toISOString()}] ${msg}\n`;
+    console.log(msg);
+    try { fs.appendFileSync(logPath, entry); } catch (e) {}
+}
+
+log(`--- [ORCHESTRATOR v73 STARTING] ---`);
+log(`CWD: ${process.cwd()}`);
+log(`DIRNAME: ${__dirname}`);
 
 // 1. Prepare Next.js Standalone Handler
 let nextHandler = null;
 try {
-    // We use the internal next-server to avoid needing the full 'next' package
-    const NextServer = require('./node_modules/next/dist/server/next-server').default;
-    
-    // Config was extracted during build
-    const configPath = path.join(__dirname, 'next-config-standalone.json');
-    const nextConfig = fs.existsSync(configPath) ? JSON.parse(fs.readFileSync(configPath, 'utf8')) : {};
-    
-    const nextApp = new NextServer({
-        hostname: 'localhost',
-        port: port,
-        dir: path.join(__dirname, 'application'), // Standalone app code folder
-        dev: false,
-        customServer: true,
-        conf: nextConfig
-    });
-    
-    nextHandler = nextApp.getRequestHandler();
-    console.log('[OK] Next.js Standalone Handler Loaded');
+    const nextServerPath = path.join(__dirname, 'node_modules', 'next', 'dist', 'server', 'next-server.js');
+    if (fs.existsSync(nextServerPath)) {
+        const NextServer = require(nextServerPath).default;
+        const configPath = path.join(__dirname, 'next-config-standalone.json');
+        const nextConfig = fs.existsSync(configPath) ? JSON.parse(fs.readFileSync(configPath, 'utf8')) : {};
+        
+        const nextApp = new NextServer({
+            hostname: 'localhost',
+            port: port,
+            dir: path.join(__dirname, 'application'),
+            dev: false,
+            customServer: true,
+            conf: nextConfig
+        });
+        
+        nextHandler = nextApp.getRequestHandler();
+        log('[OK] Next.js Standalone Handler Loaded');
+    } else {
+        log(`[ERR] NextServer not found at ${nextServerPath}`);
+    }
 } catch (err) {
-    console.error(`[ERR] Next.js Setup Failed: ${err.message}`);
+    log(`[ERR] Next.js Setup Failed: ${err.stack}`);
 }
 
 // 2. Prepare Backend API
@@ -39,25 +51,32 @@ let backendApp = null;
 try {
     const backendPath = path.join(__dirname, 'packages', 'server', 'dist', 'app.js');
     if (fs.existsSync(backendPath)) {
+        // This will now work because we consolidated node_modules in v72
         backendApp = require(backendPath);
         if (backendApp.default) backendApp = backendApp.default;
-        console.log('[OK] Backend API Loaded');
+        log('[OK] Backend API Loaded');
     } else {
-        console.log(`[WARN] Backend not found at ${backendPath}`);
+        log(`[WARN] Backend not found at ${backendPath}`);
     }
 } catch (err) {
-    console.error(`[ERR] Backend Load Failed: ${err.message}`);
+    log(`[ERR] Backend Load Failed (Likely deps): ${err.message}`);
+    log(`HINT: Check if node_modules/express exists.`);
 }
 
-// 3. Start Single Unified Server
+// 3. Start Unified Server
 createServer(async (req, res) => {
     try {
         const url = req.url || '/';
 
-        // Ping (Diagnostic)
+        // Diagnostic Endpoints
         if (url === '/ping') {
             res.writeHead(200, { 'Content-Type': 'text/plain' });
-            return res.end('PONG v71');
+            return res.end(`PONG v73 (Backend: ${backendApp ? 'LOADED' : 'MISSING'})`);
+        }
+        
+        if (url === '/debug-logs') {
+            res.writeHead(200, { 'Content-Type': 'text/plain' });
+            return res.end(fs.existsSync(logPath) ? fs.readFileSync(logPath, 'utf8') : 'No logs yet.');
         }
 
         // Backend Routing
@@ -76,13 +95,13 @@ createServer(async (req, res) => {
 
         // Fallback
         res.writeHead(503);
-        res.end('Application Starting or Unavailable');
+        res.end(`Application Starting or Unavailable. Check /debug-logs`);
 
     } catch (err) {
-        console.error(`[RUNTIME ERR] ${err.message}`);
+        log(`[RUNTIME ERR] ${err.message}`);
         res.writeHead(500);
         res.end('Internal Server Error');
     }
 }).listen(port, () => {
-    console.log(`> Service running on port ${port}`);
+    log(`> Service running on port ${port}`);
 });
