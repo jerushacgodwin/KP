@@ -5,9 +5,9 @@ const path = require('node:path');
 /**
  * v73.3 Build: Monolithic Merge (Safe Mode)
  * Combines UI (Standalone) and Backend into a single high-reliability target.
- * TARGET: ./dist (Standard Output)
+ * TARGET: ./build (Standard Output)
  */
-console.log(`\n=== [BUILD] v73.3 STARTING ===`);
+console.log(`\n=== [BUILD] v73.3 ===`);
 console.log(`TIME: ${new Date().toISOString()}`);
 
 // Diagnostic Check
@@ -70,10 +70,9 @@ run('npm run build', './packages/server');
 run('npm install', './application');
 run('npm run build', './application');
 
-// HOSTINGER OUTPUT DIRECTORY CHECK:
 // Hostinger checks for a directory named "dist", "build", or ".next" at repo ROOT.
-// We use "./dist" as our primary output.
-const targetDir = './dist'; 
+// We use "./build" as our primary output.
+const targetDir = './build'; 
 console.log(`\n> Preparing Target: ${targetDir}`);
 if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
 fs.mkdirSync(targetDir, { recursive: true });
@@ -90,7 +89,7 @@ if (fs.existsSync(buildIdSrc)) {
     console.log(`[WARN] application/.next/BUILD_ID not found — wrote placeholder`);
 }
 
-// 2. Packing into ./dist
+// 2. Packing into ./build
 console.log(`\n> Packing into ${targetDir}...`);
 
 // Copy Next.js build output into dist/application
@@ -120,7 +119,7 @@ if (fs.existsSync(publicDir)) {
     if (fs.existsSync(uploadsPath)) {
         try {
             fs.rmSync(uploadsPath, { recursive: true, force: true });
-            console.log('[WARN] uploads folder removed from dist to avoid permission errors');
+            console.log('[WARN] uploads folder removed from build to avoid permission errors');
         } catch (e) {
             console.error(`[ERR] Failed to remove uploads folder: ${e.message}`);
         }
@@ -197,5 +196,5 @@ fs.writeFileSync(
 console.log(`\n=== [SUCCESS] v73.3 ===`);
 console.log(`OUTPUT: ${path.resolve(targetDir)}`);
 console.log(`\n> IMPORTANT: In Hostinger Dashboard:`);
-console.log(`1. Set "Output Directory" to "dist"`);
-console.log(`2. If "dist" is not an option, set it to "." and ensure .htaccess is present.`);
+console.log(`1. Set "Output Directory" to "build"`);
+console.log(`2. If "build" is not an option, set it to "." and ensure .htaccess is present.`);
