@@ -1,8 +1,10 @@
+Options +FollowSymLinks
 RewriteEngine On
-
-# Proxy all requests to the Node.js app running on port 3000
+RewriteBase /
+# Proxy all non-file requests to Node.js app on the port provided by Hostinger
 RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^(.*)$ http://localhost:3000/$1 [P,L]
-
-# Allow direct file access for static assets if needed
-ProxyPassMatch ^/(.*\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot))$ !
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ http://127.0.0.1:${PORT:-3000}/$1 [P,L]
+# Allow direct access to static assets
+RewriteCond %{REQUEST_URI} \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ [NC]
+RewriteRule ^ - [L]

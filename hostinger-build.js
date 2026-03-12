@@ -112,10 +112,18 @@ if (fs.existsSync(nextBuildDir)) {
 // Copy public folder
 const publicDir = './application/public';
 if (fs.existsSync(publicDir)) {
-    if (fs.cpSync) {
-        fs.cpSync(publicDir, path.join(targetAppDir, 'public'), { recursive: true, dereference: true });
-    } else {
-        deployWithPermissions(publicDir, path.join(targetAppDir, 'public'));
+    // Use deployWithPermissions to avoid Windows privilege issues with fs.cpSync
+    deployWithPermissions(publicDir, path.join(targetAppDir, 'public'));
+    console.log(`[OK] public/ copied`);
+    // Remove uploads folder if present to avoid permission issues on Windows
+    const uploadsPath = path.join(targetAppDir, 'public', 'uploads');
+    if (fs.existsSync(uploadsPath)) {
+        try {
+            fs.rmSync(uploadsPath, { recursive: true, force: true });
+            console.log('[WARN] uploads folder removed from dist to avoid permission errors');
+        } catch (e) {
+            console.error(`[ERR] Failed to remove uploads folder: ${e.message}`);
+        }
     }
 }
 
