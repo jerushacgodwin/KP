@@ -3,10 +3,12 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 /**
- * v73.2 Build: Monolithic Merge (Safe Mode)
+ * v73.3 Build: Monolithic Merge (Safe Mode)
  * Combines UI (Standalone) and Backend into a single high-reliability target.
+ * TARGET: ./dist (Standard Output)
  */
-console.log(`--- [BUILD] v73.2 STARTING ---`);
+console.log(`\n=== [BUILD] v73.3 STARTING ===`);
+console.log(`TIME: ${new Date().toISOString()}`);
 
 // Diagnostic Check
 if (typeof path === 'undefined' || typeof fs === 'undefined') {
@@ -29,7 +31,8 @@ function deployWithPermissions(src, dest) {
         } else {
             fs.copyFileSync(src, dest);
             fs.chmodSync(dest, 0o644);
-            console.log(`[OK] ${dest}`);
+            // Too much noise for thousands of files:
+            // console.log(`[OK] ${dest}`);
         }
     } catch (err) {
         console.error(`[ERR] ${src} -> ${dest}: ${err.message}`);
@@ -38,7 +41,7 @@ function deployWithPermissions(src, dest) {
 
 function run(cmd, cwd) {
     const fullPath = path.resolve(process.cwd(), cwd);
-    console.log(`> [RUN] "${cmd}" in ${fullPath}`);
+    console.log(`\n--- [RUN] "${cmd}" in ${fullPath} ---`);
     if (!fs.existsSync(fullPath)) {
         console.error(`[ERR] Directory does not exist: ${fullPath}`);
         process.exit(1);
@@ -49,6 +52,7 @@ function run(cmd, cwd) {
             stdio: 'inherit', 
             env: { ...process.env, NEXT_DISABLE_INTERACTIVE_INSTALL: '1' } 
         });
+        console.log(`[PASS] ${cmd}`);
     } catch (e) { 
         console.error(`[FATAL] Command failed: ${cmd}`);
         console.error(`[TRACE] ${e.message}`);
@@ -66,38 +70,46 @@ run('npm run build', './packages/server');
 run('npm install', './application');
 run('npm run build', './application');
 
-// CRITICAL: New un-ignored folder name
-const targetDir = './deploy_final'; 
-
-// 2. Prep Target
+// HOSTINGER OUTPUT DIRECTORY CHECK:
+// Hostinger checks for a directory named "dist", "build", or ".next" at repo ROOT.
+// We use "./dist" as our primary output.
+const targetDir = './dist'; 
+console.log(`\n> Preparing Target: ${targetDir}`);
 if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
 fs.mkdirSync(targetDir, { recursive: true });
 
-// 3. Verbose Consolidation
-console.log(`> Packing into UN-IGNORED ./deploy_final...`);
+// Hostinger Specific: Creating root-level .next marker
+console.log(`> Creating root-level .next marker for Hostinger discovery...`);
+if (!fs.existsSync('./.next')) fs.mkdirSync('./.next', { recursive: true });
+const buildIdSrc = './application/.next/BUILD_ID';
+if (fs.existsSync(buildIdSrc)) {
+    fs.copyFileSync(buildIdSrc, './.next/BUILD_ID');
+    console.log(`[OK] Root .next/BUILD_ID created`);
+} else {
+    fs.writeFileSync('./.next/BUILD_ID', 'kp-build-' + Date.now());
+    console.log(`[WARN] application/.next/BUILD_ID not found — wrote placeholder`);
+}
 
-// Copy Next.js build output into deploy_final/application
-// NOTE: distDir is '../.next' so next build outputs to ROOT-level .next
-// Hostinger checks for .next at root — this satisfies that check.
-// We then also copy it into deploy_final/application/.next for the runtime.
-console.log(`> Copying Next.js build output...`);
-const nextBuildDir = './application/.next';   // Standard Next.js output (no distDir override)
+// 2. Packing into ./dist
+console.log(`\n> Packing into ${targetDir}...`);
+
+// Copy Next.js build output into dist/application
+const nextBuildDir = './application/.next';
 const targetAppDir = path.join(targetDir, 'application');
 if (!fs.existsSync(targetAppDir)) fs.mkdirSync(targetAppDir, { recursive: true });
 
 if (fs.existsSync(nextBuildDir)) {
-    console.log(`> Copying .next output to deploy_final/application/.next ...`);
+    console.log(`> Copying Next.js build output to ${targetAppDir}/.next...`);
     if (fs.cpSync) {
         fs.cpSync(nextBuildDir, path.join(targetAppDir, '.next'), { recursive: true, dereference: true });
     } else {
         deployWithPermissions(nextBuildDir, path.join(targetAppDir, '.next'));
     }
-    console.log(`[OK] .next copied to deploy_final/application/.next`);
 } else {
-    console.error(`[ERR] Root-level .next not found! Build may have failed.`);
+    console.error(`[ERR] Local application/.next not found!`);
 }
 
-// Copy public folder if it exists
+// Copy public folder
 const publicDir = './application/public';
 if (fs.existsSync(publicDir)) {
     if (fs.cpSync) {
@@ -105,32 +117,24 @@ if (fs.existsSync(publicDir)) {
     } else {
         deployWithPermissions(publicDir, path.join(targetAppDir, 'public'));
     }
-    console.log(`[OK] public/ copied`);
 }
 
-// Copy application source files Next.js needs to serve pages
-['package.json'].forEach(f => {
-    const src = path.join('./application', f);
-    if (fs.existsSync(src)) {
-        fs.copyFileSync(src, path.join(targetAppDir, f));
-        console.log(`[OK] application/${f} copied`);
-    }
-});
+// Copy app package.json
+if (fs.existsSync('./application/package.json')) {
+    fs.copyFileSync('./application/package.json', path.join(targetAppDir, 'package.json'));
+}
 
-
-// 4. Backend + Next.js Dependency Consolidation
+// 3. Backend Consolidation
 console.log(`> Packing Backend API...`);
 deployWithPermissions('./packages/server/dist', path.join(targetDir, 'packages/server/dist'));
 
-// Inject ALL required runtime dependencies into deploy_final/node_modules
+// 4. Inject Runtime Dependencies
 const allDeps = [
-    // Backend deps
     'express', 'sequelize', 'mysql2', 'cors', 'dotenv', 'zod',
     'bcrypt', 'bcryptjs', 'nodemailer', 'redis', 'validator', 'dompurify', 'multer',
-    // Next.js / React deps
     'next', 'react', 'react-dom', 'styled-jsx'
 ];
-console.log(`> Injecting runtime dependencies...`);
+console.log(`> Injecting dependencies into ${targetDir}/node_modules...`);
 const targetNodeModules = path.join(targetDir, 'node_modules');
 if (!fs.existsSync(targetNodeModules)) fs.mkdirSync(targetNodeModules, { recursive: true });
 
@@ -138,27 +142,25 @@ allDeps.forEach(dep => {
     const srcDep = path.join('./node_modules', dep);
     const destDep = path.join(targetNodeModules, dep);
     if (fs.existsSync(srcDep)) {
-        console.log(`[DEP] Injecting ${dep}...`);
         if (fs.cpSync) {
             fs.cpSync(srcDep, destDep, { recursive: true, dereference: true });
         } else {
             deployWithPermissions(srcDep, destDep);
         }
     } else {
-        console.log(`[WARN] Next.js dep ${dep} not found in root node_modules!`);
+        console.warn(`[WARN] Missing root dep: ${dep}`);
     }
 });
 
-// 6. Inject Entry Point (index.js)
-console.log(`> Injecting index.js...`);
+// 5. Inject Entry Point (index.js)
+console.log(`> Injecting Entry Point...`);
 const srcServer = './server.js';
 if (fs.existsSync(srcServer)) {
     fs.copyFileSync(srcServer, path.join(targetDir, 'index.js'));
     fs.chmodSync(path.join(targetDir, 'index.js'), 0o644);
 }
 
-// Write a CLEAN package.json for deploy_final (NOT the root one)
-// The root package.json has workspaces/wrong start script which breaks Hostinger
+// Write Deployment package.json
 const deployPackageJson = {
     "name": "kp-deploy",
     "version": "1.0.0",
@@ -175,42 +177,17 @@ fs.writeFileSync(
     path.join(targetDir, 'package.json'),
     JSON.stringify(deployPackageJson, null, 2)
 );
-fs.chmodSync(path.join(targetDir, 'package.json'), 0o644);
-console.log(`[OK] Clean package.json written for deploy_final`);
 
-// Copy .env files if they exist
-['.env', '.env.local'].forEach(f => {
+// Copy .env and .htaccess
+['.env', '.env.local', '.htaccess'].forEach(f => {
     if (fs.existsSync(f)) {
         fs.copyFileSync(f, path.join(targetDir, f));
         fs.chmodSync(path.join(targetDir, f), 0o644);
     }
 });
 
-// Copy .htaccess into deploy_final (REQUIRED for Apache/LiteSpeed to proxy to Node.js)
-if (fs.existsSync('./.htaccess')) {
-    fs.copyFileSync('./.htaccess', path.join(targetDir, '.htaccess'));
-    fs.chmodSync(path.join(targetDir, '.htaccess'), 0o644);
-    console.log(`[OK] .htaccess copied to deploy_final/`);
-} else {
-    console.log(`[WARN] No .htaccess found at root — Apache may not proxy to Node.js`);
-}
-
-console.log(`--- [SUCCESS] v73.2 ---`);
-console.log(`TARGET: ./deploy_final`);
-console.log(`ENTRY: index.js`);
-
-// Full Validator Map
-function listTree(dir, indent = '') {
-    try {
-        fs.readdirSync(dir).forEach(file => {
-            const p = path.join(dir, file);
-            const isDir = fs.lstatSync(p).isDirectory();
-            console.log(`${indent}${isDir ? 'DIR' : 'FILE'}: ${file}`);
-            if (isDir && !file.includes('node_modules') && indent.length < 8) {
-                listTree(p, indent + '  ');
-            }
-        });
-    } catch (e) {}
-}
-console.log(`> VALIDATOR MAP:`);
-listTree(targetDir);
+console.log(`\n=== [SUCCESS] v73.3 ===`);
+console.log(`OUTPUT: ${path.resolve(targetDir)}`);
+console.log(`\n> IMPORTANT: In Hostinger Dashboard:`);
+console.log(`1. Set "Output Directory" to "dist"`);
+console.log(`2. If "dist" is not an option, set it to "." and ensure .htaccess is present.`);
