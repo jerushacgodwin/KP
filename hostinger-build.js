@@ -186,8 +186,14 @@ console.log(`[OK] Clean package.json written for deploy_final`);
     }
 });
 
-// Final cleanup: Kill any root .htaccess
-if (fs.existsSync('./.htaccess')) fs.unlinkSync('./.htaccess');
+// Copy .htaccess into deploy_final (REQUIRED for Apache/LiteSpeed to proxy to Node.js)
+if (fs.existsSync('./.htaccess')) {
+    fs.copyFileSync('./.htaccess', path.join(targetDir, '.htaccess'));
+    fs.chmodSync(path.join(targetDir, '.htaccess'), 0o644);
+    console.log(`[OK] .htaccess copied to deploy_final/`);
+} else {
+    console.log(`[WARN] No .htaccess found at root — Apache may not proxy to Node.js`);
+}
 
 console.log(`--- [SUCCESS] v73.2 ---`);
 console.log(`TARGET: ./deploy_final`);
