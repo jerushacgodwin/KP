@@ -76,14 +76,17 @@ fs.mkdirSync(targetDir, { recursive: true });
 // 3. Verbose Consolidation
 console.log(`> Packing into UN-IGNORED ./deploy_final...`);
 
-// Copy Next.js build output (.next) and public folder into deploy_final/application
+// Copy Next.js build output into deploy_final/application
+// NOTE: distDir is '../.next' so next build outputs to ROOT-level .next
+// Hostinger checks for .next at root — this satisfies that check.
+// We then also copy it into deploy_final/application/.next for the runtime.
 console.log(`> Copying Next.js build output...`);
-const nextBuildDir = './application/.next';
+const nextBuildDir = './.next';            // Root-level .next (distDir: '../.next')
 const targetAppDir = path.join(targetDir, 'application');
 if (!fs.existsSync(targetAppDir)) fs.mkdirSync(targetAppDir, { recursive: true });
 
 if (fs.existsSync(nextBuildDir)) {
-    console.log(`> Copying .next output...`);
+    console.log(`> Copying .next output to deploy_final/application/.next ...`);
     if (fs.cpSync) {
         fs.cpSync(nextBuildDir, path.join(targetAppDir, '.next'), { recursive: true, dereference: true });
     } else {
@@ -91,7 +94,7 @@ if (fs.existsSync(nextBuildDir)) {
     }
     console.log(`[OK] .next copied to deploy_final/application/.next`);
 } else {
-    console.error(`[ERR] .next not found! Build may have failed.`);
+    console.error(`[ERR] Root-level .next not found! Build may have failed.`);
 }
 
 // Copy public folder if it exists
@@ -105,8 +108,14 @@ if (fs.existsSync(publicDir)) {
     console.log(`[OK] public/ copied`);
 }
 
-// Write application package.json
-fs.writeFileSync(path.join(targetAppDir, 'package.json'), JSON.stringify({ name: 'kpapplication', version: '0.1.0', private: true }, null, 2));
+// Copy application source files Next.js needs to serve pages
+['package.json'].forEach(f => {
+    const src = path.join('./application', f);
+    if (fs.existsSync(src)) {
+        fs.copyFileSync(src, path.join(targetAppDir, f));
+        console.log(`[OK] application/${f} copied`);
+    }
+});
 
 
 // 4. Backend + Next.js Dependency Consolidation
