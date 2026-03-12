@@ -81,7 +81,7 @@ console.log(`> Packing into UN-IGNORED ./deploy_final...`);
 // Hostinger checks for .next at root — this satisfies that check.
 // We then also copy it into deploy_final/application/.next for the runtime.
 console.log(`> Copying Next.js build output...`);
-const nextBuildDir = './.next';            // Root-level .next (distDir: '../.next')
+const nextBuildDir = './application/.next';   // Standard Next.js output (no distDir override)
 const targetAppDir = path.join(targetDir, 'application');
 if (!fs.existsSync(targetAppDir)) fs.mkdirSync(targetAppDir, { recursive: true });
 
