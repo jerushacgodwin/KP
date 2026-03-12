@@ -14,8 +14,8 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "dev": "lerna run dev --stream",
-    "build": "lerna run build --stream",
-    "hostinger-build": "node hostinger-build.js"
+    "build": "node hostinger-build.js",
+    "lerna-build": "lerna run build --stream"
   },
   "dependencies": {
     "mysql2": "^3.16.2",
