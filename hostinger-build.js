@@ -76,31 +76,56 @@ fs.mkdirSync(targetDir, { recursive: true });
 // 3. Verbose Consolidation
 console.log(`> Packing into UN-IGNORED ./deploy_final...`);
 
-// Move STANDALONE contents to root of deploy_final
-const standaloneDir = './application/.next/standalone';
-if (fs.existsSync(standaloneDir)) {
-    console.log(`> Processing Standalone...`);
-    fs.readdirSync(standaloneDir).forEach(item => {
-        const src = path.join(standaloneDir, item);
-        const dest = path.join(targetDir, item);
-        deployWithPermissions(src, dest);
-    });
+// Copy Next.js build output (.next) and public folder into deploy_final/application
+console.log(`> Copying Next.js build output...`);
+const nextBuildDir = './application/.next';
+const targetAppDir = path.join(targetDir, 'application');
+if (!fs.existsSync(targetAppDir)) fs.mkdirSync(targetAppDir, { recursive: true });
+
+if (fs.existsSync(nextBuildDir)) {
+    console.log(`> Copying .next output...`);
+    if (fs.cpSync) {
+        fs.cpSync(nextBuildDir, path.join(targetAppDir, '.next'), { recursive: true, dereference: true });
+    } else {
+        deployWithPermissions(nextBuildDir, path.join(targetAppDir, '.next'));
+    }
+    console.log(`[OK] .next copied to deploy_final/application/.next`);
+} else {
+    console.error(`[ERR] .next not found! Build may have failed.`);
 }
 
-// 4. Backend Consolidation & Dependencies
+// Copy public folder if it exists
+const publicDir = './application/public';
+if (fs.existsSync(publicDir)) {
+    if (fs.cpSync) {
+        fs.cpSync(publicDir, path.join(targetAppDir, 'public'), { recursive: true, dereference: true });
+    } else {
+        deployWithPermissions(publicDir, path.join(targetAppDir, 'public'));
+    }
+    console.log(`[OK] public/ copied`);
+}
+
+// Write application package.json
+fs.writeFileSync(path.join(targetAppDir, 'package.json'), JSON.stringify({ name: 'kpapplication', version: '0.1.0', private: true }, null, 2));
+
+
+// 4. Backend + Next.js Dependency Consolidation
 console.log(`> Packing Backend API...`);
 deployWithPermissions('./packages/server/dist', path.join(targetDir, 'packages/server/dist'));
 
-// CRITICAL: Copy Backend Dependencies from Root
-const backendDeps = [
-    'express', 'sequelize', 'mysql2', 'cors', 'dotenv', 'zod', 
-    'bcrypt', 'bcryptjs', 'nodemailer', 'redis', 'validator', 'dompurify', 'multer'
+// Inject ALL required runtime dependencies into deploy_final/node_modules
+const allDeps = [
+    // Backend deps
+    'express', 'sequelize', 'mysql2', 'cors', 'dotenv', 'zod',
+    'bcrypt', 'bcryptjs', 'nodemailer', 'redis', 'validator', 'dompurify', 'multer',
+    // Next.js / React deps
+    'next', 'react', 'react-dom', 'styled-jsx'
 ];
-console.log(`> Injecting Backend Dependencies...`);
+console.log(`> Injecting runtime dependencies...`);
 const targetNodeModules = path.join(targetDir, 'node_modules');
 if (!fs.existsSync(targetNodeModules)) fs.mkdirSync(targetNodeModules, { recursive: true });
 
-backendDeps.forEach(dep => {
+allDeps.forEach(dep => {
     const srcDep = path.join('./node_modules', dep);
     const destDep = path.join(targetNodeModules, dep);
     if (fs.existsSync(srcDep)) {
@@ -111,21 +136,9 @@ backendDeps.forEach(dep => {
             deployWithPermissions(srcDep, destDep);
         }
     } else {
-        console.log(`[WARN] Dependency ${dep} not found in root!`);
+        console.log(`[WARN] Next.js dep ${dep} not found in root node_modules!`);
     }
 });
-
-// 5. Extract Standalone Config
-console.log(`> Extracting Standalone Config...`);
-const generatedServerPath = path.join(standaloneDir, 'application', 'server.js');
-if (fs.existsSync(generatedServerPath)) {
-    const content = fs.readFileSync(generatedServerPath, 'utf8');
-    const match = content.match(/const nextConfig = (\{[\s\S]*?\})\n/);
-    if (match) {
-        fs.writeFileSync(path.join(targetDir, 'next-config-standalone.json'), match[1]);
-        console.log(`[OK] next-config-standalone.json extracted.`);
-    }
-}
 
 // 6. Inject Entry Point (index.js)
 console.log(`> Injecting index.js...`);
