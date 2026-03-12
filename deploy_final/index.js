@@ -25,6 +25,7 @@ let backendApp = null;
 try {
     const backendPath = path.join(__dirname, 'packages', 'server', 'dist', 'app.js');
     if (fs.existsSync(backendPath)) {
+        // This will now work because we consolidated node_modules in v72
         backendApp = require(backendPath);
         if (backendApp.default) backendApp = backendApp.default;
         log('[OK] Backend API Loaded');
