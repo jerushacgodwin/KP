@@ -23,9 +23,6 @@ const nextConfig = {
    transpilePackages: ["@kp/billing", "@kp/server", "@kp/shop"],
   webpack: (config) => {
     config.resolve.alias["@src"] = path.resolve(__dirname, "src");
-    config.resolve.alias['@kp/billing'] = path.resolve(__dirname, '../packages/billing/src');
-    config.resolve.alias['@kp/server'] = path.resolve(__dirname, '../packages/server/src');
-    config.resolve.alias['@kp/shop'] = path.resolve(__dirname, '../packages/shop/src');
     return config;
 
  
