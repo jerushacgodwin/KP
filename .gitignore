@@ -3,6 +3,10 @@ node_modules/
 .pnp
 .pnp.js
 
+# Hostinger Tracking
+hostinger-dist/
+!dist/
+
 # Testing
 coverage/
 

@@ -14,7 +14,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "dev": "lerna run dev --stream",
-    "build": "npm run build -w @kp/billing -w @kp/server -w @kp/shop && npm run build -w application && mkdir -p public",
+    "build": "node hostinger-build.js",
     "start": "node server.js"
   },
   "dependencies": {
