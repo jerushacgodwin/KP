@@ -7,9 +7,12 @@ const port = process.env.PORT || 3000;
 const dev = process.env.NODE_ENV !== 'production';
 
 // Initialize Next.js app (pointing to the application workspace)
+process.chdir(path.join(__dirname, 'application'));
 const app = next({ 
-    dev, 
-    dir: path.join(__dirname, 'application') 
+    dev,
+    hostname: 'localhost',
+    port,
+    dir: process.cwd()
 });
 const handle = app.getRequestHandler();
 
@@ -19,11 +22,7 @@ app.prepare().then(() => {
 
     // 1. Mount the Express Backend under /api
     try {
-        // We load the compiled backend from the server package's dist folder
         const backendApp = require('@kp/server/dist/app').default;
-        
-        // Hostinger specific: Ensure backend gets the raw /api prefix stripped correctly if needed,
-        // or just mount it. The backendApp is already an express instance.
         server.use('/api', backendApp);
         console.log('[Server] Successfully mounted Express backend at /api');
     } catch (err) {
