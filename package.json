@@ -14,9 +14,11 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "dev": "lerna run dev --stream",
-    "build": "npm run build -w @kp/billing -w @kp/server -w @kp/shop && npm run build -w application"
+    "build": "npm run build -w @kp/billing -w @kp/server -w @kp/shop && npm run build -w application",
+    "start": "node server.js"
   },
   "dependencies": {
+    "express": "^4.19.2",
     "mysql2": "^3.16.2",
     "primeflex": "^4.0.0",
     "primeicons": "^7.0.0",
